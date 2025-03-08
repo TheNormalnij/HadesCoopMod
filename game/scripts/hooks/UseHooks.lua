@@ -12,6 +12,7 @@ local ON_USED_SELECT_HERO = {
     WeaponKit01 = true, -- Weapon selector in hub room
     WeaponShop = true,  -- Charon well
     Loot = true,        -- Hammer/Boons
+    GiftRack = true,    -- Keepssakes box
 }
 
 local _OnUsed = OnUsed
