@@ -1,0 +1,5 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+LineEnding: LF
+UseTab: Never
+ColumnLimit: 120

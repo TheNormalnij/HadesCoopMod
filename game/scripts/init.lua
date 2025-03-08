@@ -1,0 +1,2 @@
+
+ModRequire "GameHooks.lua"

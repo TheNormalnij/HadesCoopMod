@@ -1,0 +1,86 @@
+
+---@class HeroContext
+local HeroContext = {}
+
+local CorontinueToHero = setmetatable({}, { __mode ="k" })
+
+local defaultHero
+
+local RunMT = {
+    __index = function(self, key)
+        if key == "Hero" then
+            return HeroContext.GetCurrentHeroContext()
+        end
+
+        return rawget(self, key)
+    end;
+
+    __newindex = function (self, key, value)
+        if key == "Hero" then
+            DebugPrint{ Text = "Update hero in run from meta" }
+            defaultHero = value
+            return;
+        end
+        rawset(self, key, value)
+    end;
+}
+
+local coroutine_create = coroutine.create
+coroutine.create = function(...)
+    local hero = HeroContext.GetCurrentHeroContext()
+
+    local co = coroutine_create(...)
+    CorontinueToHero[co] = hero
+
+    return co
+end
+
+function HeroContext.InitRunHook()
+    if not CurrentRun.Hero then
+        error("Current run has no hero")
+    end
+
+    defaultHero = CurrentRun.Hero
+    CurrentRun.Hero = nil
+    setmetatable(CurrentRun, RunMT)
+end
+
+function HeroContext.GetCurrentHeroContext()
+    local thread, isMain = coroutine.running()
+    if not isMain then
+        return CorontinueToHero[thread] or defaultHero
+    end
+
+    return defaultHero
+end
+
+function HeroContext.IsHeroContextExplicit()
+    local thread, isMain = coroutine.running()
+    if not isMain then
+        return CorontinueToHero[thread] and true
+    end
+    return false
+end
+
+function HeroContext.SetDefaultHero(hero)
+    defaultHero = hero
+end
+
+function HeroContext.GetDefaultHero()
+    return defaultHero
+end
+
+---@param hero table Hero info
+---@param fun function
+---@param ... unknown params
+function HeroContext.RunWithHeroContext(hero, fun, ...)
+    local args = {...}
+    local co = coroutine_create(function()
+        fun(table.unpack(args))
+    end)
+    CorontinueToHero[co] = hero
+    --coroutine.resume(co, ...)
+    resume(co, _threads)
+end
+
+return HeroContext
