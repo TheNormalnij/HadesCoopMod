@@ -1,3 +1,5 @@
+-- This files has modifed Super Giant Games code
+-- Not licensed
 
 ---@type CoopPlayers
 local CoopPlayers = ModRequire "CoopPlayers.lua"
