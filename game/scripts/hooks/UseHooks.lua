@@ -11,7 +11,6 @@ local HeroContext = ModRequire "../HeroContext.lua"
 local ON_USED_SELECT_HERO = {
     WeaponKit01 = true, -- Weapon selector in hub room
     WeaponShop = true,  -- Charon well
-    Loot = true,        -- Hammer/Boons
     GiftRack = true,    -- Keepssakes box
 }
 
@@ -26,10 +25,10 @@ OnUsed = function(args)
         _OnUsed({
             args[1],
             function(triggerArgs)
-                DebugPrint { Text = "on used ON_USED_SELECT_HERO: " .. tostring(args[1]) }
+                DebugPrint { Text = "on used ON_USED_SELECT_HERO: " .. tostring(args[1] .. ". User: " .. tostring(triggerArgs.UserId)) }
 
                 HeroContext.RunWithHeroContext(
-                    CoopPlayers.PlayerUnitIdToHero[triggerArgs.UserId] or HeroContext.GetDefaultHero(),
+                    CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
                     args[2],
                     triggerArgs
                 )
@@ -42,7 +41,7 @@ OnUsed = function(args)
         _OnUsed {
             args[1],
             function(triggerArgs)
-                local hero = CoopPlayers.PlayerUnitIdToHero[triggerArgs.UserId] or HeroContext.GetDefaultHero()
+                local hero = CoopPlayers.GetHeroByUnit(triggerArgs.UserId)
                 local item = triggerArgs.AttachedTable
 
                 if item.AddAmmo then
@@ -88,11 +87,28 @@ OnUsed = function(args)
                 )
             end
         }
-        return
+    elseif args[1] == "Loot"  then
+        _OnUsed({
+            args[1],
+            function(triggerArgs)
+                -- Regenerate traits in loot
+                -- Pregenarated loot can contains unsupported loot
+                -- for a second hero
+                triggerArgs.AttachedTable.UpgradeOptions = nil
+
+                HeroContext.RunWithHeroContext(
+                    CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
+                    args[2],
+                    triggerArgs
+                )
+            end
+        })
+    else
+        _OnUsed { args[1], function(triggerArgs)
+            DebugPrint { Text = "OnUsed: " .. args[1] }
+            args[2](triggerArgs)
+        end }
     end
 
-    _OnUsed { args[1], function(triggerArgs)
-        DebugPrint { Text = "OnUsed: " .. args[1] }
-        args[2](triggerArgs)
-    end }
+
 end

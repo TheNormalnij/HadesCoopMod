@@ -11,6 +11,7 @@ local HeroContext = ModRequire "HeroContext.lua"
 ---@class CoopPlayers
 local CoopPlayers = {}
 
+---@private
 ---@type table<number, table>
 CoopPlayers.PlayerUnitIdToHero = {}
 ---@type table<number, number>
@@ -38,6 +39,10 @@ end
 
 function CoopPlayers.GetHero(playerId)
     return CoopPlayers.CoopHeroes[playerId]
+end
+
+function CoopPlayers.GetHeroByUnit(unitId)
+    return CoopPlayers.PlayerUnitIdToHero[unitId]
 end
 
 function CoopPlayers.InitCoopPlayer()
