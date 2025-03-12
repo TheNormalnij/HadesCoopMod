@@ -112,7 +112,6 @@ function CoopPlayers.CoopInit()
 
     local playerId = CoopPlayers.InitCoopPlayer()
     --CoopPlayers.InitCoopUnit(playerId)
-    -- FriendlyToPlayer
 end
 
 return CoopPlayers
