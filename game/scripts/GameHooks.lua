@@ -17,19 +17,7 @@ local HeroContext = ModRequire "HeroContext.lua"
 
 ModRequire "hooks/DamageHooks.lua"
 ModRequire "hooks/UseHooks.lua"
-
-local _OnControlPressed = OnControlPressed
-OnControlPressed = function(args)
-    _OnControlPressed{
-        args[1],
-        function(triggerArgs)
-            local hero = CoopPlayers.GetHero(triggerArgs.mPlayerIndex)
-            if hero then
-                HeroContext.RunWithHeroContext(hero, args[2], triggerArgs)
-            end
-        end
-    }
-end
+ModRequire "hooks/ControlHooks.lua"
 
 local function InitStartRoomHooks()
     local _StartRoom = StartRoom
