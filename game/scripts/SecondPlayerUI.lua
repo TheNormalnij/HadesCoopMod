@@ -569,7 +569,7 @@ function SecondPlayerUi.ShowSuperMeter()
                     (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) / CurrentRun.Hero.SuperCost)
             end
         end
-        UpdateSuperUIComponent(i, fillPercent)
+        SecondPlayerUi.UpdateSuperUIComponent(i, fillPercent)
     end
 
     UpdateSuperMeterUI()
