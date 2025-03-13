@@ -824,6 +824,12 @@ function SecondPlayerUi.InitHooks()
         end
     end
 
+    -- Show traits for last player
+    local _ShowAdvancedTooltip = ShowAdvancedTooltip
+    ShowAdvancedTooltip = function(...)
+        SecondPlayerUi.UpdateTraitsMenuForCurrentHero()
+        _ShowAdvancedTooltip(...)
+    end
 
     -- Etc
     local _PulseText = PulseText
@@ -837,6 +843,64 @@ function SecondPlayerUi.InitHooks()
 
         _PulseText(args)
     end
+end
+
+function SecondPlayerUi.UpdateTraitsMenuForCurrentHero()
+    local function RemoveCurrentTraits(hero)
+        for k, trait in pairs(hero.Traits) do
+            TraitUIRemove(trait)
+        end
+        UpdateNumHiddenTraits()
+    end
+
+    local function AddCurrentTraits()
+        local showingTraits = {}
+
+        for index, traitData in pairs(CurrentRun.Hero.Traits) do
+            if showingTraits[traitData.Name] == nil or not AreTraitsIdentical(traitData, showingTraits[traitData.Name]) or (AreTraitsIdentical(traitData, showingTraits[traitData.Name]) and GetRarityValue(showingTraits[traitData.Name].Rarity) < GetRarityValue(traitData.Rarity)) then
+                if not showingTraits[traitData.Name] then
+                    showingTraits[traitData.Name] = {}
+                end
+                table.insert(showingTraits[traitData.Name], traitData)
+            end
+        end
+
+        for traitName, traitDatas in pairs(showingTraits) do
+            for i, traitData in pairs(traitDatas) do
+                TraitUIAdd(traitData, true)
+            end
+        end
+
+
+        for k, upgradeName in pairs(CurrentRun.EnemyUpgrades) do
+            local upgradeData = EnemyUpgradeData[upgradeName]
+            TraitUIAdd(upgradeData, true)
+        end
+
+        local numHidden = GetNumHiddenTraits()
+        if numHidden > 0 then
+            UpdateAdditionalTraitHint(numHidden)
+            FadeObstacleIn({
+                Id = ScreenAnchors.AdditionalTraitHint,
+                Duration = CombatUI.FadeInDuration,
+                Distance =
+                    CombatUI.FadeDistance.Trait,
+                Direction = 0
+            })
+        end
+    end
+
+    local mainHero = CoopPlayers.GetMainHero()
+    local secondHero = CoopPlayers.GetHero(2)
+    if mainHero then
+        RemoveCurrentTraits(mainHero)
+    end
+    if secondHero then
+        RemoveCurrentTraits(secondHero)
+    end
+
+    AddCurrentTraits()
+    TraitUIActivateTraits()
 end
 
 ---@private
