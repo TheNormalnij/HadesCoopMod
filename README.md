@@ -19,13 +19,12 @@ Follow these steps if you want to develop the mod and save changes in git:
 ```lua
 ModRequire "dev/game/scripts/init.lua"
 ```
-4. Create `Hades/Hades/Content/ModModules/TN_CoopMod/init.xml` with the following content:
-```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<mod>
-	<Name value="Coop mod"/>
-	<Library value="dev/bin/HadesCoopGame.dll" />
-	<Author value="Uladzislau 'TheNormalnij' Nikalayevich" />
-</mod>
+4. Create `Hades/Hades/Content/ModModules/TN_CoopMod/meta.sjson` with the following content:
+```sjson
+{
+	Name = "Coop mod"
+	Library = "dev/bin/HadesCoopGame.dll"
+	Author = "Uladzislau 'TheNormalnij' Nikalayevich"
+}
 ```
 5. Now you can make changes directly in the repository and load them in the game.

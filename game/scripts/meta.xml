@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<mod>
-	<Name value="Coop mod"/>
-	<Library value="HadesCoopGame.dll" />
-	<Author value="Uladzislau 'TheNormalnij' Nikalayevich" />
-</mod>
