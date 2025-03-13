@@ -732,8 +732,25 @@ function SecondPlayerUi.InitHooks()
     end
 
     -- Gun
-    SecondPlayerUi.CreateSimpleHook("ShowGunUI")
-    SecondPlayerUi.CreateSimpleHook("HideGunUI")
+    local _ShowGunUI = ShowGunUI
+    ShowGunUI = function()
+        local mainHero = CoopPlayers.GetMainHero() or CurrentRun.Hero
+        HeroContext.RunWithHeroContext(mainHero, _ShowGunUI)
+        local secondHero = CoopPlayers.GetHero(2)
+        if secondHero then
+            HeroContext.RunWithHeroContext(secondHero, SecondPlayerUi.ShowGunUI)
+        end
+    end
+
+    local _HideGunUI = HideGunUI
+    HideGunUI = function()
+        local mainHero = CoopPlayers.GetMainHero()
+        HeroContext.RunWithHeroContext(mainHero, _HideGunUI)
+        local secondHero = CoopPlayers.GetHero(2)
+        if secondHero then
+            HeroContext.RunWithHeroContext(secondHero, SecondPlayerUi.HideGunUI)
+        end
+    end
 
     local _UpdateGunUI = UpdateGunUI
     UpdateGunUI = function()
@@ -835,8 +852,5 @@ function SecondPlayerUi.CreateSimpleHook(funcName)
         end
     end
 end
-
---ShowSuperMeter()
---ShowTraitUI()
 
 return SecondPlayerUi
