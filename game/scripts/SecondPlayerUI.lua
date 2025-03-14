@@ -900,9 +900,11 @@ function SecondPlayerUi.ChangeHeroInTraitsMenu()
         end
 
 
-        for k, upgradeName in pairs(CurrentRun.EnemyUpgrades) do
-            local upgradeData = EnemyUpgradeData[upgradeName]
-            TraitUIAdd(upgradeData, true)
+        if CurrentRun.EnemyUpgrades then
+            for k, upgradeName in pairs(CurrentRun.EnemyUpgrades) do
+                local upgradeData = EnemyUpgradeData[upgradeName]
+                TraitUIAdd(upgradeData, true)
+            end
         end
 
         local numHidden = GetNumHiddenTraits()
@@ -930,7 +932,9 @@ function SecondPlayerUi.ChangeHeroInTraitsMenu()
     end
 
     AddCurrentTraits()
-    TraitUIActivateTraits()
+    if CurrentRoom then
+        TraitUIActivateTraits()
+    end
 
     SecondPlayerUi.isTraitsContextSwithInFrogress = false
 end
