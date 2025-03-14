@@ -13,6 +13,12 @@ local HeroContext = ModRequire "HeroContext.lua"
 ---@class SecondPlayerUi
 local SecondPlayerUi = {}
 
+---@private
+SecondPlayerUi.isTraitsContextSwithInFrogress = false
+
+---@private
+SecondPlayerUi.currentTraitsHero = nil
+
 local ScreenAnchorsSecondPlayer = {}
 
 function SecondPlayerUi.ShowHealthUI()
@@ -824,12 +830,17 @@ function SecondPlayerUi.InitHooks()
         end
     end
 
-    -- Show traits for last player
-    local _ShowAdvancedTooltip = ShowAdvancedTooltip
-    ShowAdvancedTooltip = function(...)
-        SecondPlayerUi.UpdateTraitsMenuForCurrentHero()
-        _ShowAdvancedTooltip(...)
-    end
+    -- Traits
+    HookUtils.onPreFunction("ShowAdvancedTooltip", SecondPlayerUi.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUIActivateTrait", SecondPlayerUi.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUIDeactivateTrait", SecondPlayerUi.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUICreateComponent", SecondPlayerUi.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUIUpdateText", SecondPlayerUi.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUIRemove", SecondPlayerUi.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUICreateText", SecondPlayerUi.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("UpdateTraitNumber", SecondPlayerUi.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("UpdateAdditionalTraitHint", SecondPlayerUi.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUIActivateTraits", SecondPlayerUi.ChangeHeroInTraitsMenu)
 
     -- Etc
     local _PulseText = PulseText
@@ -845,7 +856,24 @@ function SecondPlayerUi.InitHooks()
     end
 end
 
-function SecondPlayerUi.UpdateTraitsMenuForCurrentHero()
+---@private
+function SecondPlayerUi.ChangeHeroInTraitsMenu()
+    if SecondPlayerUi.isTraitsContextSwithInFrogress then
+        return
+    end
+
+    if SecondPlayerUi.currentTraitsHero then
+        if CurrentRun.Hero == SecondPlayerUi.currentTraitsHero then
+            return
+        end
+    else
+        if CurrentRun.Hero == CoopPlayers.GetMainHero() then
+            return
+        end
+    end
+
+    SecondPlayerUi.currentTraitsHero = CurrentRun.Hero
+
     local function RemoveCurrentTraits(hero)
         for k, trait in pairs(hero.Traits) do
             TraitUIRemove(trait)
@@ -890,6 +918,8 @@ function SecondPlayerUi.UpdateTraitsMenuForCurrentHero()
         end
     end
 
+    SecondPlayerUi.isTraitsContextSwithInFrogress = true
+
     local mainHero = CoopPlayers.GetMainHero()
     local secondHero = CoopPlayers.GetHero(2)
     if mainHero then
@@ -901,6 +931,8 @@ function SecondPlayerUi.UpdateTraitsMenuForCurrentHero()
 
     AddCurrentTraits()
     TraitUIActivateTraits()
+
+    SecondPlayerUi.isTraitsContextSwithInFrogress = false
 end
 
 ---@private
