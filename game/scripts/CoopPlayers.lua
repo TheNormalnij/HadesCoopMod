@@ -74,16 +74,8 @@ function CoopPlayers.InitCoopUnit(playerId)
         HeroContext.RunWithHeroContext(hero, function()
             EquipKeepsake(hero, GameState.LastAwardTrait, { SkipNewTraitHighlight = true })
             EquipAssist(hero, GameState.LastAssistTrait, { SkipNewTraitHighlight = true })
+            EquipWeaponUpgrade(hero, { SkipTraitHighlight = true })
             InitHeroLastStands(hero)
-
-            -- Equip weaon trait
-            local currentWeaponInSlot = GetEquippedWeapon()
-            AddTraitToHero{
-                SkipNewTraitHighlight = true,
-                TraitName = GetWeaponUpgradeTrait(currentWeaponInSlot, 1),
-                Rarity = GetRarityKey(
-                    GetWeaponUpgradeLevel(currentWeaponInSlot, GetEquippedWeaponTraitIndex(currentWeaponInSlot)))
-            }
         end)
     end
 
