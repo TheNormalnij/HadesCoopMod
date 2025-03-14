@@ -18,15 +18,6 @@ local RunMT = {
 
         return rawget(self, key)
     end;
-
-    __newindex = function (self, key, value)
-        if key == "Hero" then
-            DebugPrint{ Text = "Update hero in run from meta" }
-            defaultHero = value
-            return;
-        end
-        rawset(self, key, value)
-    end;
 }
 
 local coroutine_create = coroutine.create

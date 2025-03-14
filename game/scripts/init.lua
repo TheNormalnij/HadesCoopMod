@@ -23,6 +23,7 @@ local MenuHooks = ModRequire "hooks/MenuHooks.lua"
 ModRequire "hooks/DamageHooks.lua"
 ModRequire "hooks/UseHooks.lua"
 ModRequire "hooks/ControlHooks.lua"
+ModRequire "hooks/SaveHooks.lua"
 
 local hooksInited = false
 OnAnyLoad {
