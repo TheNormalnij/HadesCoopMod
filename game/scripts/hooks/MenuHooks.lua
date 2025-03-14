@@ -52,6 +52,7 @@ function MenuHooks.InitHooks()
     hookUiScreen("ShowWeaponUpgradeScreen")
     hookUiScreen("ShowAwardMenu")
     hookUiScreen("HandleLootPickup")
+    hookUiScreen("ShowAdvancedTooltip")
 end
 
 return MenuHooks
