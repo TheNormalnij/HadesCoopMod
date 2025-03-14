@@ -1,0 +1,28 @@
+name: Auto-build
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:        
+  windows:
+    name: Build for Windows
+    runs-on: windows-latest
+    strategy:
+        matrix:
+            build_type: ["Release", "Debug"]
+            arch: ["x64"]
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'true'
+
+    - name: Compile with MSVC for Windows
+      run: |
+        cmake -A ${{ matrix.arch }} . -B build_msvc
+        cmake --build build_msvc --config ${{ matrix.build_type }}
+      shell: bash
+    - name: Store artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Windows_${{ matrix.build_type }}_${{ matrix.arch }}
+        path: |
+          ${{ github.workspace }}\bin\HadesCoopGame.dll
