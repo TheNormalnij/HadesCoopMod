@@ -15,6 +15,9 @@ local SecondPlayerUi = ModRequire "SecondPlayerUI.lua"
 ---@type HeroContext
 local HeroContext = ModRequire "HeroContext.lua"
 
+---@type PactDoorFix
+local PactDoorFix = ModRequire "hooks/PactDoorFix.lua"
+
 ModRequire "hooks/DamageHooks.lua"
 ModRequire "hooks/UseHooks.lua"
 ModRequire "hooks/ControlHooks.lua"
@@ -148,12 +151,12 @@ OnAnyLoad {
                     UpdateHealthUI()
                 end)
 
-
                 InitFreezeHooks()
                 InitStartRoomHooks()
                 InitMenuHooks()
                 InitRunHooks()
 
+                PactDoorFix.InitHooks()
                 SecondPlayerUi.InitHooks()
                 CoopPlayers.CoopInit()
             end

@@ -45,6 +45,15 @@ function CoopPlayers.GetHeroByUnit(unitId)
     return CoopPlayers.PlayerUnitIdToHero[unitId]
 end
 
+---@return table<number>
+function CoopPlayers.GetUnits()
+    local out = {}
+    for unit in pairs(CoopPlayers.PlayerUnitIdToHero) do
+        table.insert(out, unit)
+    end
+    return out
+end
+
 function CoopPlayers.InitCoopPlayer()
     local playerId = 2
 
