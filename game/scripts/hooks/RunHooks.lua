@@ -43,6 +43,7 @@ function RunHooks.InitStartRoomHooks()
             --entranceFunction(currentRun, currentRoom, args)
             -- TODO ADD ENTER Animation
             CoopPlayers.InitCoopUnit(2)
+            CoopPlayers.UpdateMainHero()
             --SecondPlayerUi.UpdateHealthUI()
 
             if currentRoom.HeroEndPoint then
