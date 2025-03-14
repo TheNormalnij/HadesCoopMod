@@ -11,6 +11,8 @@ local CoopPlayers = ModRequire "CoopPlayers.lua"
 local SecondPlayerUi = ModRequire "SecondPlayerUI.lua"
 ---@type HeroContext
 local HeroContext = ModRequire "HeroContext.lua"
+---@type CoopCamera
+local CoopCamera = ModRequire "CoopCamera.lua"
 ---@type PactDoorFix
 local PactDoorFix = ModRequire "hooks/PactDoorFix.lua"
 ---@type FreezeHooks
@@ -44,6 +46,7 @@ OnAnyLoad {
                     UpdateHealthUI()
                 end)
 
+                CoopCamera.InitHooks()
                 FreezeHooks.InitHooks()
                 RunHooks.InitHooks()
                 MenuHooks.InitHooks()
