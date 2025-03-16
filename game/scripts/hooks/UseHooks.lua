@@ -8,36 +8,18 @@ local CoopPlayers = ModRequire "../CoopPlayers.lua"
 ---@type HeroContext
 local HeroContext = ModRequire "../HeroContext.lua"
 
-local ON_USED_SELECT_HERO = {
-    WeaponKit01 = true, -- Weapon selector in hub room
-    WeaponShop = true,  -- Charon well
-    GiftRack = true,    -- Keepssakes box
-}
-
 local _OnUsed = OnUsed
 OnUsed = function(args)
     if type(args[1]) == "function" then
-        -- Hack fot OnUsed in Interactables.lua
-        return _OnUsed(args)
-    end
-
-    if ON_USED_SELECT_HERO[args[1]] then
-        _OnUsed({
-            args[1],
-            function(triggerArgs)
-                DebugPrint { Text = "on used ON_USED_SELECT_HERO: " .. tostring(args[1] .. ". User: " .. tostring(triggerArgs.UserId)) }
-
-                HeroContext.RunWithHeroContext(
-                    CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
-                    args[2],
-                    triggerArgs
-                )
-            end
-        })
-        return
-    end
-
-    if args[1] == "ConsumableItems" then
+        _OnUsed { function(triggerArgs)
+            HeroContext.RunWithHeroContext(
+                CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
+                args[1],
+                triggerArgs
+            )
+        end
+        }
+    elseif args[1] == "ConsumableItems" then
         _OnUsed {
             args[1],
             function(triggerArgs)
@@ -104,10 +86,16 @@ OnUsed = function(args)
             end
         })
     else
-        _OnUsed { args[1], function(triggerArgs)
-            DebugPrint { Text = "OnUsed: " .. args[1] }
-            args[2](triggerArgs)
-        end }
+        _OnUsed({
+            args[1],
+            function(triggerArgs)
+                HeroContext.RunWithHeroContext(
+                    CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
+                    args[2],
+                    triggerArgs
+                )
+            end
+        })
     end
 
 
