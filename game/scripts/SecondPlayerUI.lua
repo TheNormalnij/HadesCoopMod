@@ -707,14 +707,35 @@ function SecondPlayerUi.InitHooks()
     HookUtils.onPostFunction("UpdateRallyHealthUI", SecondPlayerUi.UpdateRallyHealthUI)
 
     -- LifePipIds
-    local _UpdateLifePips = UpdateLifePips
-    UpdateLifePips = function()
-        local mainHero = CoopPlayers.GetMainHero()
-        _UpdateLifePips(mainHero)
-        SecondPlayerUi.UpdateLifePips()
-    end
+    SecondPlayerUi.CreateSimpleHook("RecreateLifePips")
 
-    HookUtils.onPostFunction("RecreateLifePips", SecondPlayerUi.RecreateLifePips)
+    HookUtils.wrap("UpdateLifePips", function (basefun, unit)
+        local dafaultHero = HeroContext.GetDefaultHero()
+        if not dafaultHero or not unit or dafaultHero == unit then
+            basefun(dafaultHero)
+        end
+        SecondPlayerUi.UpdateLifePips()
+    end)
+
+    local _AddLastStand = AddLastStand
+    AddLastStand = function (args)
+        local isSecondPlayer = HeroContext.GetDefaultHero() ~= HeroContext.GetCurrentHeroContext()
+        local pipsBackup = ScreenAnchors.LifePipIds
+        local _CreateScreenObstacle = CreateScreenObstacle
+        if isSecondPlayer then
+            ScreenAnchors.LifePipIds = ScreenAnchorsSecondPlayer.LifePipIds
+            CreateScreenObstacle = function(args)
+                args.X = (ScreenWidth - 80) - (args.X - 70)
+            end
+        end
+
+        _AddLastStand(args)
+
+        if isSecondPlayer then
+            ScreenAnchors.LifePipIds = pipsBackup
+            CreateScreenObstacle = _CreateScreenObstacle
+        end
+    end
 
     -- Ammo / red crystrals
     HookUtils.onPostFunction("ShowAmmoUI", SecondPlayerUi.ShowAmmoUI)

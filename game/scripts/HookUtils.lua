@@ -68,4 +68,18 @@ function HookUtils.onPreFunctionOnce(funcName, handler)
     end
 end
 
+---@param funcName string
+---@param handler fun(basefun: function, ...): any
+function HookUtils.wrap(funcName, handler)
+    local original = _G[funcName]
+
+    if not original then
+        error("Cannot wrap function: " .. tostring(funcName))
+    end
+
+    _G[funcName] = function(...)
+        handler(original, ...)
+    end
+end
+
 return HookUtils

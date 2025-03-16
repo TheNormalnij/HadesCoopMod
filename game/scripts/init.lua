@@ -43,7 +43,6 @@ OnAnyLoad {
                     CoopPlayers.InitCoopUnit(2)
                     SecondPlayerUi.UpdateHealthUI()
                     SecondPlayerUi.RecreateLifePips()
-                    UpdateHealthUI()
                 end)
 
                 CoopCamera.InitHooks()
