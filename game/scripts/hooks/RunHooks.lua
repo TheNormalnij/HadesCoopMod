@@ -16,6 +16,7 @@ local RunHooks = {}
 function RunHooks.InitHooks()
     RunHooks.InitRunHooks()
     RunHooks.InitStartRoomHooks()
+    RunHooks.CreateRoomHooks()
 end
 
 ---@private
@@ -64,6 +65,21 @@ function RunHooks.InitRunHooks()
         CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
 
         return newRun
+    end
+end
+
+---@private
+function RunHooks.CreateRoomHooks()
+    _CreateRoom = CreateRoom
+    CreateRoom = function(...)
+        local room = _CreateRoom(...)
+        if not room.ZoomFraction then
+            room.ZoomFraction = 0.6
+        elseif room.ZoomFraction > 0.5 then
+            room.ZoomFraction = room.ZoomFraction * 0.6
+        end
+
+        return room
     end
 end
 

@@ -12,22 +12,7 @@ local HookUtils = ModRequire "HookUtils.lua"
 local CoopCamera = {}
 
 function CoopCamera.InitHooks()
-    CoopCamera.InitZoomHook()
     CoopCamera.AddCameraUpdater()
-
-end
-
----@private
-function CoopCamera.InitZoomHook()
-    local _AdjustZoom = AdjustZoom
-    AdjustZoom = function(args)
-        local faction = args.Fraction or 1.0
-        if faction < 1.5 then
-            faction = faction * 0.60
-        end
-        args.Fraction = faction
-        _AdjustZoom(args)
-    end
 end
 
 ---@private
