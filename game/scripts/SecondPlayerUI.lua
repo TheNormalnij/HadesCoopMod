@@ -699,18 +699,11 @@ function SecondPlayerUi.InitHooks()
     -- Health
     HookUtils.onPostFunction("ShowHealthUI", SecondPlayerUi.ShowHealthUI)
 
-    local _UpdateHealthUI = UpdateHealthUI
-    function UpdateHealthUI()
-        local mainHero = CoopPlayers.GetMainHero()
-        HeroContext.RunWithHeroContext(mainHero, function()
-            _UpdateHealthUI()
-            SecondPlayerUi.UpdateHealthUI()
-        end)
-    end
-
-    HookUtils.onPostFunction("UpdateHealthUI", SecondPlayerUi.UpdateHealthUI)
+    SecondPlayerUi.CreateSimpleHook("UpdateHealthUI")
     HookUtils.onPostFunction("DestroyHealthUI", SecondPlayerUi.DestroyHealthUI)
-    HookUtils.onPostFunction("HideHealthUI", SecondPlayerUi.HideHealthUI)
+    HookUtils.onPreFunction("HideHealthUI", function ()
+        thread(SecondPlayerUi.HideHealthUI)
+    end )
     HookUtils.onPostFunction("UpdateRallyHealthUI", SecondPlayerUi.UpdateRallyHealthUI)
 
     -- LifePipIds
