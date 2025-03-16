@@ -854,6 +854,12 @@ function SecondPlayerUi.InitHooks()
 
         _PulseText(args)
     end
+
+    HookUtils.onPostFunction("ShowUseButton", function(objectId, useTarget)
+        if HeroContext.GetDefaultHero() ~= HeroContext.GetCurrentHeroContext() then
+            Move({ Id = ScreenAnchors.UsePrompts[objectId], DestinationId = ScreenAnchors.UsePrompts[objectId], OffsetY = -50 })
+        end
+    end)
 end
 
 ---@private

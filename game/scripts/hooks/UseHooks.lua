@@ -112,3 +112,37 @@ OnUsed = function(args)
 
 
 end
+
+local _OnActiveUseTarget = OnActiveUseTarget
+OnActiveUseTarget = function(args)
+    if type(args[1]) == "function" then
+        _OnActiveUseTarget{
+            function (triggerArgs)
+                HeroContext.RunWithHeroContext(
+                    CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
+                    args[1],
+                    triggerArgs
+                )
+            end
+        }
+    else
+        _OnActiveUseTarget(args)
+    end
+end
+
+local _OnActiveUseTargetLost = OnActiveUseTargetLost
+OnActiveUseTargetLost = function(args)
+    if type(args[1]) == "function" then
+        _OnActiveUseTargetLost {
+            function(triggerArgs)
+                HeroContext.RunWithHeroContext(
+                    CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
+                    args[1],
+                    triggerArgs
+                )
+            end
+        }
+    else
+        _OnActiveUseTargetLost(args)
+    end
+end
