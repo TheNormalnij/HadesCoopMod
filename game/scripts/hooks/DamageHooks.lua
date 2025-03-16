@@ -40,7 +40,7 @@ function OnHit(args)
             elseif victim == CoopPlayers.GetHero(2) then
                 SecondPlayerUi.UpdateHealthUI()
             end
-            if victim.Health <= 0 then
+            if victim.Health <= 0 and not triggerArgs.HasLastStand then
                 CoopPlayers.OnPlayerDead(victim)
             end
         end
