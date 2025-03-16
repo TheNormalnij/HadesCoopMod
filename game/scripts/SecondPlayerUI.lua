@@ -103,6 +103,8 @@ function SecondPlayerUi.ShowHealthUI()
     SetAnimation({ Name = "HealthBarFillWhite", DestinationId = ScreenAnchorsSecondPlayer.HealthRally, FrameTarget = frameTarget, Instant = true, Color =
     Color.RallyHealth })
 
+    SecondPlayerUi.UpdateHealthUI()
+
     if CurrentRun.CurrentRoom.LoadedAmmo then
         for i = 1, CurrentRun.CurrentRoom.LoadedAmmo do
             local offsetX = 600 + 380 -- Some random shit
