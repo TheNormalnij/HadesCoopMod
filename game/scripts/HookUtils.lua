@@ -16,9 +16,9 @@ function HookUtils.onPostFunctionOnce(funcName, handler)
     end
 
     _G[funcName] = function(...)
+        _G[funcName] = original
         original(...)
         handler(...)
-        _G[funcName] = original
     end
 end
 
@@ -62,8 +62,8 @@ function HookUtils.onPreFunctionOnce(funcName, handler)
     end
 
     _G[funcName] = function(...)
-        handler(...)
         _G[funcName] = original
+        handler(...)
         original(...)
     end
 end

@@ -36,18 +36,19 @@ OnAnyLoad {
         local mapName = triggerArgs.name
 
         if mapName == "RoomPreRun" then
+            HookUtils.onPostFunctionOnce("DeathAreaRoomTransition", function()
+                if not HeroContext.GetDefaultHero() then
+                    HeroContext.InitRunHook()
+                end
+                CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
+                CoopPlayers.UpdateMainHero()
+                CoopPlayers.InitCoopUnit(2)
+                SecondPlayerUi.UpdateHealthUI()
+                SecondPlayerUi.RecreateLifePips()
+            end)
+
             if not hooksInited then
                 hooksInited = true
-
-                HookUtils.onPostFunctionOnce("DeathAreaRoomTransition", function()
-                    HeroContext.InitRunHook()
-                    CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
-                    CoopPlayers.UpdateMainHero()
-                    CoopPlayers.InitCoopUnit(2)
-                    SecondPlayerUi.UpdateHealthUI()
-                    SecondPlayerUi.RecreateLifePips()
-                end)
-
                 EnemyAiHooks.InitHooks()
                 SaveHooks.InitHooks()
                 CoopCamera.InitHooks()
