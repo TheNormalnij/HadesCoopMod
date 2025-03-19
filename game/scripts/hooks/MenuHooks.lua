@@ -21,6 +21,8 @@ function MenuHooks.InitHooks()
     MenuHooks.HookUiControl("PlayTextLines")
     MenuHooks.HookUiControl("OpenUpgradeChoiceMenu")
     MenuHooks.HookUiControl("ShowAdvancedTooltip")
+    MenuHooks.HookUiControl("ShowStoreScreen")
+    MenuHooks.HookUiControl("OpenSellTraitMenu")
 
     HookUtils.onPreFunction("ShowAwardMenu", function()
         local currentGift, currentAssist
