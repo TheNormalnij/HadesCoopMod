@@ -23,6 +23,8 @@ local RunHooks = ModRequire "hooks/RunHooks.lua"
 local MenuHooks = ModRequire "hooks/MenuHooks.lua"
 ---@type SaveHooks
 local SaveHooks = ModRequire "hooks/SaveHooks.lua"
+---@type EnemyAiHooks
+local EnemyAiHooks = ModRequire "hooks/EnemyAiHooks.lua"
 
 ModRequire "hooks/DamageHooks.lua"
 ModRequire "hooks/UseHooks.lua"
@@ -46,6 +48,7 @@ OnAnyLoad {
                     SecondPlayerUi.RecreateLifePips()
                 end)
 
+                EnemyAiHooks.InitHooks()
                 SaveHooks.InitHooks()
                 CoopCamera.InitHooks()
                 FreezeHooks.InitHooks()

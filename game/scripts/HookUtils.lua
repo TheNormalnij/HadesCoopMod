@@ -78,7 +78,7 @@ function HookUtils.wrap(funcName, handler)
     end
 
     _G[funcName] = function(...)
-        handler(original, ...)
+        return handler(original, ...)
     end
 end
 

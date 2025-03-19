@@ -32,6 +32,17 @@ function CoopPlayers.GetMainHero()
     return CoopPlayers.CoopHeroes[1]
 end
 
+---@return number
+function CoopPlayers.GetPlayersCount()
+    return CoopGetPlayersCount()
+end
+
+---@param unitId integer
+---@return boolean
+function CoopPlayers.IsPlayerUnit(unitId)
+    return CoopPlayers.PlayerUnitIdToHero[unitId] and true
+end
+
 function CoopPlayers.SetMainHero(hero)
     DebugPrint{Text = "Set main hero: " .. tostring(hero) }
     CoopPlayers.CoopHeroes[1] = hero
