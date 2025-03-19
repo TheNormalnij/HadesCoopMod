@@ -7,24 +7,48 @@
 local CoopPlayers = ModRequire "CoopPlayers.lua"
 ---@type HookUtils
 local HookUtils = ModRequire "HookUtils.lua"
+---@type HeroContext
+local HeroContext = ModRequire "HeroContext.lua"
 
 ---@class CoopCamera
 local CoopCamera = {}
 
+---@private
+CoopCamera.isFocusEnabled = true
+
 function CoopCamera.InitHooks()
-    CoopCamera.AddCameraUpdater()
+    HookUtils.onPostFunction("draw", CoopCamera.Update)
+    CoopCamera.LockCameraOrig = LockCamera
+    LockCamera = CoopCamera.LockCamaraHook
+end
+
+---@param state boolean
+function CoopCamera.ForceFocus(state)
+    CoopCamera.isFocusEnabled = state
+end
+
+function CoopCamera.LockCamaraHook(args)
+    if args.Id == 40000 then
+        CoopCamera.isFocusEnabled = true
+        CoopCamera.Update()
+    else
+        CoopCamera.isFocusEnabled = false
+        CoopCamera.LockCameraOrig(args)
+    end
 end
 
 ---@private
-function CoopCamera.AddCameraUpdater()
-    HookUtils.onPostFunction("draw", function ()
-        local secondPlayer = CoopPlayers.GetHero(2)
-        if secondPlayer then
-            local mainPlayer = CoopPlayers.GetMainHero()
-            UnlockCamera()
-            LockCamera { Ids = { mainPlayer.ObjectId, secondPlayer.ObjectId }, Duration = 0.0 }
-        end
-    end)
+function CoopCamera.Update()
+    if not CoopCamera.isFocusEnabled then
+        return
+    end
+
+    local secondPlayer = CoopPlayers.GetHero(2)
+    if secondPlayer then
+        local mainPlayer = CoopPlayers.GetMainHero()
+        UnlockCamera()
+        CoopCamera.LockCameraOrig { Ids = { mainPlayer.ObjectId, secondPlayer.ObjectId }, Duration = 0.0 }
+    end
 end
 
 return CoopCamera

@@ -9,6 +9,8 @@ local CoopPlayers = ModRequire "../CoopPlayers.lua"
 local HeroContext = ModRequire "../HeroContext.lua"
 ---@type HookUtils
 local HookUtils = ModRequire "../HookUtils.lua"
+---@type CoopCamera
+local CoopCamera = ModRequire "../CoopCamera.lua"
 
 ---@class RunHooks
 local RunHooks = {}
@@ -45,7 +47,7 @@ function RunHooks.InitStartRoomHooks()
             -- TODO ADD ENTER Animation
             CoopPlayers.InitCoopUnit(2)
             CoopPlayers.UpdateMainHero()
-            --SecondPlayerUi.UpdateHealthUI()
+            CoopCamera.ForceFocus(true)
 
             if currentRoom.HeroEndPoint then
                 Teleport({ Id = CoopPlayers.CoopHeroes[2].ObjectId, DestinationId = currentRoom.HeroEndPoint })
