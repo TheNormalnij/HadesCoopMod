@@ -3,18 +3,25 @@
 -- Licensed under the MIT license. See LICENSE file in the project root for details.
 --
 
----@type CoopPlayers
-local CoopPlayers = ModRequire "../CoopPlayers.lua"
+---@type HeroContext
+local HeroContext = ModRequire "../HeroContext.lua"
+---@type HookUtils
+local HookUtils = ModRequire "../HookUtils.lua"
 
-local _SaveCheckpoint = SaveCheckpoint
+---@class SaveHooks
+local SaveHooks = {}
 
-SaveCheckpoint = function(args)
-    local mainHero = CoopPlayers.GetMainHero()
-    if mainHero then
-        CurrentRun.Hero = mainHero
-        _SaveCheckpoint(args)
-        CurrentRun.Hero = nil
-    else
-        _SaveCheckpoint(args)
-    end
+function SaveHooks.InitHooks()
+    HookUtils.wrap("Save", function(baseFun)
+        local mainHero = HeroContext.GetDefaultHero()
+        if mainHero then
+            CurrentRun.Hero = mainHero
+            baseFun()
+            CurrentRun.Hero = nil
+        else
+            baseFun()
+        end
+    end)
 end
+
+return SaveHooks

@@ -21,11 +21,12 @@ local FreezeHooks = ModRequire "hooks/FreezeHooks.lua"
 local RunHooks = ModRequire "hooks/RunHooks.lua"
 ---@type MenuHooks
 local MenuHooks = ModRequire "hooks/MenuHooks.lua"
+---@type SaveHooks
+local SaveHooks = ModRequire "hooks/SaveHooks.lua"
 
 ModRequire "hooks/DamageHooks.lua"
 ModRequire "hooks/UseHooks.lua"
 ModRequire "hooks/ControlHooks.lua"
-ModRequire "hooks/SaveHooks.lua"
 
 local hooksInited = false
 OnAnyLoad {
@@ -45,6 +46,7 @@ OnAnyLoad {
                     SecondPlayerUi.RecreateLifePips()
                 end)
 
+                SaveHooks.InitHooks()
                 CoopCamera.InitHooks()
                 FreezeHooks.InitHooks()
                 RunHooks.InitHooks()
