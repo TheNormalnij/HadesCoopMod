@@ -43,6 +43,23 @@ function MenuHooks.InitHooks()
         GameState.LastAwardTrait = currentGift
         GameState.LastAssistTrait = currentAssist
     end)
+
+    HookUtils.wrap("OpenSellTraitMenu", function(base)
+        local playerId = CoopPlayers.GetPlayerByHero(HeroContext.GetCurrentHeroContext()) or 1
+
+        local backup
+        if playerId > 1 then
+            backup = CurrentRoom.SellOptions
+            CurrentRoom.SellOptions = CurrentRoom["SellOptions" .. playerId]
+        end
+
+        base()
+
+        if playerId > 1 then
+            CurrentRoom["SellOptions" .. playerId] = CurrentRoom.SellOptions
+            CurrentRoom.SellOptions = backup
+        end
+    end)
 end
 
 ---@private

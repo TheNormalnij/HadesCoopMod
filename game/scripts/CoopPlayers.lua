@@ -52,6 +52,14 @@ function CoopPlayers.GetHero(playerId)
     return CoopPlayers.CoopHeroes[playerId]
 end
 
+function CoopPlayers.GetPlayerByHero(hero)
+    for playerId = 1, #CoopPlayers.CoopHeroes do
+        if CoopPlayers.CoopHeroes[playerId] == hero then
+            return playerId
+        end
+    end
+end
+
 function CoopPlayers.GetHeroByUnit(unitId)
     return CoopPlayers.PlayerUnitIdToHero[unitId]
 end
