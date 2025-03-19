@@ -18,7 +18,8 @@ local MenuHooks = {}
 function MenuHooks.InitHooks()
     MenuHooks.HookUiControl("ShowWeaponUpgradeScreen")
     MenuHooks.HookUiControl("ShowAwardMenu")
-    MenuHooks.HookUiControl("HandleLootPickup")
+    MenuHooks.HookUiControl("PlayTextLines")
+    MenuHooks.HookUiControl("OpenUpgradeChoiceMenu")
     MenuHooks.HookUiControl("ShowAdvancedTooltip")
 
     HookUtils.onPreFunction("ShowAwardMenu", function()
