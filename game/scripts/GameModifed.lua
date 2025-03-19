@@ -82,9 +82,6 @@ function GameModifed.SetupAdditional(currentRun, applyLuaUpgrades, Hero, ObjectI
     Hero.VacuumRush = false
     Hero.WeaponSpawns = nil
 
-    Hero.MaxHealth = Hero.MaxHealth + GetNumMetaUpgrades("HealthMetaUpgrade") * MetaUpgradeData.HealthMetaUpgrade.ChangeValue
-    Hero.Health = Hero.MaxHealth
-
     -- Changes gamepad LED color. Check PS4 gamepad for references. Do we need that?
     --SetLightBarColor({ PlayerIndex = 2, Color = Hero.LightBarColor or HeroData.DefaultHero.LightBarColor });
 end

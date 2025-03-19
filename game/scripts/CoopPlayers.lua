@@ -85,6 +85,9 @@ function CoopPlayers.InitCoopUnit(playerId)
             EquipAssist(hero, GameState.LastAssistTrait, { SkipNewTraitHighlight = true })
             EquipWeaponUpgrade(hero, { SkipTraitHighlight = true })
             InitHeroLastStands(hero)
+
+            hero.MaxHealth = hero.MaxHealth + GetNumMetaUpgrades("HealthMetaUpgrade") * MetaUpgradeData.HealthMetaUpgrade.ChangeValue
+            hero.Health = hero.MaxHealth
         end)
     end
 
