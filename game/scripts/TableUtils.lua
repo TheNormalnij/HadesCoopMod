@@ -6,6 +6,9 @@
 ---@class TableUtils
 local TableUtils = {}
 
+---@param t table
+---@param value any
+---@return any
 function TableUtils.find(t, value)
     for key, _v in pairs(t) do
         if _v == value then

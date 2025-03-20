@@ -11,6 +11,8 @@ local CoopPlayers = ModRequire "../CoopPlayers.lua"
 local HeroContext = ModRequire "../HeroContext.lua"
 ---@type HookUtils
 local HookUtils = ModRequire "../HookUtils.lua"
+---@type CoopControl
+local CoopControl = ModRequire "../CoopControl.lua"
 
 ---@class MenuHooks
 local MenuHooks = {}
@@ -68,32 +70,14 @@ function MenuHooks.HookUiControl(funName)
     local originalFun = _G[funName]
     _G[funName] = function(...)
         local currentHero = HeroContext.GetCurrentHeroContext()
-        if currentHero == CoopPlayers.GetMainHero() then
-            return originalFun(...)
-        else
-            local prevState = ShallowCopyTable(CoopPlayers.PlayerIdToController)
+        local playerId = TableUtils.find(CoopPlayers.CoopHeroes, currentHero)
+        CoopControl.SwitchControlForMenu(playerId)
 
-            -- We need first change player 0 controller to requested plater controller
-            -- So the player 1 will control the menu
-            local playerId = TableUtils.find(CoopPlayers.CoopHeroes, currentHero)
-            local controller = CoopPlayers.PlayerIdToController[playerId]
+        HookUtils.onPreFunctionOnce("UnfreezePlayerUnit", function()
+            CoopControl.ResetAllPlayers()
+        end)
 
-            for playerId, _ in pairs(CoopPlayers.PlayerIdToController) do
-                if playerId == 1 then
-                    CoopSetPlayerGamepad(playerId, controller)
-                else
-                    CoopSetPlayerGamepad(playerId, -1)
-                end
-            end
-
-            HookUtils.onPreFunctionOnce("UnfreezePlayerUnit", function()
-                for playerId, gamepadId in pairs(prevState) do
-                    CoopSetPlayerGamepad(playerId, gamepadId)
-                end
-            end)
-
-            originalFun(...)
-        end
+        originalFun(...)
     end
 end
 

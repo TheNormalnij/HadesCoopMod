@@ -7,6 +7,8 @@
 local GameModifed = ModRequire "GameModifed.lua"
 ---@type HeroContext
 local HeroContext = ModRequire "HeroContext.lua"
+---@type CoopControl
+local CoopControl = ModRequire "CoopControl.lua"
 
 ---@class CoopPlayers
 local CoopPlayers = {}
@@ -14,8 +16,6 @@ local CoopPlayers = {}
 ---@private
 ---@type table<number, table>
 CoopPlayers.PlayerUnitIdToHero = {}
----@type table<number, number>
-CoopPlayers.PlayerIdToController = {}
 ---@type table[]
 CoopPlayers.CoopHeroes = {}
 
@@ -78,14 +78,9 @@ function CoopPlayers.InitCoopPlayer()
 
     if not CoopHasPlayer(playerId) then
         playerId = CoopCreatePlayer()
+        CoopControl.InitControlSchemas()
     end
 
-    CoopSetPlayerGamepad(1, 1)
-    CoopSetPlayerGamepad(playerId, 0)
-    SetConfigOption { Name = "AllowControlHotSwap", Value = false }
-
-    CoopPlayers.PlayerIdToController[1] = 1
-    CoopPlayers.PlayerIdToController[playerId] = 0
     return playerId
 end
 
@@ -145,10 +140,7 @@ function CoopPlayers.OnPlayerDead(hero)
 end
 
 function CoopPlayers.CoopInit()
-    CoopPlayers.PlayerIdToController[1] = 0
-
-    local playerId = CoopPlayers.InitCoopPlayer()
-    --CoopPlayers.InitCoopUnit(playerId)
+    CoopPlayers.InitCoopPlayer()
 end
 
 return CoopPlayers
