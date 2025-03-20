@@ -62,3 +62,10 @@ OnAnyLoad {
         end
     end
 }
+
+OnMenuOpened {
+    "MainMenuScreen",
+    function(triggerArgs)
+        SetConfigOption { Name = "AllowControlHotSwap", Value = true }
+    end
+}
