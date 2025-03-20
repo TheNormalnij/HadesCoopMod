@@ -12,11 +12,19 @@ local _OnUsed = OnUsed
 OnUsed = function(args)
     if type(args[1]) == "function" then
         _OnUsed { function(triggerArgs)
-            HeroContext.RunWithHeroContext(
-                CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
-                args[1],
-                triggerArgs
-            )
+            local functionName = triggerArgs.AttachedTable and triggerArgs.AttachedTable.OnUsedFunctionName
+            if functionName == "UseEscapeDoor" then
+                -- Pact door
+                -- Disable control for a second player
+                -- A second player in context resets weapon choice for a first player
+                return;
+            else
+                HeroContext.RunWithHeroContext(
+                    CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
+                    args[1],
+                    triggerArgs
+                )
+            end
         end
         }
     elseif args[1] == "ConsumableItems" then
@@ -106,8 +114,15 @@ OnActiveUseTarget = function(args)
     if type(args[1]) == "function" then
         _OnActiveUseTarget{
             function (triggerArgs)
+                local hero = CoopPlayers.GetHeroByUnit(triggerArgs.UserId)
+                local mainHero = HeroContext.GetDefaultHero()
+                local functionName = triggerArgs.AttachedTable and triggerArgs.AttachedTable.OnUsedFunctionName
+                if functionName == "UseEscapeDoor" and hero ~= mainHero then
+                    return;
+                end
+
                 HeroContext.RunWithHeroContext(
-                    CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
+                    hero,
                     args[1],
                     triggerArgs
                 )
@@ -123,8 +138,15 @@ OnActiveUseTargetLost = function(args)
     if type(args[1]) == "function" then
         _OnActiveUseTargetLost {
             function(triggerArgs)
+                local hero = CoopPlayers.GetHeroByUnit(triggerArgs.UserId)
+                local mainHero = HeroContext.GetDefaultHero()
+                local functionName = triggerArgs.AttachedTable and triggerArgs.AttachedTable.OnUsedFunctionName
+                if functionName == "UseEscapeDoor" and hero ~= mainHero then
+                    return;
+                end
+
                 HeroContext.RunWithHeroContext(
-                    CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
+                    hero,
                     args[1],
                     triggerArgs
                 )
