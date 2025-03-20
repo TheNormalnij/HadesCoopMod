@@ -258,6 +258,10 @@ function SecondPlayerUi.UpdateLifePips()
 end
 
 function SecondPlayerUi.RecreateLifePips()
+    if ScreenAnchorsSecondPlayer.LifePipIds then
+        Destroy { Ids = ScreenAnchorsSecondPlayer.LifePipIds }
+    end
+
     ScreenAnchorsSecondPlayer.LifePipIds = {}
 
     local unit = CoopPlayers.GetHero(2)
