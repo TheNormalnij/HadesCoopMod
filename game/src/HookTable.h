@@ -25,6 +25,4 @@ struct HookTable {
     size_t Unit_Delete;
 
     size_t GameDataManager_GetUnitData;
-
-    size_t path_disable_hootwasp;
 };

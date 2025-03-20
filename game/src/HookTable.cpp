@@ -21,8 +21,6 @@ void HookTable::ApplySteamVk() {
     Unit_Delete = 0x2EA330;
 
     GameDataManager_GetUnitData = 0xB1D40;
-
-    path_disable_hootwasp = 0x20D4C2;
 }
 
 void HookTable::ApplyOffset(size_t offset) {

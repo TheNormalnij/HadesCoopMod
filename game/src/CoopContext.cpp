@@ -42,8 +42,6 @@ size_t CoopContext::CreatePlayer() {
 
     playerManager.CreatePlayer(playerIndex);
 
-    hoohSystem.SetControllerHotswapEnabled(false);
-
     return playerIndex;
 }
 
@@ -103,9 +101,6 @@ bool CoopContext::RemovePlayer(size_t playerIndex) {
 
     playerManager.RemovePlayer(playerIndex);
     RemovePlayerUnit(playerIndex);
-    
-    if (playerManager.GetPlayersCount() == 1)
-        hoohSystem.SetControllerHotswapEnabled(true);
 
     return true;
 }

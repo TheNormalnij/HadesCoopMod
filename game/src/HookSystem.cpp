@@ -9,21 +9,6 @@
 #include <string>
 #include "CoopContext.h"
 
-void HookSystem::SetControllerHotswapEnabled(bool state) {
-    auto &hookTable = HookTable::Instance();
-    if (state) {
-        if (!hotswapOriginal)
-            return;
-        MemCpyUnsafe((void *)hookTable.path_disable_hootwasp, hotswapOriginal.get()->data(), 11);
-    } else {
-        if (!hotswapOriginal) {
-            hotswapOriginal = std::make_unique<std::array<uint8_t, 11>>();
-            std::memcpy(hotswapOriginal.get()->data(), (void *)hookTable.path_disable_hootwasp, 11);
-        }
-        MemSetUnsafe((void *)hookTable.path_disable_hootwasp, 0x90, 11);
-    }
-}
-
 void HookSystem::MemSetUnsafe(void *dest, int val, size_t size) {
     DWORD oldProtect;
     VirtualProtect(dest, 1024, PAGE_EXECUTE_READWRITE, &oldProtect);

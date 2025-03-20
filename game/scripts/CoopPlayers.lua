@@ -82,6 +82,7 @@ function CoopPlayers.InitCoopPlayer()
 
     CoopSetPlayerGamepad(1, 1)
     CoopSetPlayerGamepad(playerId, 0)
+    SetConfigOption { Name = "AllowControlHotSwap", Value = false }
 
     CoopPlayers.PlayerIdToController[1] = 1
     CoopPlayers.PlayerIdToController[playerId] = 0
