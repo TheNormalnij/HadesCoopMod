@@ -12,8 +12,11 @@ local _OnUsed = OnUsed
 OnUsed = function(args)
     if type(args[1]) == "function" then
         _OnUsed { function(triggerArgs)
+            local hero = CoopPlayers.GetHeroByUnit(triggerArgs.UserId)
+            local mainHero = HeroContext.GetDefaultHero()
+
             local functionName = triggerArgs.AttachedTable and triggerArgs.AttachedTable.OnUsedFunctionName
-            if functionName == "UseEscapeDoor" then
+            if functionName == "UseEscapeDoor" and hero ~= mainHero then
                 -- Pact door
                 -- Disable control for a second player
                 -- A second player in context resets weapon choice for a first player
