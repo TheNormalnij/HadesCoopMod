@@ -19,6 +19,7 @@ function RunHooks.InitHooks()
     RunHooks.InitRunHooks()
     RunHooks.InitStartRoomHooks()
     RunHooks.CreateRoomHooks()
+    HookUtils.onPreFunction("LeaveRoom", RunHooks.LeaveRoomHook)
 end
 
 ---@private
@@ -83,6 +84,12 @@ function RunHooks.CreateRoomHooks()
 
         return room
     end
+end
+
+-- Disables an extit door after use
+---@private
+function RunHooks.LeaveRoomHook(currentRun, door)
+    door.ReadyToUse = false
 end
 
 return RunHooks
