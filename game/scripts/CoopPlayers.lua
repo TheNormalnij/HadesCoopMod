@@ -111,6 +111,7 @@ function CoopPlayers.InitCoopUnit(playerId)
     CoopPlayers.PlayerUnitIdToHero[unit] = hero
     CoopPlayers.CoopHeroes[playerId] = hero
 
+    SetColor{ Id = unit, Color = { 0, 255, 0, 255 } }
     HeroContext.RunWithHeroContext(hero, GameModifed.SetupAdditional, CurrentRun, nil, hero, unit)
 
     SetUntargetable { Id = hero.ObjectId }
