@@ -25,6 +25,8 @@ local MenuHooks = ModRequire "hooks/MenuHooks.lua"
 local SaveHooks = ModRequire "hooks/SaveHooks.lua"
 ---@type EnemyAiHooks
 local EnemyAiHooks = ModRequire "hooks/EnemyAiHooks.lua"
+---@type LootHooks
+local LootHooks = ModRequire "hooks/LootHooks.lua"
 
 ModRequire "hooks/DamageHooks.lua"
 ModRequire "hooks/UseHooks.lua"
@@ -58,6 +60,7 @@ OnAnyLoad {
                 --PactDoorFix.InitHooks()
                 SecondPlayerUi.InitHooks()
                 CoopPlayers.CoopInit()
+                LootHooks.InitHooks()
             end
         end
     end

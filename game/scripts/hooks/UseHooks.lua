@@ -108,8 +108,6 @@ OnUsed = function(args)
             end
         })
     end
-
-
 end
 
 local _OnActiveUseTarget = OnActiveUseTarget

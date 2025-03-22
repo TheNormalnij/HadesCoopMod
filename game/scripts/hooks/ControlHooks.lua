@@ -7,6 +7,8 @@
 local CoopPlayers = ModRequire "../CoopPlayers.lua"
 ---@type HeroContext
 local HeroContext = ModRequire "../HeroContext.lua"
+---@type HookUtils
+local HookUtils = ModRequire "../HookUtils.lua"
 
 local _OnControlPressed = OnControlPressed
 OnControlPressed = function(args)
@@ -20,3 +22,17 @@ OnControlPressed = function(args)
         end
     }
 end
+
+HookUtils.wrap("AddInputBlock", function(baseFun, argumenst)
+    for playerId = 1, CoopPlayers.GetPlayersCount() do
+        argumenst.PlayerIndex = playerId
+        baseFun(argumenst)
+    end
+end)
+
+HookUtils.wrap("RemoveInputBlock", function(baseFun, argumenst)
+    for playerId = 1, CoopPlayers.GetPlayersCount() do
+        argumenst.PlayerIndex = playerId
+        baseFun(argumenst)
+    end
+end)
