@@ -24,15 +24,23 @@ OnControlPressed = function(args)
 end
 
 HookUtils.wrap("AddInputBlock", function(baseFun, argumenst)
-    for playerId = 1, CoopPlayers.GetPlayersCount() do
-        argumenst.PlayerIndex = playerId
+    if argumenst.PlayerIndex then
         baseFun(argumenst)
+    else
+        for playerId = 1, CoopPlayers.GetPlayersCount() do
+            argumenst.PlayerIndex = playerId
+            baseFun(argumenst)
+        end
     end
 end)
 
 HookUtils.wrap("RemoveInputBlock", function(baseFun, argumenst)
-    for playerId = 1, CoopPlayers.GetPlayersCount() do
-        argumenst.PlayerIndex = playerId
+    if argumenst.PlayerIndex then
         baseFun(argumenst)
+    else
+        for playerId = 1, CoopPlayers.GetPlayersCount() do
+            argumenst.PlayerIndex = playerId
+            baseFun(argumenst)
+        end
     end
 end)
