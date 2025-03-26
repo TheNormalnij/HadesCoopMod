@@ -7,8 +7,6 @@
 local CoopPlayers = ModRequire "CoopPlayers.lua"
 ---@type HookUtils
 local HookUtils = ModRequire "HookUtils.lua"
----@type HeroContext
-local HeroContext = ModRequire "HeroContext.lua"
 
 ---@class CoopCamera
 local CoopCamera = {}
@@ -43,12 +41,27 @@ function CoopCamera.Update()
         return
     end
 
-    local secondPlayer = CoopPlayers.GetHero(2)
-    if secondPlayer then
-        local mainPlayer = CoopPlayers.GetMainHero()
-        UnlockCamera()
-        CoopCamera.LockCameraOrig { Ids = { mainPlayer.ObjectId, secondPlayer.ObjectId }, Duration = 0.0 }
+    local units = {}
+
+    -- It's bad
+    -- Players are dead in prerun room
+    -- the game sets EndingMoney in state after death
+    -- So we can use this value to check if the run was finished
+    local wasRunFinished = CurrentRun.EndingMoney and true
+
+    for playerIndex = 1, CoopPlayers.GetPlayersCount() do
+        local hero = CoopPlayers.GetHero(playerIndex)
+        if hero and (wasRunFinished or not hero.IsDead) then
+            table.insert(units, hero.ObjectId)
+        end
     end
+
+    if #units == 0 then
+        return
+    end
+
+    UnlockCamera()
+    CoopCamera.LockCameraOrig { Ids = units, Duration = 0.0 }
 end
 
 return CoopCamera
