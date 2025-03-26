@@ -5,14 +5,21 @@
 
 ---@type GameModifed
 local GameModifed = ModRequire "../GameModifed.lua"
+---@type HookUtils
+local HookUtils = ModRequire "../HookUtils.lua"
 
 local LootHooks = {}
 
 function LootHooks.InitHooks()
-    -- The game has autouse for a blind loot in shop
-    -- We disable it here
-    -- TODO add autouse, but select current player
-    UnwrapRandomLoot = GameModifed.UnwrapRandomLoot
+    -- Select hero for blind loot
+    HookUtils.onPostFunction("UnwrapRandomLoot", function()
+        for lootId, lootData in pairs(LootObjects) do
+            if not lootData.Cost then
+                CoopUseItem(CurrentRun.Hero.ObjectId, lootId)
+                return
+            end
+        end
+    end)
 end
 
 return LootHooks

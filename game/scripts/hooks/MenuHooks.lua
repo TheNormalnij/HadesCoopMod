@@ -3,8 +3,6 @@
 -- Licensed under the MIT license. See LICENSE file in the project root for details.
 --
 
----@type TableUtils
-local TableUtils = ModRequire "../TableUtils.lua"
 ---@type CoopPlayers
 local CoopPlayers = ModRequire "../CoopPlayers.lua"
 ---@type HeroContext

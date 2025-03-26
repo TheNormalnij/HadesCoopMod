@@ -86,30 +86,4 @@ function GameModifed.SetupAdditional(currentRun, applyLuaUpgrades, Hero, ObjectI
     --SetLightBarColor({ PlayerIndex = 2, Color = Hero.LightBarColor or HeroData.DefaultHero.LightBarColor });
 end
 
-function GameModifed.UnwrapRandomLoot( spawnId )
-	FreezePlayerUnit("RandomLoot")
-	RandomSynchronize()
-	InvalidateCheckpoint()
-	local obstacleId = SpawnObstacle({ Name = "InvisibleTarget", DestinationId = spawnId })
-	local reward = GiveLoot({ SpawnPoint = obstacleId })
-	reward.BoughtFromShop = true
-	UseableOff({ Id = reward.ObjectId })
-	UnwrapLootPresentation( reward )
-	Destroy({ Id = obstacleId })
-	wait(0.7)
-	UseableOn({ Id = reward.ObjectId })
-    -- Disabled by us
-	-- SetInteractProperty({ DestinationId = reward.ObjectId, Property = "AutoActivate", Value = true })
-	-- SetInteractProperty({ DestinationId = reward.ObjectId, Property = "AutoUseDistance", Value = 1000})
-	-- SetInteractProperty({ DestinationId = reward.ObjectId, Property = "Distance", Value = 1000})
-
-	RunWeaponMethod({ Id = CurrentRun.Hero.ObjectId, Weapon = "All", Method = "cancelCharge" })
-	RunWeaponMethod({ Id = CurrentRun.Hero.ObjectId, Weapon = "All", Method = "ForceControlRelease" })
-
-	UnfreezePlayerUnit("RandomLoot")
-	HideUseButton( reward.ObjectId, reward, 0 )
-
-    CoopUseItem(CurrentRun.Hero.ObjectId, reward.ObjectId)
-end
-
 return GameModifed
