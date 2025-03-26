@@ -114,6 +114,10 @@ function RunHooks.KillHeroHook(baseFun, ...)
     CurrentRun.Hero.IsDead = true
     if not RunHooks.HasAlivePlayers() then
         baseFun(...)
+        HeroContext.SetDefaultHero(CoopPlayers.GetMainHero())
+        for _, hero in CoopPlayers.PlayersIterator() do
+            hero.Health = hero.MaxHealth or 50
+        end
         return
     end
     if CurrentRun.Hero == CoopPlayers.GetMainHero() then
