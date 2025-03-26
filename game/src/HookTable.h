@@ -20,9 +20,17 @@ struct HookTable {
 
     size_t UnitManager_ENTITY_MANAGER;
     size_t UnitManager_Add;
+    size_t UnitManager_Get;
     size_t UnitManager_CreatePlayerUnit;
 
     size_t Unit_Delete;
+
+    size_t ThingManager_GetThing;
+
+    size_t Iteract_Use;
+
+    size_t World_Instance;
+    size_t World_GetActiveThings;
 
     size_t GameDataManager_GetUnitData;
 };

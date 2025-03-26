@@ -108,6 +108,8 @@ function GameModifed.UnwrapRandomLoot( spawnId )
 
 	UnfreezePlayerUnit("RandomLoot")
 	HideUseButton( reward.ObjectId, reward, 0 )
+
+    CoopUseItem(CurrentRun.Hero.ObjectId, reward.ObjectId)
 end
 
 return GameModifed

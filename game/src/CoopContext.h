@@ -35,6 +35,8 @@ class CoopContext {
     bool RemovePlayer(size_t playerIndex);
     bool RemovePlayerUnit(size_t playerIndex);
 
+    bool UseItem(size_t playerUnit, size_t useUnit);
+
   private:
     HookSystem hoohSystem;
     PlayerManagerExtension playerManager;

@@ -12,6 +12,7 @@
 #include "interface/PlayerUnit.h"
 #include "interface/UnitManager.h"
 #include "interface/GameDataManager.h"
+#include "interface/World.h"
 
 std::unique_ptr<CoopContext> CoopContext::instance = nullptr;
 
@@ -120,6 +121,18 @@ bool CoopContext::RemovePlayerUnit(size_t playerIndex) {
     unit->Delete();
 
     player->SetUnit(nullptr);
+
+    return true;
+}
+
+bool CoopContext::UseItem(size_t playerUnitIndex, size_t useUnitIndex) {
+    auto *playerUnit = SGG::UnitManager::Get(playerUnitIndex);
+    auto *useThing = SGG::World::Instance()->GetActiveThing(useUnitIndex);
+
+    if (!playerUnit || !useThing)
+        return false;
+
+    useThing->GetIteract()->Use(playerUnit, true, true);
 
     return true;
 }

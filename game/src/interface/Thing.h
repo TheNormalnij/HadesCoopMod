@@ -7,6 +7,7 @@
 
 #include "Vector2.h"
 #include "MapThing.h"
+#include "Interact.h"
 #include "IRenderComponent.h"
 #include "helpers.h"
 
@@ -25,7 +26,8 @@ __declspec(align(8)) class Thing : public IRenderComponent {
     Vectormath::Vector2 GetLocation() const noexcept { return *SGG_OFFSET_TO(Vectormath::Vector2, 0x70); };
     uint32_t GetId() const noexcept { return *SGG_OFFSET_TO(uint32_t, 0x54); };
     HashGuid GetName() const noexcept { return *SGG_OFFSET_TO(HashGuid, 0x378); };
-    MapThing *GetMapThing() const noexcept { return *SGG_OFFSET_TO(MapThing*, 0x220); };
+    MapThing *GetMapThing() const noexcept { return *SGG_OFFSET_TO(MapThing *, 0x220); };
+    Interact *GetIteract() const noexcept { return *SGG_OFFSET_TO(Interact *, 0x110); };
 
   private:
     uint8_t __pad_to_finish[0x380 - 0x48];

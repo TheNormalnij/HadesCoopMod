@@ -16,9 +16,14 @@ void HookTable::ApplySteamVk() {
 
     UnitManager_ENTITY_MANAGER = 0x1A57028;
     UnitManager_Add = 0x2EF700;
+    UnitManager_Get = 0x2F0AC0;
     UnitManager_CreatePlayerUnit = 0x2F0800;
 
     Unit_Delete = 0x2EA330;
+    Iteract_Use = 0x2B8540;
+
+    World_Instance = 0x3069E0;
+    World_GetActiveThings = 0x30A360;
 
     GameDataManager_GetUnitData = 0xB1D40;
 }

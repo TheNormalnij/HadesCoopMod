@@ -14,6 +14,8 @@ class UnitManager {
         ((void(__fastcall *)(Unit *, bool))HookTable::Instance().UnitManager_Add)(unit, needsInitialization);
     }
 
+    static Unit* Get(int id) { return ((Unit * (__fastcall *)(int)) HookTable::Instance().UnitManager_Get)(id); }
+
     static Unit *CreatePlayerUnit(UnitData *unitData, Vectormath::Vector2 position, MapThing *mapThing,
                                   bool needsInitialization) {
         return ((Unit * (__fastcall *)(UnitData *, Vectormath::Vector2, MapThing *, bool)) HookTable::Instance()

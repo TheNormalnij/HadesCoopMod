@@ -109,6 +109,25 @@ static int CoopRemovePlayerUnit(lua_State *L) {
     return 1;
 }
 
+// bool CoopUseItem(number playerUnit, number lootUnit)
+static int CoopUseItem(lua_State* L) {
+    if (!lua_isnumber(L, 1)) {
+        return luaL_error(L, "Argument 1 must be a number");
+    }
+
+    if (!lua_isnumber(L, 2)) {
+        return luaL_error(L, "Argument 2 must be a number");
+    }
+
+    size_t playerUnit = static_cast<size_t>(lua_tonumber(L, 1));
+    size_t thingUnit = static_cast<size_t>(lua_tonumber(L, 2));
+
+    bool result = CoopContext::GetInstance()->UseItem(playerUnit, thingUnit);
+    lua_pushboolean(L, result);
+
+    return 1;
+}
+
 void LuaFunctionDefs::Load(lua_State* L) {
     #define REGISTER(fun) lua_register(L, #fun, fun)
 
@@ -121,6 +140,7 @@ void LuaFunctionDefs::Load(lua_State* L) {
 
     REGISTER(CoopCreatePlayerUnit);
     REGISTER(CoopRemovePlayerUnit);
+    REGISTER(CoopUseItem);
 
     #undef REGISTER
 }
