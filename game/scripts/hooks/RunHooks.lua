@@ -51,7 +51,9 @@ function RunHooks.InitStartRoomHooks()
             CoopCamera.ForceFocus(true)
 
             if currentRoom.HeroEndPoint then
-                Teleport({ Id = CoopPlayers.CoopHeroes[2].ObjectId, DestinationId = currentRoom.HeroEndPoint })
+                for playerId = 2, CoopPlayers.GetPlayersCount() do
+                    Teleport({ Id = CoopPlayers.GetHero(playerId).ObjectId, DestinationId = currentRoom.HeroEndPoint })
+                end
             end
         end)
 

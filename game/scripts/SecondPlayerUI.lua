@@ -716,16 +716,16 @@ function SecondPlayerUi.InitHooks()
     SecondPlayerUi.CreateSimpleHook("RecreateLifePips")
 
     HookUtils.wrap("UpdateLifePips", function (basefun, unit)
-        local dafaultHero = HeroContext.GetDefaultHero()
-        if not dafaultHero or not unit or dafaultHero == unit then
-            basefun(dafaultHero)
+        local mainHero = CoopPlayers.GetMainHero()
+        if not mainHero or not unit or mainHero == unit then
+            basefun(mainHero)
         end
         SecondPlayerUi.UpdateLifePips()
     end)
 
     local _AddLastStand = AddLastStand
     AddLastStand = function (args)
-        local isSecondPlayer = HeroContext.GetDefaultHero() ~= HeroContext.GetCurrentHeroContext()
+        local isSecondPlayer = CoopPlayers.GetMainHero() ~= HeroContext.GetCurrentHeroContext()
         local pipsBackup = ScreenAnchors.LifePipIds
         local _CreateScreenObstacle = CreateScreenObstacle
         if isSecondPlayer then
