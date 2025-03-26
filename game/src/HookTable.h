@@ -25,8 +25,6 @@ struct HookTable {
 
     size_t Unit_Delete;
 
-    size_t ThingManager_GetThing;
-
     size_t Iteract_Use;
 
     size_t World_Instance;

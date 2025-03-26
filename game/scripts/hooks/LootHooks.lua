@@ -3,8 +3,6 @@
 -- Licensed under the MIT license. See LICENSE file in the project root for details.
 --
 
----@type GameModifed
-local GameModifed = ModRequire "../GameModifed.lua"
 ---@type HookUtils
 local HookUtils = ModRequire "../HookUtils.lua"
 
