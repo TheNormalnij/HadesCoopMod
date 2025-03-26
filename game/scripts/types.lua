@@ -3,7 +3,7 @@
 -- Licensed under the MIT license. See LICENSE file in the project root for details.
 --
 
----@type fun(number, number): boolean
+---@type fun(playerId: number, gamepadIndex: number): boolean
 CoopSetPlayerGamepad = nil
 
 ---@type fun(): number
@@ -12,14 +12,17 @@ CoopGetPlayersCount = nil
 ---@type fun(): number
 CoopCreatePlayer = nil
 
----@type fun(number): boolean
+---@type fun(playerId: number): boolean
 CoopRemovePlayer = nil
 
----@type fun(number): boolean
+---@type fun(playerId: number): boolean
 CoopHasPlayer = nil
 
----@type fun(number): number | false
+---@type fun(playerId: number): number | false
 CoopCreatePlayerUnit = nil
 
----@type fun(number): boolean
+---@type fun(playerId: number): boolean
 CoopRemovePlayerUnit = nil
+
+---@type fun(unitId: number, thingId: number): boolean
+CoopUseItem = nil

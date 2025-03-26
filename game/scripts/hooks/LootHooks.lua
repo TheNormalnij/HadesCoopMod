@@ -8,6 +8,7 @@ local GameModifed = ModRequire "../GameModifed.lua"
 ---@type HookUtils
 local HookUtils = ModRequire "../HookUtils.lua"
 
+---@class LootHooks
 local LootHooks = {}
 
 function LootHooks.InitHooks()
