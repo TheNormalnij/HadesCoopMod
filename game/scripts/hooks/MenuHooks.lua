@@ -70,7 +70,7 @@ function MenuHooks.HookUiControl(funName)
     local originalFun = _G[funName]
     _G[funName] = function(...)
         local currentHero = HeroContext.GetCurrentHeroContext()
-        local playerId = TableUtils.find(CoopPlayers.CoopHeroes, currentHero)
+        local playerId = CoopPlayers.GetPlayerByHero(currentHero)
         CoopControl.SwitchControlForMenu(playerId)
 
         HookUtils.onPreFunctionOnce("UnfreezePlayerUnit", function()

@@ -59,13 +59,11 @@ function EnemyAiHooks.NotifyWithinDistanceHook(baseFun, params)
     end
 
     if CoopPlayers.IsPlayerUnit(params.DestinationId) then
-        for playerId = 1, CoopPlayers.GetPlayersCount() do
-            local hero = CoopPlayers.GetHero(playerId)
-            if hero and hero.ObjectId then
-                params.DestinationId = hero.ObjectId
-                baseFun(params)
-            end
-        end
+        params.DestinationId = nil
+        params.DestinationIds = CoopPlayers.GetUnits()
+        params.Ids = params.Ids or { params.Id }
+        params.Id = nil
+        NotifyWithinDistanceAny(params)
     else
         baseFun(params)
     end

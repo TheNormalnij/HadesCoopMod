@@ -16,13 +16,13 @@ function FreezeHooks.InitHooks()
     local _UnfreezePlayerUnit = UnfreezePlayerUnit
 
     function FreezePlayerUnit(...)
-        for _, hero in pairs(CoopPlayers.CoopHeroes) do
+        for _, hero in CoopPlayers.PlayersIterator() do
             HeroContext.RunWithHeroContext(hero, _FreezePlayerUnit, ...)
         end
     end
 
     function UnfreezePlayerUnit(...)
-        for _, hero in pairs(CoopPlayers.CoopHeroes) do
+        for _, hero in CoopPlayers.PlayersIterator() do
             HeroContext.RunWithHeroContext(hero, _UnfreezePlayerUnit, ...)
         end
     end

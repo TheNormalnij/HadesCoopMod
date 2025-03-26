@@ -16,6 +16,7 @@ local CoopPlayers = {}
 ---@private
 ---@type table<number, table>
 CoopPlayers.PlayerUnitIdToHero = {}
+---@private
 ---@type table[]
 CoopPlayers.CoopHeroes = {}
 
@@ -52,6 +53,11 @@ function CoopPlayers.GetHero(playerId)
     return CoopPlayers.CoopHeroes[playerId]
 end
 
+function CoopPlayers.PlayersIterator()
+    return ipairs(CoopPlayers.CoopHeroes)
+end
+
+---@param hero table
 function CoopPlayers.GetPlayerByHero(hero)
     for playerId = 1, #CoopPlayers.CoopHeroes do
         if CoopPlayers.CoopHeroes[playerId] == hero then
