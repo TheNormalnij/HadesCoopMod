@@ -140,19 +140,6 @@ function CoopPlayers.UpdateMainHero()
     SetUntargetable { Id = hero.ObjectId }
 end
 
-function CoopPlayers.OnPlayerDead(hero)
-    if CoopPlayers.CoopHeroes[1] == hero then
-        -- Handle to prevent crashes
-    else
-        for playerId = 2, #CoopPlayers.CoopHeroes do
-            --SwitchActiveUnit { PlayerIndex = playerId }
-            if CoopPlayers.CoopHeroes[playerId] == hero then
-                CoopRemovePlayerUnit(playerId)
-            end
-        end
-    end
-end
-
 function CoopPlayers.CoopInit()
     CoopPlayers.InitCoopPlayer()
 end

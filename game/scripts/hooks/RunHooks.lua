@@ -20,6 +20,8 @@ function RunHooks.InitHooks()
     RunHooks.InitStartRoomHooks()
     RunHooks.CreateRoomHooks()
     HookUtils.onPreFunction("LeaveRoom", RunHooks.LeaveRoomHook)
+    HookUtils.wrap("KillHero", RunHooks["KillHeroHook"])
+    HookUtils.wrap("CheckRoomExitsReady", RunHooks.CheckRoomExitsReadyHook)
 end
 
 ---@private
@@ -49,6 +51,10 @@ function RunHooks.InitStartRoomHooks()
             CoopPlayers.InitCoopUnit(2)
             CoopPlayers.UpdateMainHero()
             CoopCamera.ForceFocus(true)
+            local mainHero = CoopPlayers.GetMainHero()
+            if mainHero and mainHero.IsDead then
+                RunHooks.HideMainPlayer(mainHero)
+            end
 
             if currentRoom.HeroEndPoint then
                 for playerId = 2, CoopPlayers.GetPlayersCount() do
@@ -88,10 +94,85 @@ function RunHooks.CreateRoomHooks()
     end
 end
 
+--- Bypass IsAlive check with this hook
+---@private
+function RunHooks.CheckRoomExitsReadyHook(baseFun, ...)
+    local aliveHero = RunHooks.GetAlivePlayers()[1]
+    if aliveHero then
+        local result = false
+        HeroContext.RunWithHeroContext(aliveHero, function(...)
+            result = baseFun(...)
+        end, ...)
+
+        return result
+    else
+        return baseFun(...)
+    end
+end
+
+function RunHooks.KillHeroHook(baseFun, ...)
+    CurrentRun.Hero.IsDead = true
+    if not RunHooks.HasAlivePlayers() then
+        baseFun(...)
+        return
+    end
+    if CurrentRun.Hero == CoopPlayers.GetMainHero() then
+        RunHooks.HideMainPlayer(CurrentRun.Hero)
+
+        local heroToChange = RunHooks.GetAlivePlayers()[1]
+        HeroContext.SetDefaultHero(heroToChange)
+    else
+        local playerId = CoopPlayers.GetPlayerByHero(CurrentRun.Hero)
+        if playerId then
+            CoopRemovePlayerUnit(playerId)
+        end
+    end
+end
+
 -- Disables an extit door after use
 ---@private
 function RunHooks.LeaveRoomHook(currentRun, door)
     door.ReadyToUse = false
+end
+
+---@private
+---@return boolean
+function RunHooks.HasAlivePlayers()
+    for _, hero in CoopPlayers.PlayersIterator() do
+        if hero and not hero.IsDead then
+            return true
+        end
+    end
+
+    return false
+end
+
+---@private
+---@return table<table>
+function RunHooks.GetAlivePlayers()
+    local out = {}
+    for _, hero in CoopPlayers.PlayersIterator() do
+        if hero and not hero.IsDead then
+            table.insert(out, hero)
+        end
+    end
+
+    return out
+end
+
+---@private
+---@param hero table
+function RunHooks.HideMainPlayer(hero)
+    local weaponsToHide = { "RangedWeapon" }
+    for _, weaponName in ipairs(WeaponSets.HeroMeleeWeapons) do
+        if hero.Weapons[weaponName] then
+            table.insert(weaponsToHide, weaponName)
+        end
+    end
+
+    UnequipWeapon{ DestinationId = hero.ObjectId, Names = weaponsToHide }
+    SetColor{ Id = hero.ObjectId, Color = { 255, 255, 255, 0 } }
+    Teleport{ Id = hero.ObjectId, DestinationId = hero.ObjectId, OffsetX = -10000 }
 end
 
 return RunHooks
