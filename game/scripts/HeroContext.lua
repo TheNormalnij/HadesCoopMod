@@ -78,4 +78,17 @@ function HeroContext.RunWithHeroContext(hero, fun, ...)
     resume(co, _threads)
 end
 
+---@param hero table Hero info
+---@param fun function
+---@param ... unknown params
+---@return unknown
+function HeroContext.RunWithHeroContextReturn(hero, fun, ...)
+    local out = {}
+    HeroContext.RunWithHeroContext(hero, function(...)
+        out = { fun(...) }
+    end, ...)
+
+    return table.unpack(out)
+end
+
 return HeroContext

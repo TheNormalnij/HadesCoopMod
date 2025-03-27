@@ -90,6 +90,29 @@ function CoopPlayers.InitCoopPlayer()
     return playerId
 end
 
+---@return boolean
+function CoopPlayers.HasAlivePlayers()
+    for _, hero in CoopPlayers.PlayersIterator() do
+        if hero and not hero.IsDead then
+            return true
+        end
+    end
+
+    return false
+end
+
+---@return table<table>
+function CoopPlayers.GetAlivePlayers()
+    local out = {}
+    for _, hero in CoopPlayers.PlayersIterator() do
+        if hero and not hero.IsDead then
+            table.insert(out, hero)
+        end
+    end
+
+    return out
+end
+
 function CoopPlayers.InitCoopUnit(playerId)
     local unit = CoopCreatePlayerUnit(playerId)
 

@@ -11,6 +11,8 @@ local HeroContext = ModRequire "../HeroContext.lua"
 local HookUtils = ModRequire "../HookUtils.lua"
 ---@type CoopCamera
 local CoopCamera = ModRequire "../CoopCamera.lua"
+---@type EnemyAiHooks
+local EnemyAiHooks = ModRequire "EnemyAiHooks.lua"
 
 ---@class RunHooks
 local RunHooks = {}
@@ -97,7 +99,7 @@ end
 --- Bypass IsAlive check with this hook
 ---@private
 function RunHooks.CheckRoomExitsReadyHook(baseFun, ...)
-    local aliveHero = RunHooks.GetAlivePlayers()[1]
+    local aliveHero = CoopPlayers.GetAlivePlayers()[1]
     if aliveHero then
         local result = false
         HeroContext.RunWithHeroContext(aliveHero, function(...)
@@ -112,7 +114,7 @@ end
 
 function RunHooks.KillHeroHook(baseFun, ...)
     CurrentRun.Hero.IsDead = true
-    if not RunHooks.HasAlivePlayers() then
+    if not CoopPlayers.HasAlivePlayers() then
         baseFun(...)
         HeroContext.SetDefaultHero(CoopPlayers.GetMainHero())
         for _, hero in CoopPlayers.PlayersIterator() do
@@ -123,7 +125,7 @@ function RunHooks.KillHeroHook(baseFun, ...)
     if CurrentRun.Hero == CoopPlayers.GetMainHero() then
         RunHooks.HideMainPlayer(CurrentRun.Hero)
 
-        local heroToChange = RunHooks.GetAlivePlayers()[1]
+        local heroToChange = CoopPlayers.GetAlivePlayers()[1]
         HeroContext.SetDefaultHero(heroToChange)
     else
         local playerId = CoopPlayers.GetPlayerByHero(CurrentRun.Hero)
@@ -131,37 +133,14 @@ function RunHooks.KillHeroHook(baseFun, ...)
             CoopRemovePlayerUnit(playerId)
         end
     end
+    -- Unstuck AI
+    EnemyAiHooks.RefreshAI()
 end
 
 -- Disables an extit door after use
 ---@private
 function RunHooks.LeaveRoomHook(currentRun, door)
     door.ReadyToUse = false
-end
-
----@private
----@return boolean
-function RunHooks.HasAlivePlayers()
-    for _, hero in CoopPlayers.PlayersIterator() do
-        if hero and not hero.IsDead then
-            return true
-        end
-    end
-
-    return false
-end
-
----@private
----@return table<table>
-function RunHooks.GetAlivePlayers()
-    local out = {}
-    for _, hero in CoopPlayers.PlayersIterator() do
-        if hero and not hero.IsDead then
-            table.insert(out, hero)
-        end
-    end
-
-    return out
 end
 
 ---@private

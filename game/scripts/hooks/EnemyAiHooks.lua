@@ -16,6 +16,7 @@ local EnemyAiHooks = {}
 function EnemyAiHooks.InitHooks()
     HookUtils.wrap("NotifyWithinDistance", EnemyAiHooks.NotifyWithinDistanceHook)
     HookUtils.wrap("GetTargetId", EnemyAiHooks.GetTargetIdHook)
+    HookUtils.wrap("IsAIActive", EnemyAiHooks.IsAIActiveHook)
 end
 
 ---@private
@@ -26,11 +27,15 @@ function EnemyAiHooks.getNearestHero(unitId)
 
     for playerId = 1, CoopPlayers.GetPlayersCount() do
         local hero = CoopPlayers.GetHero(playerId)
+        if hero.IsDead then
+            goto continue
+        end
         local thisDistance = GetDistance { Id = hero.ObjectId, DestinationId = unitId }
         if thisDistance <= distance then
             nearest = hero
             distance = thisDistance
         end
+        ::continue::
     end
 
     return nearest or HeroContext.GetDefaultHero()
@@ -43,9 +48,7 @@ end
 ---@return integer
 function EnemyAiHooks.GetTargetIdHook(baseFun, enemy, weaponAiData)
     local hero = EnemyAiHooks.getNearestHero(enemy.ObjectId)
-    local targetId
-    HeroContext.RunWithHeroContext(hero, function() targetId = baseFun(enemy, weaponAiData) end)
-    return targetId
+    return HeroContext.RunWithHeroContextReturn(hero, baseFun, enemy, weaponAiData)
 end
 
 ---@private
@@ -66,6 +69,39 @@ function EnemyAiHooks.NotifyWithinDistanceHook(baseFun, params)
         NotifyWithinDistanceAny(params)
     else
         baseFun(params)
+    end
+end
+
+function EnemyAiHooks.RefreshAI()
+    for _, enemy in pairs(ActiveEnemies) do
+        if not enemy.IsDead then
+            killTaggedThreads(enemy.AIThreadName)
+            killWaitUntilThreads(enemy.AINotifyName)
+            Stop({ Id = enemy.ObjectId })
+            StopAnimation({ DestinationId = enemy.ObjectId })
+
+            enemy.TargetId = nil
+            thread(function()
+                if enemy.AIStages ~= nil then
+                    thread(StagedAI, enemy, CurrentRun)
+                else
+                    local aiBehavior = enemy.AIBehavior
+                    if aiBehavior ~= nil then
+                        thread(SetAI, aiBehavior, enemy, CurrentRun)
+                    end
+                end
+            end)
+
+        end
+    end
+end
+
+function EnemyAiHooks.IsAIActiveHook(baseFun, ...)
+    local alivePlayer = CoopPlayers.GetAlivePlayers()[1]
+    if alivePlayer then
+        return HeroContext.RunWithHeroContextReturn(alivePlayer, baseFun, ...)
+    else
+        return baseFun(...)
     end
 end
 
