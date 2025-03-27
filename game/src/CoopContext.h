@@ -5,7 +5,6 @@
 
 #include "extensions/PlayerManagerExtension.h"
 #include <memory>
-#include "HookSystem.h"
 #include <vector>
 
 #include "interface/MapThing.h"
@@ -38,7 +37,6 @@ class CoopContext {
     bool UseItem(size_t playerUnit, size_t useUnit);
 
   private:
-    HookSystem hoohSystem;
     PlayerManagerExtension playerManager;
 
     std::vector<SGG::MapThing *> m_cretedThings;

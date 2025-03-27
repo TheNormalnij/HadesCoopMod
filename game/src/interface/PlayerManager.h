@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "../HookSystem.h"
-#include "../HookTable.h"
 #include "Player.h"
 #include "InputHandler.h"
 #include "allocator.h"
