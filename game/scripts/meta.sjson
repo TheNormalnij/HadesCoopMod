@@ -1,5 +1,6 @@
 {
 	Name = "Coop mod"
 	Library = "HadesCoopGame.dll"
+	Priority = 0
 	Author = "Uladzislau 'TheNormalnij' Nikalayevich"
 }
