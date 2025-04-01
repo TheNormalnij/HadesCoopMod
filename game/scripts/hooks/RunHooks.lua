@@ -53,9 +53,14 @@ function RunHooks.InitStartRoomHooks()
             local entranceFunction = _G[roomEntranceFunctionName]
             --entranceFunction(currentRun, currentRoom, args)
             -- TODO ADD ENTER Animation
-            CoopPlayers.InitCoopUnit(2)
-            CoopPlayers.UpdateMainHero()
-            CoopCamera.ForceFocus(true)
+            for playerId = 2, CoopPlayers.GetPlayersCount() do
+                local hero = CoopPlayers.InitCoopUnit(playerId)
+                if hero and not hero.IsDead then
+                    CoopPlayers.UpdateMainHero()
+                    CoopCamera.ForceFocus(true)
+                end
+            end
+
             local mainHero = CoopPlayers.GetMainHero()
             if mainHero and mainHero.IsDead then
                 RunHooks.HideMainPlayer(mainHero)
@@ -63,7 +68,10 @@ function RunHooks.InitStartRoomHooks()
 
             if currentRoom.HeroEndPoint then
                 for playerId = 2, CoopPlayers.GetPlayersCount() do
-                    Teleport({ Id = CoopPlayers.GetHero(playerId).ObjectId, DestinationId = currentRoom.HeroEndPoint })
+                    local hero = CoopPlayers.GetHero(playerId)
+                    if not hero.IsDead then
+                        Teleport({ Id = hero.ObjectId, DestinationId = currentRoom.HeroEndPoint })
+                    end
                 end
             end
         end)
