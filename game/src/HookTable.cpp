@@ -7,34 +7,26 @@
 
 static HookTable g_HookTable{};
 
-void HookTable::ApplySteamVk() {
-    PlayerManager_Instance = 0x307A0;
-    PlayerManager_AddPlayer = 0x2102A0;
-    PlayerManager_AssignController = 0x210320;
-    Player_Player = 0x20A520;
-    PlayerUnit_PlayerUnit = 0x2E3260;
-
-    UnitManager_ENTITY_MANAGER = 0x1A57028;
-    UnitManager_Add = 0x2EF700;
-    UnitManager_Get = 0x2F0AC0;
-    UnitManager_CreatePlayerUnit = 0x2F0800;
-
-    Unit_Delete = 0x2EA330;
-    Iteract_Use = 0x2B8540;
-
-    World_Instance = 0x3069E0;
-    World_GetActiveThings = 0x30A360;
-
-    GameDataManager_GetUnitData = 0xB1D40;
-}
-
-void HookTable::ApplyOffset(size_t offset) {
-    auto asArray = reinterpret_cast<size_t*>(this);
-    for (size_t i = 0; i < sizeof(HookTable) / sizeof(size_t); i++) {
-        asArray[i] += offset;
-    }
-}
-
 HookTable& HookTable::Instance() {
-    return g_HookTable;
+    return g_HookTable; }
+
+void HookTable::Init(IModApi::GetSymbolAddress_t GetSymbolAddress) {
+    PlayerManager_Instance = GetSymbolAddress("sgg::PlayerManager::Instance");
+    PlayerManager_AddPlayer = GetSymbolAddress("sgg::PlayerManager::AddPlayer");
+    PlayerManager_AssignController = GetSymbolAddress("sgg::PlayerManager::AssignController");
+    Player_Player = GetSymbolAddress("sgg::Player::Player");
+    PlayerUnit_PlayerUnit = GetSymbolAddress("sgg::PlayerUnit::PlayerUnit");
+
+    UnitManager_ENTITY_MANAGER = GetSymbolAddress("sgg::UnitManager::ENTITY_MANAGER");
+    UnitManager_Add = GetSymbolAddress("sgg::UnitManager::Add");
+    UnitManager_Get = GetSymbolAddress("sgg::UnitManager::Get");
+    UnitManager_CreatePlayerUnit = GetSymbolAddress("sgg::UnitManager::CreatePlayerUnit");
+
+    Unit_Delete = GetSymbolAddress("sgg::Unit::Delete");
+    Interact_Use = GetSymbolAddress("sgg::Interact::Use");
+
+    World_Instance = GetSymbolAddress("sgg::World::Instance");
+    World_GetActiveThing = GetSymbolAddress("sgg::World::GetActiveThing");
+
+    GameDataManager_GetUnitData = GetSymbolAddress("sgg::GameDataManager::GetUnitData");
 }

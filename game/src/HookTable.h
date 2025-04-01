@@ -5,10 +5,11 @@
 
 #pragma once
 
+#include "../include/HadesModApi.h"
+
 struct HookTable {
-    void ApplySteamVk();
-	void ApplyOffset(size_t offset);
     static HookTable& Instance();
+    void Init(IModApi::GetSymbolAddress_t GetSymbolAddress);
 
 	size_t PlayerManager_Instance;
     size_t PlayerManager_AddPlayer;
@@ -25,10 +26,10 @@ struct HookTable {
 
     size_t Unit_Delete;
 
-    size_t Iteract_Use;
+    size_t Interact_Use;
 
     size_t World_Instance;
-    size_t World_GetActiveThings;
+    size_t World_GetActiveThing;
 
     size_t GameDataManager_GetUnitData;
 };

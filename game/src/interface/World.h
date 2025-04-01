@@ -14,7 +14,7 @@ class Thing;
 class World {
   public:
     Thing *GetActiveThing(size_t id) {
-        return ((Thing * (__fastcall *)(void *, int)) HookTable::Instance().World_GetActiveThings)(
+        return ((Thing * (__fastcall *)(void *, int)) HookTable::Instance().World_GetActiveThing)(
             this, id);
     }
 

@@ -9,9 +9,9 @@
 #define HADES_MOD_API __declspec(dllexport)
 #endif
 
-#define MOD_API_VERSION 1
+#define MOD_API_VERSION 2
 
-enum class eGameVariant: uint8_t {
+enum class eGameVariant : uint8_t {
     UNKNOWN,
     VULKAN,
     DX12,
@@ -19,11 +19,15 @@ enum class eGameVariant: uint8_t {
 };
 
 struct IModApi {
-    using GetGameDllOffset_t = uint64_t(__cdecl *)();
+    using GetGameDll_t = void *(__cdecl *)();
+    using GetSymbolAddress_t = uint64_t(__cdecl *)(const char *symbolName);
+    using LoadDllSymbolds_t = bool(__cdecl *)(void *handle, const char *dllName);
 
     uint64_t version;
     eGameVariant gameVariant;
-    GetGameDllOffset_t GetGameDllOffset;
+    GetGameDll_t GetGameDll;
+    GetSymbolAddress_t GetSymbolAddress;
+    LoadDllSymbolds_t LoadDllSymbols;
 };
 
 #ifdef HADES_MOD_API

@@ -14,10 +14,7 @@ HADES_MOD_API bool _cdecl HadesModInit(const IModApi *modApi) {
     if (modApi->version < MOD_API_VERSION)
         return false;
 
-    if (modApi->gameVariant == eGameVariant::VULKAN)
-        HookTable::Instance().ApplySteamVk();
-
-    HookTable::Instance().ApplyOffset(modApi->GetGameDllOffset());
+    HookTable::Instance().Init(modApi->GetSymbolAddress);
 
     return true;
 };
