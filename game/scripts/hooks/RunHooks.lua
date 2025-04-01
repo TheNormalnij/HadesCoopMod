@@ -26,6 +26,7 @@ function RunHooks.InitHooks()
     HookUtils.onPreFunction("LeaveRoom", RunHooks.LeaveRoomHook)
     HookUtils.wrap("KillHero", RunHooks["KillHeroHook"])
     HookUtils.wrap("CheckRoomExitsReady", RunHooks.CheckRoomExitsReadyHook)
+    HookUtils.onPostFunction("StartNewGame", RunHooks.StartNewGameHook)
 end
 
 ---@private
@@ -159,6 +160,14 @@ function RunHooks.HideMainPlayer(hero)
     UnequipWeapon{ DestinationId = hero.ObjectId, Names = weaponsToHide }
     SetColor{ Id = hero.ObjectId, Color = { 255, 255, 255, 0 } }
     Teleport{ Id = hero.ObjectId, DestinationId = hero.ObjectId, OffsetX = -10000 }
+end
+
+---@private
+function RunHooks.StartNewGameHook()
+    if not HeroContext.GetDefaultHero() then
+        HeroContext.InitRunHook()
+    end
+    CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
 end
 
 return RunHooks

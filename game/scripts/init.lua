@@ -33,6 +33,30 @@ ModRequire "hooks/UseHooks.lua"
 ModRequire "hooks/ControlHooks.lua"
 
 local hooksInited = false
+local function TryInstalBasicHooks()
+    if hooksInited then
+        return
+    end
+
+    hooksInited = true
+
+    EnemyAiHooks.InitHooks()
+    SaveHooks.InitHooks()
+    CoopCamera.InitHooks()
+    FreezeHooks.InitHooks()
+    RunHooks.InitHooks()
+    MenuHooks.InitHooks()
+    --PactDoorFix.InitHooks()
+    SecondPlayerUi.InitHooks()
+    CoopPlayers.CoopInit()
+    LootHooks.InitHooks()
+end
+
+OnPreThingCreation
+{
+    TryInstalBasicHooks
+}
+
 OnAnyLoad {
     function(triggerArgs)
         local mapName = triggerArgs.name
@@ -48,20 +72,6 @@ OnAnyLoad {
                 SecondPlayerUi.UpdateHealthUI()
                 SecondPlayerUi.RecreateLifePips()
             end)
-
-            if not hooksInited then
-                hooksInited = true
-                EnemyAiHooks.InitHooks()
-                SaveHooks.InitHooks()
-                CoopCamera.InitHooks()
-                FreezeHooks.InitHooks()
-                RunHooks.InitHooks()
-                MenuHooks.InitHooks()
-                --PactDoorFix.InitHooks()
-                SecondPlayerUi.InitHooks()
-                CoopPlayers.CoopInit()
-                LootHooks.InitHooks()
-            end
         end
     end
 }
