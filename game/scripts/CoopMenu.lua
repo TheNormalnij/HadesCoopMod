@@ -133,5 +133,5 @@ MainMenuAPIAddGamemode("Coop", function(name)
 
     menu:AddReflection("mControllerPress", btn)
 
-    menu:LoadDefenitions("../ModModules/TN_CoopMod/ControllerSelectionMenuScreen.sjson")
+    menu:LoadDefenitions("../Mods/TN_CoopMod/ControllerSelectionMenuScreen.sjson")
 end)
