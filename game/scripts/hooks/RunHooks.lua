@@ -27,6 +27,7 @@ function RunHooks.InitHooks()
     HookUtils.wrap("KillHero", RunHooks["KillHeroHook"])
     HookUtils.wrap("CheckRoomExitsReady", RunHooks.CheckRoomExitsReadyHook)
     HookUtils.onPostFunction("StartNewGame", RunHooks.StartNewGameHook)
+    HookUtils.onPostFunction("CheckForAllEnemiesDead", RunHooks.CheckForAllEnemiesDeadPostHook)
 end
 
 ---@private
@@ -149,10 +150,50 @@ function RunHooks.KillHeroHook(baseFun, ...)
     EnemyAiHooks.RefreshAI()
 end
 
--- Disables an extit door after use
 ---@private
 function RunHooks.LeaveRoomHook(currentRun, door)
+    -- Disables an extit door after use
     door.ReadyToUse = false
+
+    -- Updates traits and health
+    local nextRoom = door.Room
+    local currentHero = CurrentRun.Hero
+    for _, hero in CoopPlayers.PlayersIterator() do
+        if hero ~= currentHero then
+            ClearEffect({ Id = hero.ObjectId, All = true, BlockAll = true, })
+            StopCurrentStatusAnimation(hero)
+            hero.BlockStatusAnimations = true
+
+            if not nextRoom.BlockDoorHealFromPrevious then
+                HeroContext.RunWithHeroContext(hero, CheckDoorHealTrait, currentRun)
+            end
+
+            local removedTraits = {}
+            for _, trait in pairs(hero.Traits) do
+                if trait.RemainingUses ~= nil and trait.UsesAsRooms ~= nil and trait.UsesAsRooms then
+                    UseTraitData(hero, trait)
+                    if trait.RemainingUses ~= nil and trait.RemainingUses <= 0 then
+                        table.insert(removedTraits, trait)
+                    end
+                end
+            end
+            for _, trait in pairs(removedTraits) do
+                RemoveTraitData(hero, trait)
+            end
+        end
+    end
+end
+
+-- Clrears poison effects
+---@private
+function RunHooks.CheckForAllEnemiesDeadPostHook()
+    for playerID = 2, CoopPlayers.GetPlayersCount() do
+        local hero = CoopPlayers.GetHero(playerID)
+        if hero then
+            ClearEffect({ Id = hero.ObjectId, Name = "StyxPoison" })
+            ClearEffect({ Id = hero.ObjectId, Name = "DamageOverTime" })
+        end
+    end
 end
 
 ---@private
