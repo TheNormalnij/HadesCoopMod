@@ -3,9 +3,6 @@
 -- Licensed under the MIT license. See LICENSE file in the project root for details.
 --
 
----@type HookUtils
-local HookUtils = ModRequire "HookUtils.lua"
-
 ---@class CoopControl
 local CoopControl = {}
 
@@ -30,8 +27,8 @@ CoopControl.Schemas = {
 }
 
 function CoopControl.InitControlSchemas()
-    CoopControl.Schemas.UserDefined = DeepCopyTable(CoopControl.Schemas.Default)
-    CoopControl.Schemas.Current = DeepCopyTable(CoopControl.Schemas.Default)
+    CoopControl.Schemas.UserDefined = eat_true(GetTempRuntimeData("TN_Coop:control"))
+    CoopControl.Schemas.Current = DeepCopyTable(CoopControl.Schemas.UserDefined)
 
     SetConfigOption { Name = "AllowControlHotSwap", Value = false }
     CoopControl.ResetAllPlayers("UserDefined")
@@ -50,8 +47,8 @@ function CoopControl.SetPlayerControlSchema(playerId, shemaName)
     CoopSetPlayerGamepad(playerId, shema.ControllerId)
 end
 
--- We need first change player 0 controller to requested plater controller
--- So the player 1 will control the menu
+-- We need first change player 1 controller to requested plater controller
+-- So the player 2 will control the menu
 ---@param playerId number
 function CoopControl.SwitchControlForMenu(playerId)
     local controllerId = CoopControl.Schemas.Current[playerId].ControllerId

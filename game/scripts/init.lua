@@ -3,82 +3,16 @@
 -- Licensed under the MIT license. See LICENSE file in the project root for details.
 --
 
----@type HookUtils
-local HookUtils = ModRequire "HookUtils.lua"
----@type CoopPlayers
-local CoopPlayers = ModRequire "CoopPlayers.lua"
----@type SecondPlayerUi
-local SecondPlayerUi = ModRequire "SecondPlayerUI.lua"
----@type HeroContext
-local HeroContext = ModRequire "HeroContext.lua"
----@type CoopCamera
-local CoopCamera = ModRequire "CoopCamera.lua"
----@type PactDoorFix
-local PactDoorFix = ModRequire "hooks/PactDoorFix.lua"
----@type FreezeHooks
-local FreezeHooks = ModRequire "hooks/FreezeHooks.lua"
----@type RunHooks
-local RunHooks = ModRequire "hooks/RunHooks.lua"
----@type MenuHooks
-local MenuHooks = ModRequire "hooks/MenuHooks.lua"
----@type SaveHooks
-local SaveHooks = ModRequire "hooks/SaveHooks.lua"
----@type EnemyAiHooks
-local EnemyAiHooks = ModRequire "hooks/EnemyAiHooks.lua"
----@type LootHooks
-local LootHooks = ModRequire "hooks/LootHooks.lua"
+-- Load menu and add gamemode button
+ModRequire "CoopMenu.lua"
 
-ModRequire "hooks/DamageHooks.lua"
-ModRequire "hooks/UseHooks.lua"
-ModRequire "hooks/ControlHooks.lua"
-
-local hooksInited = false
-local function TryInstalBasicHooks()
-    if hooksInited then
-        return
-    end
-
-    hooksInited = true
-
-    EnemyAiHooks.InitHooks()
-    SaveHooks.InitHooks()
-    CoopCamera.InitHooks()
-    FreezeHooks.InitHooks()
-    RunHooks.InitHooks()
-    MenuHooks.InitHooks()
-    --PactDoorFix.InitHooks()
-    SecondPlayerUi.InitHooks()
-    CoopPlayers.CoopInit()
-    LootHooks.InitHooks()
+-- Get current gamemode
+local _, data = GetTempRuntimeData("Gamemode")
+if data ~= "Coop" then
+    return
 end
 
-OnPreThingCreation
-{
-    TryInstalBasicHooks
-}
-
-OnAnyLoad {
-    function(triggerArgs)
-        local mapName = triggerArgs.name
-
-        if mapName == "RoomPreRun" then
-            HookUtils.onPostFunctionOnce("DeathAreaRoomTransition", function()
-                if not HeroContext.GetDefaultHero() then
-                    HeroContext.InitRunHook()
-                end
-                CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
-                CoopPlayers.UpdateMainHero()
-                CoopPlayers.InitCoopUnit(2)
-                SecondPlayerUi.UpdateHealthUI()
-                SecondPlayerUi.RecreateLifePips()
-            end)
-        end
-    end
-}
-
-OnMenuOpened {
-    "MainMenuScreen",
-    function(triggerArgs)
-        SetConfigOption { Name = "AllowControlHotSwap", Value = true }
-    end
-}
+-- Disable the gamemode for the next run
+SetTempRuntimeData("Gamemode", nil)
+-- Load gamemode hooks
+ModRequire "GamemodeInit.lua"

@@ -13,8 +13,11 @@ class PlayerManagerExtension {
     PlayerManagerExtension() = default;
     ~PlayerManagerExtension() = default;
 
-    bool AssignGamepad(size_t playerIndex, uint8_t ccontroler);
-    bool AssignController(SGG::Player *player, uint8_t ccontroler);
+
+    bool AssignGamepad(size_t playerIndex, uint8_t gamepad);
+    uint8_t GetGamepad(size_t playerIndex);
+
+    bool AssignController(SGG::Player *player, uint8_t controler);
 
     bool HasPlayer(size_t index);
     void RemovePlayer(size_t index);

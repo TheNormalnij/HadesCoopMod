@@ -32,4 +32,6 @@ struct HookTable {
     size_t World_GetActiveThing;
 
     size_t GameDataManager_GetUnitData;
+
+    uintptr_t getGamePadNameForIndex;
 };

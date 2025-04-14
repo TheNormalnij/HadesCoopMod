@@ -29,4 +29,6 @@ void HookTable::Init(IModApi::GetSymbolAddress_t GetSymbolAddress) {
     World_GetActiveThing = GetSymbolAddress("sgg::World::GetActiveThing");
 
     GameDataManager_GetUnitData = GetSymbolAddress("sgg::GameDataManager::GetUnitData");
+
+    getGamePadNameForIndex = GetSymbolAddress("getGamePadNameForIndex");
 }

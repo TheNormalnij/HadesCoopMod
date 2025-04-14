@@ -7,6 +7,7 @@
 #include "LuaFunctionDefs.h"
 #include "CoopContext.h"
 #include "lua.hpp"
+#include "interface/Gamepad.h"
 
 #include <windows.h>
 
@@ -20,12 +21,36 @@ static int CoopSetPlayerGamepad(lua_State *L) {
         return luaL_error(L, "Argument 2 must be a number");
     }
 
-    uint64_t playerIndex = static_cast<uint64_t>(lua_tonumber(L, 1)) - 1;
+    size_t playerIndex = static_cast<size_t>(lua_tonumber(L, 1)) - 1;
     uint8_t controllerIndex = static_cast<uint8_t>(lua_tonumber(L, 2));
 
     bool result = CoopContext::GetInstance()->GetPlayerManager().AssignGamepad(playerIndex, controllerIndex);
 
     lua_pushboolean(L, result);
+    return 1;
+}
+
+// number CoopGetPlayerGamepad(number playerIndex)
+static int CoopGetPlayerGamepad(lua_State *L) {
+    if (!lua_isnumber(L, 1)) {
+        return luaL_error(L, "Argument 1 must be a number");
+    }
+
+    size_t playerIndex = static_cast<size_t>(lua_tonumber(L, 1)) - 1;
+    size_t result = CoopContext::GetInstance()->GetPlayerManager().GetGamepad(playerIndex);
+
+    lua_pushnumber(L, result);
+    return 1;
+}
+
+// number CoopGetGamepadName(number controllerIndex)
+static int CoopGetGamepadName(lua_State *L) {
+    if (!lua_isnumber(L, 1)) {
+        return luaL_error(L, "Argument 1 must be a number");
+    }
+
+    uint8_t index = static_cast<uint8_t>(lua_tonumber(L, 1));
+    lua_pushstring(L, SGG::getGamePadNameForIndex(index));
     return 1;
 }
 
@@ -132,6 +157,8 @@ void LuaFunctionDefs::Load(lua_State* L) {
     #define REGISTER(fun) lua_register(L, #fun, fun)
 
     REGISTER(CoopSetPlayerGamepad);
+    REGISTER(CoopGetPlayerGamepad);
+    REGISTER(CoopGetGamepadName);
 
     REGISTER(CoopGetPlayersCount);
     REGISTER(CoopCreatePlayer);

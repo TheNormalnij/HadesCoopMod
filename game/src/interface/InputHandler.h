@@ -33,6 +33,7 @@ class InputHandler {
   public:
     uint8_t GetGamepadId() const noexcept { return _gamePadHandler.mControllerIndex; };
     void SetGamepadId(uint8_t index) noexcept { _gamePadHandler.mControllerIndex = index; };
+    uint8_t GetGamepadId(uint8_t index) const noexcept { return _gamePadHandler.mControllerIndex; };
 
   private:
     Vectormath::Vector2 _prevSearchDirection;

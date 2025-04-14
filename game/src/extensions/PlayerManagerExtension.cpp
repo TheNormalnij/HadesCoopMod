@@ -25,6 +25,23 @@ bool PlayerManagerExtension::AssignGamepad(size_t playerIndex, uint8_t gamepadIn
     return true;
 }
 
+uint8_t PlayerManagerExtension::GetGamepad(size_t playerIndex) {
+    if (GetPlayersCount() < playerIndex + 1)
+        return -1;
+
+    auto *player = SGG::PlayerManager::Instance()->m_palyers[playerIndex];
+
+    if (!player)
+        return -1;
+
+    auto *input = GetInput(player->GetControllerIndex());
+
+    if (!input)
+        return -1;
+
+    return input->GetGamepadId();
+}
+
 bool PlayerManagerExtension::AssignController(SGG::Player *player, uint8_t ccontroler) {
     SGG::PlayerManager::Instance()->AssignController(player, ccontroler);
     return false;
