@@ -15,6 +15,8 @@ local CoopCamera = ModRequire "../CoopCamera.lua"
 local EnemyAiHooks = ModRequire "EnemyAiHooks.lua"
 ---@type LootHooks
 local LootHooks = ModRequire "LootHooks.lua"
+---@type CoopModConfig
+local Config = ModRequire "../config.lua"
 
 ---@class RunHooks
 local RunHooks = {}
@@ -65,6 +67,12 @@ function RunHooks.InitStartRoomHooks()
             local mainHero = CoopPlayers.GetMainHero()
             if mainHero and mainHero.IsDead then
                 RunHooks.HideMainPlayer(mainHero)
+            else
+                if Config.Player1HasOutline then
+                    AddOutline(
+                        MergeTables(Config.Player1Outline, { Id = mainHero.ObjectId })
+                    )
+                end
             end
 
             if currentRoom.HeroEndPoint then
