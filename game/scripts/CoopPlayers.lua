@@ -115,6 +115,15 @@ function CoopPlayers.GetAlivePlayers()
     return out
 end
 
+function CoopPlayers.RestoreSavedHero(playerId)
+    local hero = CurrentRun["Hero" .. playerId]
+    DebugPrint { Text = "Restore player hero" .. tostring(playerId) .. " " .. tostring(hero) }
+    if hero then
+        CoopPlayers.CoopHeroes[playerId] = hero
+        CoopPlayers.InitCoopUnit(playerId)
+    end
+end
+
 function CoopPlayers.InitCoopUnit(playerId)
     local unit = CoopCreatePlayerUnit(playerId)
 
@@ -136,6 +145,8 @@ function CoopPlayers.InitCoopUnit(playerId)
             hero.Health = hero.MaxHealth
         end)
     end
+
+    CurrentRun["Hero" .. playerId] = hero
 
     DebugPrint { Text = "Create hero for player " .. tostring(playerId) }
 
@@ -164,6 +175,15 @@ end
 
 function CoopPlayers.CoopInit()
     CoopPlayers.InitCoopPlayer()
+
+    CoopPlayers.CoopHeroes[1] = CurrentRun.Hero
+
+    for playerId = 2, CoopPlayers.GetPlayersCount() do
+        local hero = CurrentRun["Hero" .. playerId]
+        if hero then
+            CoopPlayers.CoopHeroes[playerId] = hero
+        end
+    end
 end
 
 return CoopPlayers

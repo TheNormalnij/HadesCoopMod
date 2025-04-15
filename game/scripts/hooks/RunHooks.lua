@@ -17,6 +17,8 @@ local EnemyAiHooks = ModRequire "EnemyAiHooks.lua"
 local LootHooks = ModRequire "LootHooks.lua"
 ---@type CoopModConfig
 local Config = ModRequire "../config.lua"
+---@type SecondPlayerUi
+local SecondPlayerUi = ModRequire "../SecondPlayerUI.lua"
 
 ---@class RunHooks
 local RunHooks = {}
@@ -30,6 +32,7 @@ function RunHooks.InitHooks()
     HookUtils.wrap("CheckRoomExitsReady", RunHooks.CheckRoomExitsReadyHook)
     HookUtils.onPostFunction("StartNewGame", RunHooks.StartNewGameHook)
     HookUtils.onPostFunction("CheckForAllEnemiesDead", RunHooks.CheckForAllEnemiesDeadPostHook)
+    HookUtils.onPostFunction("RestoreUnlockRoomExits", RunHooks.RestoreUnlockRoomExitsHook)
 end
 
 ---@private
@@ -43,6 +46,12 @@ function RunHooks.InitStartRoomHooks()
         if playersCount <= 1 then
             _StartRoom(run, currentRoom)
             return
+        end
+
+        -- Initialization after save loading when encounter is active
+        if not HeroContext.GetDefaultHero() then
+            HeroContext.InitRunHook()
+            CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
         end
 
         local prevRoom = GetPreviousRoom(CurrentRun)
@@ -225,6 +234,21 @@ function RunHooks.StartNewGameHook()
         HeroContext.InitRunHook()
     end
     CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
+end
+
+---@private
+function RunHooks.RestoreUnlockRoomExitsHook()
+    if not HeroContext.GetDefaultHero() then
+        HeroContext.InitRunHook()
+    end
+    CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
+
+    for playerId = 2, CoopPlayers.GetPlayersCount() do
+        CoopPlayers.RestoreSavedHero(playerId)
+    end
+
+    SecondPlayerUi.UpdateHealthUI()
+    SecondPlayerUi.RecreateLifePips()
 end
 
 return RunHooks
