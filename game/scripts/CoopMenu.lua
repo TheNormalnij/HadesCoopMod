@@ -70,7 +70,7 @@ MainMenuAPIAddGamemode("Coop", function(name)
 
     menu:CreateCancelButton(function()
         SetTempRuntimeData("Gamemode", nil)
-        menu:Close()
+        menu:ExitScreen()
     end)
 
     local message = CreateGUIComponentTextBox(menu)
