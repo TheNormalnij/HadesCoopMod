@@ -44,3 +44,15 @@ HookUtils.wrap("RemoveInputBlock", function(baseFun, argumenst)
         end
     end
 end)
+
+HookUtils.wrap("NotifyOnControlPressed", function(baseFun, argumenst)
+    if argumenst.PlayerIndex then
+        baseFun(argumenst)
+    elseif argumenst.Notify == "FishingInput" then
+        local playerId = CoopPlayers.GetPlayerByHero(CurrentRun.Hero) or 1
+        argumenst.PlayerIndex = playerId
+        baseFun(argumenst)
+    else
+        baseFun(argumenst)
+    end
+end)
