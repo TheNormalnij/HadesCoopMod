@@ -17,6 +17,6 @@ install(TARGETS HadesCoopGame
         DESTINATION ${CMAKE_SOURCE_DIR}/bin
 )
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/module/scripts/
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/game/scripts/
         DESTINATION ${CMAKE_SOURCE_DIR}/bin
 )
