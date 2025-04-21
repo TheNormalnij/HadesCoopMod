@@ -47,17 +47,18 @@ function MenuHooks.InitHooks()
     HookUtils.wrap("OpenSellTraitMenu", function(base)
         local playerId = CoopPlayers.GetPlayerByHero(HeroContext.GetCurrentHeroContext()) or 1
 
+        local currentRoom = CurrentRun.CurrentRoom
         local backup
         if playerId > 1 then
-            backup = CurrentRoom.SellOptions
-            CurrentRoom.SellOptions = CurrentRoom["SellOptions" .. playerId]
+            backup = currentRoom.SellOptions
+            currentRoom.SellOptions = currentRoom["SellOptions" .. playerId]
         end
 
         base()
 
         if playerId > 1 then
-            CurrentRoom["SellOptions" .. playerId] = CurrentRoom.SellOptions
-            CurrentRoom.SellOptions = backup
+            currentRoom["SellOptions" .. playerId] = currentRoom.SellOptions
+            currentRoom.SellOptions = backup
         end
     end)
 end
