@@ -59,7 +59,7 @@ function CoopControl.SwitchControlForMenu(playerId)
     end
 end
 
----@param schema ControlSchema
+---@param schema ControlSchema?
 function CoopControl.ResetAllPlayers(schema)
     schema = schema or "Current"
     for playerId in pairs(CoopControl.Schemas.Current) do
