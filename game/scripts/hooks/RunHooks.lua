@@ -25,8 +25,8 @@ local RunHooks = {}
 
 function RunHooks.InitHooks()
     RunHooks.InitRunHooks()
-    RunHooks.InitStartRoomHooks()
     RunHooks.CreateRoomHooks()
+    HookUtils.onPreFunction("StartRoom", RunHooks.StartRoomPreHook)
     HookUtils.onPreFunction("LeaveRoom", RunHooks.LeaveRoomHook)
     HookUtils.wrap("KillHero", RunHooks["KillHeroHook"])
     HookUtils.wrap("CheckRoomExitsReady", RunHooks.CheckRoomExitsReadyHook)
@@ -43,58 +43,52 @@ function RunHooks.SetupHeroObjectHook()
 end
 
 ---@private
-function RunHooks.InitStartRoomHooks()
-    local _StartRoom = StartRoom
-
-    function StartRoom(run, currentRoom)
-        -- Initialization after save loading when encounter is active
-        if not HeroContext.GetDefaultHero() then
-            HeroContext.InitRunHook()
-            CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
-        end
-
-        local prevRoom = GetPreviousRoom(CurrentRun)
-        local roomEntranceFunctionName = currentRoom.EntranceFunctionName or "RoomEntranceStandard"
-        if prevRoom ~= nil and prevRoom.NextRoomEntranceFunctionName ~= nil then
-            roomEntranceFunctionName = prevRoom.NextRoomEntranceFunctionName
-        end
-        local args = currentRoom.EntranceFunctionArgs
-
-        HookUtils.onPostFunctionOnce(roomEntranceFunctionName, function()
-            local entranceFunction = _G[roomEntranceFunctionName]
-            --entranceFunction(currentRun, currentRoom, args)
-            -- TODO ADD ENTER Animation
-            for playerId = 2, CoopPlayers.GetPlayersCount() do
-                local hero = CoopPlayers.InitCoopUnit(playerId)
-                if hero and not hero.IsDead then
-                    CoopPlayers.UpdateMainHero()
-                    CoopCamera.ForceFocus(true)
-                end
-            end
-
-            local mainHero = CoopPlayers.GetMainHero()
-            if mainHero and mainHero.IsDead then
-                RunHooks.HideMainPlayer(mainHero)
-            else
-                if Config.Player1HasOutline then
-                    AddOutline(
-                        MergeTables(Config.Player1Outline, { Id = mainHero.ObjectId })
-                    )
-                end
-            end
-
-            if currentRoom.HeroEndPoint then
-                for playerId = 2, CoopPlayers.GetPlayersCount() do
-                    local hero = CoopPlayers.GetHero(playerId)
-                    if not hero.IsDead then
-                        Teleport({ Id = hero.ObjectId, DestinationId = currentRoom.HeroEndPoint })
-                    end
-                end
-            end
-        end)
-
-        _StartRoom(run, currentRoom)
+function RunHooks.StartRoomPreHook(run, currentRoom)
+    -- Initialization after save loading when encounter is active
+    if not HeroContext.GetDefaultHero() then
+        HeroContext.InitRunHook()
+        CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
     end
+
+    local prevRoom = GetPreviousRoom(CurrentRun)
+    local roomEntranceFunctionName = currentRoom.EntranceFunctionName or "RoomEntranceStandard"
+    if prevRoom ~= nil and prevRoom.NextRoomEntranceFunctionName ~= nil then
+        roomEntranceFunctionName = prevRoom.NextRoomEntranceFunctionName
+    end
+    local args = currentRoom.EntranceFunctionArgs
+
+    HookUtils.onPostFunctionOnce(roomEntranceFunctionName, function()
+        local entranceFunction = _G[roomEntranceFunctionName]
+        --entranceFunction(currentRun, currentRoom, args)
+        -- TODO ADD ENTER Animation
+        for playerId = 2, CoopPlayers.GetPlayersCount() do
+            local hero = CoopPlayers.InitCoopUnit(playerId)
+            if hero and not hero.IsDead then
+                CoopPlayers.UpdateMainHero()
+                CoopCamera.ForceFocus(true)
+            end
+        end
+
+        local mainHero = CoopPlayers.GetMainHero()
+        if mainHero and mainHero.IsDead then
+            RunHooks.HideMainPlayer(mainHero)
+        else
+            if Config.Player1HasOutline then
+                AddOutline(
+                    MergeTables(Config.Player1Outline, { Id = mainHero.ObjectId })
+                )
+            end
+        end
+
+        if currentRoom.HeroEndPoint then
+            for playerId = 2, CoopPlayers.GetPlayersCount() do
+                local hero = CoopPlayers.GetHero(playerId)
+                if not hero.IsDead then
+                    Teleport({ Id = hero.ObjectId, DestinationId = currentRoom.HeroEndPoint })
+                end
+            end
+        end
+    end)
 end
 
 ---@private
