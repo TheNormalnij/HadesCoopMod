@@ -33,6 +33,13 @@ function RunHooks.InitHooks()
     HookUtils.onPostFunction("StartNewGame", RunHooks.StartNewGameHook)
     HookUtils.onPostFunction("CheckForAllEnemiesDead", RunHooks.CheckForAllEnemiesDeadPostHook)
     HookUtils.onPostFunction("RestoreUnlockRoomExits", RunHooks.RestoreUnlockRoomExitsHook)
+    HookUtils.onPostFunction("SetupHeroObject", RunHooks.SetupHeroObjectHook)
+end
+
+---@private
+function RunHooks.SetupHeroObjectHook()
+    -- Fix unit -> hero table here
+    CoopPlayers.UpdateMainHero()
 end
 
 ---@private

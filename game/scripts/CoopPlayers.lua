@@ -49,6 +49,9 @@ end
 function CoopPlayers.SetMainHero(hero)
     DebugPrint{Text = "Set main hero: " .. tostring(hero) }
     CoopPlayers.CoopHeroes[1] = hero
+    if hero.ObjectId then
+        CoopPlayers.PlayerUnitIdToHero[hero.ObjectId] = hero
+    end
 end
 
 function CoopPlayers.GetHero(playerId)
