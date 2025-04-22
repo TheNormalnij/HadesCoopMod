@@ -106,6 +106,21 @@ function CoopPlayers.HasAlivePlayers()
     return false
 end
 
+function CoopPlayers.OnAllPlayersDead()
+    -- The main player can changed when Player 1 is dead
+    -- We should reset the player after death
+    HeroContext.SetDefaultHero(CoopPlayers.GetMainHero())
+
+    -- Heal all players in the Hades home
+    for _, hero in CoopPlayers.PlayersIterator() do
+        hero.Health = hero.MaxHealth or 50
+    end
+
+    -- Sometimes we change control schemas during the run
+    -- We need reset it whe the run is finished
+    CoopControl.ResetAllPlayers("UserDefined")
+end
+
 ---@return table<table>
 function CoopPlayers.GetAlivePlayers()
     local out = {}
