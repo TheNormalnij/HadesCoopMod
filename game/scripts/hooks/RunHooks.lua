@@ -40,14 +40,6 @@ function RunHooks.InitStartRoomHooks()
     local _StartRoom = StartRoom
 
     function StartRoom(run, currentRoom)
-        local playersCount = CoopGetPlayersCount()
-
-        DebugPrint { Text = "StartRoom with players " .. playersCount }
-        if playersCount <= 1 then
-            _StartRoom(run, currentRoom)
-            return
-        end
-
         -- Initialization after save loading when encounter is active
         if not HeroContext.GetDefaultHero() then
             HeroContext.InitRunHook()
