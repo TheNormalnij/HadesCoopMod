@@ -121,16 +121,32 @@ end
 ---@private
 function LootHooks.SpawnRoomRewardHook(baseFun, ...)
     local room = CurrentRun.CurrentRoom
-    local playerId = room.CoopModPlayerId
-    if playerId then
-        local hero = CoopPlayers.GetHero(playerId)
-        if hero then
-            HeroContext.RunWithHeroContext(hero, baseFun, ...)
-            return
+    local roomRewardPredefinedPlayerId = room.CoopModPlayerId
+
+    local hero = roomRewardPredefinedPlayerId and CoopPlayers.GetHero(roomRewardPredefinedPlayerId) or CurrentRun.Hero
+
+    if hero.IsDead then
+        local alternativePlayerIndex
+        if roomRewardPredefinedPlayerId then
+            alternativePlayerIndex = LootHooks.UseNextHeroForLoot()
+
+            if not alternativePlayerIndex then
+                DebugPrint { Text = "Cannot spawn a loot for a player. Cannot choose alternative hero" }
+                return baseFun(...)
+            end
+
+            hero = CoopPlayers.GetHero(alternativePlayerIndex)
+        else
+            hero = CoopPlayers.GetAliveHeroes()[1]
+
+            if not hero then
+                DebugPrint { Text = "Cannot spawn a loot for a player. All players are dead" }
+                return baseFun(...)
+            end
         end
     end
 
-    baseFun(...)
+    HeroContext.RunWithHeroContext(hero, baseFun, ...)
 end
 
 ---@private

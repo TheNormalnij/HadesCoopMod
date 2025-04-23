@@ -123,7 +123,7 @@ end
 --- Bypass IsAlive check with this hook
 ---@private
 function RunHooks.CheckRoomExitsReadyHook(baseFun, ...)
-    local aliveHero = CoopPlayers.GetAlivePlayers()[1]
+    local aliveHero = CoopPlayers.GetAliveHeroes()[1]
     if aliveHero then
         local result = false
         HeroContext.RunWithHeroContext(aliveHero, function(...)
@@ -146,7 +146,7 @@ function RunHooks.KillHeroHook(baseFun, ...)
     if CurrentRun.Hero == CoopPlayers.GetMainHero() then
         RunHooks.HideMainPlayer(CurrentRun.Hero)
 
-        local heroToChange = CoopPlayers.GetAlivePlayers()[1]
+        local heroToChange = CoopPlayers.GetAliveHeroes()[1]
         HeroContext.SetDefaultHero(heroToChange)
     else
         local playerId = CoopPlayers.GetPlayerByHero(CurrentRun.Hero)

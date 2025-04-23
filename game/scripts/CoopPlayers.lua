@@ -124,7 +124,7 @@ function CoopPlayers.OnAllPlayersDead()
 end
 
 ---@return table<table>
-function CoopPlayers.GetAlivePlayers()
+function CoopPlayers.GetAliveHeroes()
     local out = {}
     for _, hero in CoopPlayers.PlayersIterator() do
         if hero and not hero.IsDead then

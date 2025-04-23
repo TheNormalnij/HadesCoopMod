@@ -97,7 +97,7 @@ function EnemyAiHooks.RefreshAI()
 end
 
 function EnemyAiHooks.IsAIActiveHook(baseFun, ...)
-    local alivePlayer = CoopPlayers.GetAlivePlayers()[1]
+    local alivePlayer = CoopPlayers.GetAliveHeroes()[1]
     if alivePlayer then
         return HeroContext.RunWithHeroContextReturn(alivePlayer, baseFun, ...)
     else
