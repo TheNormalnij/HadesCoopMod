@@ -49,8 +49,7 @@ function CoopCamera.Update()
     -- So we can use this value to check if the run was finished
     local wasRunFinished = CurrentRun.EndingMoney and true
 
-    for playerIndex = 1, CoopPlayers.GetPlayersCount() do
-        local hero = CoopPlayers.GetHero(playerIndex)
+    for _, hero in CoopPlayers.PlayersIterator() do
         if hero and (wasRunFinished or not hero.IsDead) then
             table.insert(units, hero.ObjectId)
         end
