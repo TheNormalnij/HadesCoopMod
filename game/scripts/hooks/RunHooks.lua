@@ -99,6 +99,7 @@ function RunHooks.InitRunHooks()
         HeroContext.InitRunHook()
         LootHooks.Reset(CoopPlayers.GetPlayersCount())
         CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
+        CoopPlayers.RecreateAllAdditionalPlayers()
 
         return newRun
     end

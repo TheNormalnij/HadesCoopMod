@@ -11,6 +11,8 @@ local HeroContext = ModRequire "../HeroContext.lua"
 local HookUtils = ModRequire "../HookUtils.lua"
 ---@type CoopControl
 local CoopControl = ModRequire "../CoopControl.lua"
+---@type HeroEx
+local HeroEx = ModRequire "../HeroEx.lua"
 
 ---@class MenuHooks
 local MenuHooks = {}
@@ -25,20 +27,7 @@ function MenuHooks.InitHooks()
     MenuHooks.HookUiControl("OpenSellTraitMenu")
 
     HookUtils.onPreFunction("ShowAwardMenu", function()
-        local currentGift, currentAssist
-        for _, trait in pairs(CurrentRun.Hero.Traits) do
-            if not trait.InheritFrom then
-                goto continue
-            end
-
-            if trait.InheritFrom[1] == "AssistTrait" then
-                currentAssist = trait.Name
-            elseif trait.InheritFrom[1] == "GiftTrait" then
-                currentGift = trait.Name
-            end
-
-            ::continue::
-        end
+        local currentGift, currentAssist = HeroEx.GetGiftAndAssist(CurrentRun.Hero)
 
         GameState.LastAwardTrait = currentGift
         GameState.LastAssistTrait = currentAssist

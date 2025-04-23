@@ -11,6 +11,8 @@ local HeroContext = ModRequire "HeroContext.lua"
 local CoopControl = ModRequire "CoopControl.lua"
 ---@type CoopModConfig
 local Config = ModRequire "config.lua"
+---@type HeroEx
+local HeroEx = ModRequire "HeroEx.lua"
 
 ---@class CoopPlayers
 local CoopPlayers = {}
@@ -151,25 +153,19 @@ function CoopPlayers.InitCoopUnit(playerId)
 
     local hero = CoopPlayers.CoopHeroes[playerId]
     if not hero then
-        hero = CreateNewHero(nil, { WeaponName = WeaponSets.HeroMeleeWeapons[1] })
-
-        HeroContext.RunWithHeroContext(hero, function()
-            EquipKeepsake(hero, GameState.LastAwardTrait, { SkipNewTraitHighlight = true })
-            EquipAssist(hero, GameState.LastAssistTrait, { SkipNewTraitHighlight = true })
-            EquipWeaponUpgrade(hero, { SkipTraitHighlight = true })
-            InitHeroLastStands(hero)
-
-            hero.MaxHealth = hero.MaxHealth + GetNumMetaUpgrades("HealthMetaUpgrade") * MetaUpgradeData.HealthMetaUpgrade.ChangeValue
-            hero.Health = hero.MaxHealth
-        end)
+        hero = HeroEx.CreateFreshHero{
+            keepsake = GameState.LastAwardTrait;
+            assist = GameState.LastAssistTrait;
+            weaponName = WeaponSets.HeroMeleeWeapons[1];
+            weaponVariant = 1;
+        }
     end
-
-    CurrentRun["Hero" .. playerId] = hero
 
     DebugPrint { Text = "Create hero for player " .. tostring(playerId) }
 
     CoopPlayers.PlayerUnitIdToHero[unit] = hero
     CoopPlayers.CoopHeroes[playerId] = hero
+    CurrentRun["Hero" .. playerId] = hero
 
     if Config.Player2HasOutline then
         AddOutline(
@@ -183,6 +179,36 @@ function CoopPlayers.InitCoopUnit(playerId)
     SetUnitProperty { DestinationId = unit, Property = "FriendlyToPlayer", Value = true }
 
     return hero
+end
+
+---@param playerId number
+function CoopPlayers.RecreateFreshHeroWithCurrentMeta(playerId)
+    local hero = CoopPlayers.CoopHeroes[playerId]
+    local currentUnit = hero.ObjectId
+    local keepsake, assist = HeroEx.GetGiftAndAssist(hero)
+    local weaponName, weaponIndex = HeroEx.GetHeroWeaponFull(hero)
+
+    weaponName = weaponName or WeaponSets.HeroMeleeWeapons[1]
+    weaponIndex = weaponIndex or 1
+
+    hero = HeroEx.CreateFreshHero{
+        keepsake = keepsake;
+        assist = assist;
+        weaponName = weaponName;
+        weaponVariant = weaponIndex;
+    }
+
+    if currentUnit then
+        CoopPlayers.PlayerUnitIdToHero[currentUnit] = hero
+    end
+    CoopPlayers.CoopHeroes[playerId] = hero
+    CurrentRun["Hero" .. playerId] = hero
+end
+
+function CoopPlayers.RecreateAllAdditionalPlayers()
+    for playerIndex = 2, CoopPlayers.GetPlayersCount() do
+        CoopPlayers.RecreateFreshHeroWithCurrentMeta(playerIndex)
+    end
 end
 
 function CoopPlayers.UpdateMainHero()

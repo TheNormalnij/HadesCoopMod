@@ -1,0 +1,118 @@
+--
+-- Copyright (c) Uladzislau Nikalayevich <thenormalnij@gmail.com>. All rights reserved.
+-- Licensed under the MIT license. See LICENSE file in the project root for details.
+--
+
+---@type HeroContext
+local HeroContext = ModRequire "HeroContext.lua"
+
+local WEAPON_RARITY_TO_INDEX = {
+    Common = 0,
+    Rare = 1,
+    Epic = 2,
+    Heroic = 3,
+    Legendary = 4,
+}
+
+---@class HeroEx
+local HeroEx = {}
+
+---@param hero table
+---@return string
+---@return string
+function HeroEx.GetGiftAndAssist(hero)
+    local currentGift, currentAssist
+    for _, trait in pairs(hero.Traits) do
+        if not trait.InheritFrom then
+            goto continue
+        end
+
+        if trait.InheritFrom[1] == "AssistTrait" then
+            currentAssist = trait.Name
+        elseif trait.InheritFrom[1] == "GiftTrait" then
+            currentGift = trait.Name
+        end
+
+        ::continue::
+    end
+
+
+    return currentGift, currentAssist
+end
+
+---@param hero table
+---@return string?
+function HeroEx.GetWeapon(hero)
+    for _, name in pairs(WeaponSets.HeroMeleeWeapons) do
+        if hero.Weapons[name] then
+            return name
+        end
+    end
+end
+
+---@param hero table
+---@return string?
+---@return number?
+function HeroEx.GetHeroWeaponFull(hero)
+    local weaponName = HeroEx.GetWeapon(hero)
+
+    if not weaponName then
+        DebugPrint { Text = "The player has no weapon!!!!" }
+        return
+    end
+
+    local weaponIndex
+
+    for index in pairs(WeaponUpgradeData[weaponName]) do
+        local weaponData = WeaponUpgradeData[weaponName][index]
+        local trait = hero.TraitDictionary[weaponData.TraitName or weaponData.RequiredInvestmentTraitName]
+        if trait then
+            weaponIndex = index
+            break
+        end
+    end
+
+    if not weaponIndex then
+        DebugPrint { Text = "The player has no rarity!!!!" }
+        return
+    end
+
+    return weaponName, weaponIndex
+end
+
+
+---@class ICreateFreshHeroArgs
+---@field keepsake string
+---@field assist string
+---@field weaponName string
+---@field weaponVariant number
+
+---@param args ICreateFreshHeroArgs
+function HeroEx.CreateFreshHero(args)
+    local hero = CreateNewHero(nil, { WeaponName = args.weaponName })
+
+    HeroContext.RunWithHeroContext(hero, function()
+        EquipKeepsake(hero, args.keepsake, { SkipNewTraitHighlight = true })
+        EquipAssist(hero, args.assist, { SkipNewTraitHighlight = true })
+
+        -- Weapon
+        AddTraitToHero{
+            SkipNewTraitHighlight = true,
+            TraitName = GetWeaponUpgradeTrait(args.weaponName, args.weaponVariant),
+            Rarity = GetRarityKey(
+                GetWeaponUpgradeLevel(args.weaponName, args.weaponVariant)
+            )
+        }
+
+        EquipWeaponUpgrade(hero, { SkipTraitHighlight = true })
+        InitHeroLastStands(hero)
+
+        hero.MaxHealth = hero.MaxHealth +
+        GetNumMetaUpgrades("HealthMetaUpgrade") * MetaUpgradeData.HealthMetaUpgrade.ChangeValue
+        hero.Health = hero.MaxHealth
+    end)
+
+    return hero
+end
+
+return HeroEx
