@@ -3,8 +3,8 @@
 -- Licensed under the MIT license. See LICENSE file in the project root for details.
 --
 
----@type HeroContext
-local HeroContext = ModRequire "../HeroContext.lua"
+---@type CoopPlayers
+local CoopPlayers = ModRequire "../CoopPlayers.lua"
 ---@type HookUtils
 local HookUtils = ModRequire "../HookUtils.lua"
 
@@ -13,7 +13,7 @@ local SaveHooks = {}
 
 function SaveHooks.InitHooks()
     HookUtils.wrap("Save", function(baseFun)
-        local mainHero = HeroContext.GetDefaultHero()
+        local mainHero = CoopPlayers.GetMainHero()
         if mainHero then
             CurrentRun.Hero = mainHero
             baseFun()

@@ -26,7 +26,8 @@ function CoopCamera.ForceFocus(state)
 end
 
 function CoopCamera.LockCamaraHook(args)
-    if args.Id == 40000 then
+    local mainPlayerId  = CoopPlayers.GetMainHero().ObjectId
+    if mainPlayerId and args.Id == mainPlayerId then
         CoopCamera.isFocusEnabled = true
         CoopCamera.Update()
     else

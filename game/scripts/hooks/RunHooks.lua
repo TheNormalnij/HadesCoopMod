@@ -26,14 +26,15 @@ local RunHooks = {}
 function RunHooks.InitHooks()
     RunHooks.InitRunHooks()
     RunHooks.CreateRoomHooks()
-    HookUtils.onPreFunction("StartRoom", RunHooks.StartRoomPreHook)
     HookUtils.onPreFunction("LeaveRoom", RunHooks.LeaveRoomHook)
+    HookUtils.wrap("StartRoom", RunHooks.StartRoomPreHook)
     HookUtils.wrap("KillHero", RunHooks.KillHeroHook)
     HookUtils.wrap("CheckRoomExitsReady", RunHooks.CheckRoomExitsReadyHook)
+    HookUtils.wrap("StartEncounter", RunHooks.StartEncounterHook)
+    HookUtils.onPostFunction("SetupHeroObject", RunHooks.SetupHeroObjectHook)
     HookUtils.onPostFunction("StartNewGame", RunHooks.StartNewGameHook)
     HookUtils.onPostFunction("CheckForAllEnemiesDead", RunHooks.CheckForAllEnemiesDeadPostHook)
     HookUtils.onPostFunction("RestoreUnlockRoomExits", RunHooks.RestoreUnlockRoomExitsHook)
-    HookUtils.onPostFunction("SetupHeroObject", RunHooks.SetupHeroObjectHook)
 end
 
 ---@private
@@ -43,7 +44,14 @@ function RunHooks.SetupHeroObjectHook()
 end
 
 ---@private
-function RunHooks.StartRoomPreHook(run, currentRoom)
+function RunHooks.StartEncounterHook(StartEncounter, ...)
+    -- Run this function for any alive player
+    local hero = CoopPlayers.GetAliveHeroes()[1] or CoopPlayers.GetMainHero()
+    HeroContext.RunWithHeroContext(hero, StartEncounter, ...)
+end
+
+---@private
+function RunHooks.StartRoomPreHook(StartRoomFun, run, currentRoom)
     -- Initialization after save loading when encounter is active
     if not HeroContext.GetDefaultHero() then
         HeroContext.InitRunHook()
@@ -90,6 +98,8 @@ function RunHooks.StartRoomPreHook(run, currentRoom)
             end
         end
     end)
+
+    HeroContext.RunWithHeroContext(CoopPlayers.GetMainHero(), StartRoomFun, run, currentRoom)
 end
 
 ---@private
