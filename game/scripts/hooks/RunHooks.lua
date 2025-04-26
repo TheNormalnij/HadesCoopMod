@@ -90,10 +90,14 @@ function RunHooks.StartRoomPreHook(StartRoomFun, run, currentRoom)
         end
 
         if currentRoom.HeroEndPoint then
+            local isMainPlayerDead = CoopPlayers.GetMainHero().IsDead
             for playerId = 2, CoopPlayers.GetPlayersCount() do
                 local hero = CoopPlayers.GetHero(playerId)
                 if not hero.IsDead then
                     Teleport({ Id = hero.ObjectId, DestinationId = currentRoom.HeroEndPoint })
+                    if isMainPlayerDead then
+                        RemoveInputBlock({ PlayerIndex = playerId,  Name = "MoveHeroToRoomPosition" })
+                    end
                 end
             end
         end
