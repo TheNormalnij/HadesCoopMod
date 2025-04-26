@@ -62,12 +62,13 @@ function RunHooks.StartRoomPreHook(run, currentRoom)
         --entranceFunction(currentRun, currentRoom, args)
         -- TODO ADD ENTER Animation
         for playerId = 2, CoopPlayers.GetPlayersCount() do
-            local hero = CoopPlayers.InitCoopUnit(playerId)
+            local hero = CoopPlayers.GetHero(playerId)
             if hero and not hero.IsDead then
-                CoopPlayers.UpdateMainHero()
                 CoopCamera.ForceFocus(true)
+                CoopPlayers.InitCoopUnit(playerId)
             end
         end
+        CoopPlayers.UpdateMainHero()
 
         local mainHero = CoopPlayers.GetMainHero()
         if mainHero and mainHero.IsDead then
@@ -167,7 +168,7 @@ function RunHooks.LeaveRoomHook(currentRun, door)
     local nextRoom = door.Room
     local currentHero = CurrentRun.Hero
     for _, hero in CoopPlayers.PlayersIterator() do
-        if hero ~= currentHero then
+        if hero ~= currentHero and not hero.IsDead then
             ClearEffect({ Id = hero.ObjectId, All = true, BlockAll = true, })
             StopCurrentStatusAnimation(hero)
             hero.BlockStatusAnimations = true
@@ -197,7 +198,7 @@ end
 function RunHooks.CheckForAllEnemiesDeadPostHook()
     for playerID = 2, CoopPlayers.GetPlayersCount() do
         local hero = CoopPlayers.GetHero(playerID)
-        if hero then
+        if hero and not hero.IsDead and hero.ObjectId then
             ClearEffect({ Id = hero.ObjectId, Name = "StyxPoison" })
             ClearEffect({ Id = hero.ObjectId, Name = "DamageOverTime" })
         end

@@ -140,7 +140,9 @@ function CoopPlayers.RestoreSavedHero(playerId)
     DebugPrint { Text = "Restore player hero" .. tostring(playerId) .. " " .. tostring(hero) }
     if hero then
         CoopPlayers.CoopHeroes[playerId] = hero
-        CoopPlayers.InitCoopUnit(playerId)
+        if not hero.IsDead then
+            CoopPlayers.InitCoopUnit(playerId)
+        end
     end
 end
 
