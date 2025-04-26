@@ -112,7 +112,7 @@ static int CoopCreatePlayerUnit(lua_State* L) {
 
     size_t unitId = CoopContext::GetInstance()->CreatePlayerUnit(playerIndex);
 
-    if (playerIndex != -1)
+    if (unitId != -1)
         lua_pushnumber(L, unitId);
     else
         lua_pushboolean(L, false);
