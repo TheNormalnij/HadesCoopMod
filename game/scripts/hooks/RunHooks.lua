@@ -75,8 +75,10 @@ function RunHooks.StartRoomWrapHook(StartRoomFun, run, currentRoom)
         CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
     end
 
+    local overrides = currentRoom.EncounterSpecificDataOverwrites and currentRoom.EncounterSpecificDataOverwrites[currentRoom.Encounter.Name]
+
     local prevRoom = GetPreviousRoom(CurrentRun)
-    local roomEntranceFunctionName = currentRoom.EntranceFunctionName or "RoomEntranceStandard"
+    local roomEntranceFunctionName = (overrides and overrides.EntranceFunctionName) or currentRoom.EntranceFunctionName or "RoomEntranceStandard"
     if prevRoom ~= nil and prevRoom.NextRoomEntranceFunctionName ~= nil then
         roomEntranceFunctionName = prevRoom.NextRoomEntranceFunctionName
     end
