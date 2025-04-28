@@ -31,9 +31,15 @@ function RunHooks.InitHooks()
     HookUtils.wrap("KillHero", RunHooks.KillHeroHook)
     HookUtils.wrap("CheckRoomExitsReady", RunHooks.CheckRoomExitsReadyHook)
     HookUtils.wrap("SetupHeroObject", RunHooks.SetupHeroObjectHook)
+    HookUtils.wrap("CheckDistanceTrigger", RunHooks.CheckDistanceTriggerWrapHook)
     HookUtils.onPostFunction("StartNewGame", RunHooks.StartNewGameHook)
     HookUtils.onPostFunction("CheckForAllEnemiesDead", RunHooks.CheckForAllEnemiesDeadPostHook)
     HookUtils.onPostFunction("RestoreUnlockRoomExits", RunHooks.RestoreUnlockRoomExitsHook)
+end
+
+---@private
+function RunHooks.CheckDistanceTriggerWrapHook(CheckDistanceTriggerFun, ...)
+    HeroContext.RunWithHeroContext(CoopPlayers.GetMainHero(), CheckDistanceTriggerFun, ...)
 end
 
 ---@private
@@ -229,7 +235,7 @@ function RunHooks.HideMainPlayer(hero)
 
     UnequipWeapon{ DestinationId = hero.ObjectId, Names = weaponsToHide }
     SetColor{ Id = hero.ObjectId, Color = { 255, 255, 255, 0 } }
-    Teleport{ Id = hero.ObjectId, DestinationId = hero.ObjectId, OffsetX = -10000 }
+    --Teleport{ Id = hero.ObjectId, DestinationId = hero.ObjectId, OffsetX = -10000 }
 end
 
 ---@private
