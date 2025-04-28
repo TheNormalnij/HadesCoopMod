@@ -235,7 +235,7 @@ function RunHooks.HideMainPlayer(hero)
 
     UnequipWeapon{ DestinationId = hero.ObjectId, Names = weaponsToHide }
     SetColor{ Id = hero.ObjectId, Color = { 255, 255, 255, 0 } }
-    --Teleport{ Id = hero.ObjectId, DestinationId = hero.ObjectId, OffsetX = -10000 }
+    Teleport{ Id = hero.ObjectId, DestinationId = hero.ObjectId, OffsetX = -10000 }
 end
 
 ---@private
