@@ -7,6 +7,8 @@
 local CoopPlayers = ModRequire "CoopPlayers.lua"
 ---@type HookUtils
 local HookUtils = ModRequire "HookUtils.lua"
+---@type RunEx
+local RunEx = ModRequire "RunEx.lua"
 
 ---@class CoopCamera
 local CoopCamera = {}
@@ -46,9 +48,7 @@ function CoopCamera.Update()
 
     -- It's bad
     -- Players are dead in prerun room
-    -- the game sets EndingMoney in state after death
-    -- So we can use this value to check if the run was finished
-    local wasRunFinished = CurrentRun.EndingMoney and true
+    local wasRunFinished = RunEx.IsRunEnded()
 
     for _, hero in CoopPlayers.PlayersIterator() do
         if hero and (wasRunFinished or not hero.IsDead) then

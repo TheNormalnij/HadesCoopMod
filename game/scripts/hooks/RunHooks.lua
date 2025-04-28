@@ -19,6 +19,8 @@ local LootHooks = ModRequire "LootHooks.lua"
 local Config = ModRequire "../config.lua"
 ---@type SecondPlayerUi
 local SecondPlayerUi = ModRequire "../SecondPlayerUI.lua"
+---@type RunEx
+local RunEx = ModRequire "../RunEx.lua"
 
 ---@class RunHooks
 local RunHooks = {}
@@ -48,9 +50,21 @@ end
 
 ---@private
 function RunHooks.SetupHeroObjectHook(SetupHeroObjectFun, ...)
-    HeroContext.RunWithHeroContext(CoopPlayers.GetMainHero(), SetupHeroObjectFun, ...)
+    local mainHero = CoopPlayers.GetMainHero()
+
+    HeroContext.RunWithHeroContext(mainHero, SetupHeroObjectFun, ...)
     -- Fix unit -> hero table here
     CoopPlayers.UpdateMainHero()
+
+    if Config.Player1HasOutline then
+        AddOutline(
+            MergeTables(Config.Player1Outline, { Id = mainHero.ObjectId })
+        )
+    end
+
+    if mainHero.IsDead and not RunEx.IsRunEnded() then
+        RunHooks.HideMainPlayer(mainHero)
+    end
 end
 
 ---@private
@@ -83,15 +97,6 @@ function RunHooks.StartRoomWrapHook(StartRoomFun, run, currentRoom)
 
         local mainHero = CoopPlayers.GetMainHero()
         local isMainPlayerDead = mainHero and mainHero.IsDead
-        if isMainPlayerDead then
-            RunHooks.HideMainPlayer(mainHero)
-        else
-            if Config.Player1HasOutline then
-                AddOutline(
-                    MergeTables(Config.Player1Outline, { Id = mainHero.ObjectId })
-                )
-            end
-        end
 
         if currentRoom.HeroEndPoint then
             for playerId = 2, CoopPlayers.GetPlayersCount() do
