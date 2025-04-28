@@ -27,31 +27,24 @@ function RunHooks.InitHooks()
     RunHooks.InitRunHooks()
     RunHooks.CreateRoomHooks()
     HookUtils.onPreFunction("LeaveRoom", RunHooks.LeaveRoomHook)
-    HookUtils.wrap("StartRoom", RunHooks.StartRoomPreHook)
+    HookUtils.wrap("StartRoom", RunHooks.StartRoomWrapHook)
     HookUtils.wrap("KillHero", RunHooks.KillHeroHook)
     HookUtils.wrap("CheckRoomExitsReady", RunHooks.CheckRoomExitsReadyHook)
-    HookUtils.wrap("StartEncounter", RunHooks.StartEncounterHook)
-    HookUtils.onPostFunction("SetupHeroObject", RunHooks.SetupHeroObjectHook)
+    HookUtils.wrap("SetupHeroObject", RunHooks.SetupHeroObjectHook)
     HookUtils.onPostFunction("StartNewGame", RunHooks.StartNewGameHook)
     HookUtils.onPostFunction("CheckForAllEnemiesDead", RunHooks.CheckForAllEnemiesDeadPostHook)
     HookUtils.onPostFunction("RestoreUnlockRoomExits", RunHooks.RestoreUnlockRoomExitsHook)
 end
 
 ---@private
-function RunHooks.SetupHeroObjectHook()
+function RunHooks.SetupHeroObjectHook(SetupHeroObjectFun, ...)
+    HeroContext.RunWithHeroContext(CoopPlayers.GetMainHero(), SetupHeroObjectFun, ...)
     -- Fix unit -> hero table here
     CoopPlayers.UpdateMainHero()
 end
 
 ---@private
-function RunHooks.StartEncounterHook(StartEncounter, ...)
-    -- Run this function for any alive player
-    local hero = CoopPlayers.GetAliveHeroes()[1] or CoopPlayers.GetMainHero()
-    HeroContext.RunWithHeroContext(hero, StartEncounter, ...)
-end
-
----@private
-function RunHooks.StartRoomPreHook(StartRoomFun, run, currentRoom)
+function RunHooks.StartRoomWrapHook(StartRoomFun, run, currentRoom)
     -- Initialization after save loading when encounter is active
     if not HeroContext.GetDefaultHero() then
         HeroContext.InitRunHook()
@@ -103,7 +96,12 @@ function RunHooks.StartRoomPreHook(StartRoomFun, run, currentRoom)
         end
     end)
 
-    HeroContext.RunWithHeroContext(CoopPlayers.GetMainHero(), StartRoomFun, run, currentRoom)
+    HookUtils.onPostFunctionOnce("SwitchActiveUnit", function()
+        SwitchActiveUnit { PlayerIndex = 1, Id = CoopPlayers.GetMainHero().ObjectId }
+    end)
+
+    local hero = CoopPlayers.GetAliveHeroes()[1] or CoopPlayers.GetMainHero()
+    HeroContext.RunWithHeroContext(hero, StartRoomFun, run, currentRoom)
 end
 
 ---@private
