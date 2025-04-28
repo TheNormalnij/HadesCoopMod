@@ -79,7 +79,8 @@ function RunHooks.StartRoomPreHook(StartRoomFun, run, currentRoom)
         CoopPlayers.UpdateMainHero()
 
         local mainHero = CoopPlayers.GetMainHero()
-        if mainHero and mainHero.IsDead then
+        local isMainPlayerDead = mainHero and mainHero.IsDead
+        if isMainPlayerDead then
             RunHooks.HideMainPlayer(mainHero)
         else
             if Config.Player1HasOutline then
@@ -90,7 +91,6 @@ function RunHooks.StartRoomPreHook(StartRoomFun, run, currentRoom)
         end
 
         if currentRoom.HeroEndPoint then
-            local isMainPlayerDead = CoopPlayers.GetMainHero().IsDead
             for playerId = 2, CoopPlayers.GetPlayersCount() do
                 local hero = CoopPlayers.GetHero(playerId)
                 if not hero.IsDead then
