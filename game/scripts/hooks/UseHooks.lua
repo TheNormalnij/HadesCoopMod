@@ -44,11 +44,11 @@ OnUsed = function(args)
                         Id = triggerArgs.UserId,
                         WeaponName = "RangedWeapon",
                         Property = "Ammo"
-                    }
+                    } or 0
                     local max = GetWeaponMaxAmmo {
                         Id = triggerArgs.UserId,
                         WeaponName = "RangedWeapon"
-                    }
+                    } or 0
 
                     if current >= max then
                         if not item.coopDisableMagneto then
