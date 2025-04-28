@@ -26,9 +26,9 @@ local RunEx = ModRequire "../RunEx.lua"
 local RunHooks = {}
 
 function RunHooks.InitHooks()
-    RunHooks.InitRunHooks()
     RunHooks.CreateRoomHooks()
     HookUtils.onPreFunction("LeaveRoom", RunHooks.LeaveRoomHook)
+    HookUtils.wrap("StartNewRun", RunHooks.StartNewRunWrapHook)
     HookUtils.wrap("StartRoom", RunHooks.StartRoomWrapHook)
     HookUtils.wrap("KillHero", RunHooks.KillHeroHook)
     HookUtils.wrap("CheckRoomExitsReady", RunHooks.CheckRoomExitsReadyHook)
@@ -63,7 +63,7 @@ function RunHooks.SetupHeroObjectHook(SetupHeroObjectFun, ...)
     end
 
     if mainHero.IsDead and not RunEx.IsRunEnded() then
-        RunHooks.HideMainPlayer(mainHero)
+        RunHooks.HideHero(mainHero)
     end
 end
 
@@ -117,22 +117,23 @@ function RunHooks.StartRoomWrapHook(StartRoomFun, run, currentRoom)
         SwitchActiveUnit { PlayerIndex = 1, Id = CoopPlayers.GetMainHero().ObjectId }
     end)
 
-    local hero = CoopPlayers.GetAliveHeroes()[1] or CoopPlayers.GetMainHero()
-    HeroContext.RunWithHeroContext(hero, StartRoomFun, run, currentRoom)
+    if RunEx.IsRunEnded() then
+        HeroContext.RunWithHeroContext(CoopPlayers.GetMainHero(), StartRoomFun, run, currentRoom)
+    else
+        local hero = CoopPlayers.GetAliveHeroes()[1] or CoopPlayers.GetMainHero()
+        HeroContext.RunWithHeroContext(hero, StartRoomFun, run, currentRoom)
+    end
 end
 
 ---@private
-function RunHooks.InitRunHooks()
-    local _StartNewRun = StartNewRun
-    StartNewRun = function(prevRun, args)
-        local newRun = _StartNewRun(prevRun, args)
-        HeroContext.InitRunHook()
-        LootHooks.Reset(CoopPlayers.GetPlayersCount())
-        CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
-        CoopPlayers.RecreateAllAdditionalPlayers()
+function RunHooks.StartNewRunWrapHook(StartNewRunFun, prevRun, args)
+    local newRun = StartNewRunFun(prevRun, args)
+    HeroContext.InitRunHook()
+    LootHooks.Reset(CoopPlayers.GetPlayersCount())
+    CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
+    CoopPlayers.RecreateAllAdditionalPlayers()
 
-        return newRun
-    end
+    return newRun
 end
 
 ---@private
@@ -169,12 +170,15 @@ end
 function RunHooks.KillHeroHook(baseFun, ...)
     CurrentRun.Hero.IsDead = true
     if not CoopPlayers.HasAlivePlayers() then
-        baseFun(...)
+        -- Handle death for player 1 only
+        local mainHero = CoopPlayers.GetMainHero()
+        RunHooks.ShowHero(mainHero, CurrentRun.Hero.ObjectId)
+        HeroContext.RunWithHeroContext(mainHero, baseFun, ...)
         CoopPlayers.OnAllPlayersDead()
         return
     end
     if CurrentRun.Hero == CoopPlayers.GetMainHero() then
-        RunHooks.HideMainPlayer(CurrentRun.Hero)
+        RunHooks.HideHero(CurrentRun.Hero)
 
         local heroToChange = CoopPlayers.GetAliveHeroes()[1]
         HeroContext.SetDefaultHero(heroToChange)
@@ -236,7 +240,7 @@ end
 
 ---@private
 ---@param hero table
-function RunHooks.HideMainPlayer(hero)
+function RunHooks.HideHero(hero)
     local weaponsToHide = { "RangedWeapon" }
     for _, weaponName in ipairs(WeaponSets.HeroMeleeWeapons) do
         if hero.Weapons[weaponName] then
@@ -247,6 +251,14 @@ function RunHooks.HideMainPlayer(hero)
     UnequipWeapon{ DestinationId = hero.ObjectId, Names = weaponsToHide }
     SetColor{ Id = hero.ObjectId, Color = { 255, 255, 255, 0 } }
     Teleport{ Id = hero.ObjectId, DestinationId = hero.ObjectId, OffsetX = -10000 }
+end
+
+---@private
+---@param hero table
+---@param position number
+function RunHooks.ShowHero(hero, position)
+    SetColor { Id = hero.ObjectId, Color = { 255, 255, 255, 255 } }
+    Teleport { Id = hero.ObjectId, DestinationId = position }
 end
 
 ---@private
