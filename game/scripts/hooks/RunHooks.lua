@@ -39,6 +39,10 @@ end
 
 ---@private
 function RunHooks.CheckDistanceTriggerWrapHook(CheckDistanceTriggerFun, ...)
+    -- TODO
+    -- This hack fixes crashes like #21 when the player 1 is dead.
+    -- The crash is caused by invalid reference to the second player.
+    -- The game cannot find a player unit and triggers NotifyWithinDistance instantly without result
     HeroContext.RunWithHeroContext(CoopPlayers.GetMainHero(), CheckDistanceTriggerFun, ...)
 end
 
