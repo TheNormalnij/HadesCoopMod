@@ -123,6 +123,9 @@ function LootHooks.SpawnRoomRewardHook(baseFun, ...)
     local room = CurrentRun.CurrentRoom
     local roomRewardPredefinedPlayerId = room.CoopModPlayerId
 
+    -- Fix #16
+    room.DisableRewardMagnetisim = true
+
     local hero = roomRewardPredefinedPlayerId and CoopPlayers.GetHero(roomRewardPredefinedPlayerId) or CurrentRun.Hero
 
     if hero.IsDead then
