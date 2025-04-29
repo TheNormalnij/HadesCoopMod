@@ -28,6 +28,7 @@ local RunHooks = {}
 function RunHooks.InitHooks()
     RunHooks.CreateRoomHooks()
     HookUtils.onPreFunction("LeaveRoom", RunHooks.LeaveRoomHook)
+    HookUtils.onPreFunction("DeathAreaRoomTransition", RunHooks.DeathAreaRoomTransitionPreHook)
     HookUtils.wrap("StartNewRun", RunHooks.StartNewRunWrapHook)
     HookUtils.wrap("StartRoom", RunHooks.StartRoomWrapHook)
     HookUtils.wrap("KillHero", RunHooks.KillHeroHook)
@@ -37,6 +38,13 @@ function RunHooks.InitHooks()
     HookUtils.onPostFunction("StartNewGame", RunHooks.StartNewGameHook)
     HookUtils.onPostFunction("CheckForAllEnemiesDead", RunHooks.CheckForAllEnemiesDeadPostHook)
     HookUtils.onPostFunction("RestoreUnlockRoomExits", RunHooks.RestoreUnlockRoomExitsHook)
+end
+
+---@private
+function RunHooks.DeathAreaRoomTransitionPreHook()
+    if not HeroContext.GetDefaultHero() then
+        HeroContext.InitRunHook()
+    end
 end
 
 ---@private
