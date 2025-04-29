@@ -50,6 +50,20 @@ function MenuHooks.InitHooks()
             currentRoom.SellOptions = backup
         end
     end)
+
+    HookUtils.wrap("DisplayTextLine", function(baseFun, screen, source, line, parentLine)
+        if line.Choices then
+            -- Only this solution works
+            SetConfigOption { Name = "AllowControlHotSwap", Value = true }
+
+            HookUtils.onPreFunctionOnce("UnfreezePlayerUnit", function(name)
+                if name == "PlayTextLines" then
+                    SetConfigOption { Name = "AllowControlHotSwap", Value = false }
+                end
+            end)
+        end
+        baseFun(screen, source, line, parentLine)
+    end)
 end
 
 ---@private
