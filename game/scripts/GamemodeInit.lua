@@ -27,6 +27,8 @@ local SaveHooks = ModRequire "hooks/SaveHooks.lua"
 local EnemyAiHooks = ModRequire "hooks/EnemyAiHooks.lua"
 ---@type LootHooks
 local LootHooks = ModRequire "hooks/LootHooks.lua"
+---@type UIHooks
+local UIHooks = ModRequire "hooks/UIHooks.lua"
 
 ModRequire "hooks/DamageHooks.lua"
 ModRequire "hooks/UseHooks.lua"
@@ -47,7 +49,7 @@ local function TryInstalBasicHooks()
     RunHooks.InitHooks()
     MenuHooks.InitHooks()
     --PactDoorFix.InitHooks()
-    SecondPlayerUi.InitHooks()
+    UIHooks.InitHooks()
     CoopPlayers.CoopInit()
     LootHooks.InitHooks()
 end

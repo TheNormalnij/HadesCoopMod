@@ -4,12 +4,6 @@
 ---@type CoopPlayers
 local CoopPlayers = ModRequire "CoopPlayers.lua"
 
----@type HookUtils
-local HookUtils = ModRequire "HookUtils.lua"
-
----@type HeroContext
-local HeroContext = ModRequire "HeroContext.lua"
-
 ---@class SecondPlayerUi
 local SecondPlayerUi = {}
 
@@ -20,6 +14,8 @@ SecondPlayerUi.isTraitsContextSwithInFrogress = false
 SecondPlayerUi.currentTraitsHero = nil
 
 local ScreenAnchorsSecondPlayer = {}
+
+SecondPlayerUi.ScreenAnchors = ScreenAnchorsSecondPlayer
 
 function SecondPlayerUi.ShowHealthUI()
     if not ConfigOptionCache.ShowUIAnimations then
@@ -701,187 +697,6 @@ function SecondPlayerUi.UpdateSuperMeterUIReal()
     UIScriptsDeferred.SuperMeterDirty = false
 end
 
-function SecondPlayerUi.InitHooks()
-    -- Health
-    HookUtils.onPostFunction("ShowHealthUI", SecondPlayerUi.ShowHealthUI)
-
-    SecondPlayerUi.CreateSimpleHook("UpdateHealthUI")
-    HookUtils.onPostFunction("DestroyHealthUI", SecondPlayerUi.DestroyHealthUI)
-    HookUtils.onPreFunction("HideHealthUI", function ()
-        thread(SecondPlayerUi.HideHealthUI)
-    end )
-    HookUtils.onPostFunction("UpdateRallyHealthUI", SecondPlayerUi.UpdateRallyHealthUI)
-
-    -- LifePipIds
-    SecondPlayerUi.CreateSimpleHook("RecreateLifePips")
-
-    HookUtils.wrap("UpdateLifePips", function (basefun, unit)
-        local mainHero = CoopPlayers.GetMainHero()
-        if not mainHero or not unit or mainHero == unit then
-            basefun(mainHero)
-        end
-        SecondPlayerUi.UpdateLifePips()
-    end)
-
-    local _AddLastStand = AddLastStand
-    AddLastStand = function (args)
-        local isSecondPlayer = CoopPlayers.GetMainHero() ~= HeroContext.GetCurrentHeroContext()
-        local pipsBackup = ScreenAnchors.LifePipIds
-        local _CreateScreenObstacle = CreateScreenObstacle
-        if isSecondPlayer then
-            ScreenAnchors.LifePipIds = ScreenAnchorsSecondPlayer.LifePipIds
-            CreateScreenObstacle = function(args)
-                args.X = (ScreenWidth - 80) - (args.X - 70)
-            end
-        end
-
-        _AddLastStand(args)
-
-        if isSecondPlayer then
-            ScreenAnchors.LifePipIds = pipsBackup
-            CreateScreenObstacle = _CreateScreenObstacle
-        end
-    end
-
-    -- Ammo / red crystrals
-    HookUtils.onPostFunction("ShowAmmoUI", SecondPlayerUi.ShowAmmoUI)
-    HookUtils.onPostFunction("HideAmmoUI", SecondPlayerUi.HideAmmoUI)
-    HookUtils.onPostFunction("DestroyAmmoUI", SecondPlayerUi.DestroyAmmoUI)
-
-    local _UpdateAmmoUI = UpdateAmmoUI
-    UpdateAmmoUI = function()
-        local mainHero = CoopPlayers.GetMainHero()
-        HeroContext.RunWithHeroContext(mainHero, function()
-            _UpdateAmmoUI()
-            SecondPlayerUi.UpdateAmmoUI()
-        end)
-    end
-
-    -- Gun
-    local _ShowGunUI = ShowGunUI
-    ShowGunUI = function()
-        local mainHero = CoopPlayers.GetMainHero() or CurrentRun.Hero
-        HeroContext.RunWithHeroContext(mainHero, _ShowGunUI)
-        local secondHero = CoopPlayers.GetHero(2)
-        if secondHero then
-            HeroContext.RunWithHeroContext(secondHero, SecondPlayerUi.ShowGunUI)
-        end
-    end
-
-    local _HideGunUI = HideGunUI
-    HideGunUI = function()
-        local mainHero = CoopPlayers.GetMainHero()
-        HeroContext.RunWithHeroContext(mainHero, _HideGunUI)
-        local secondHero = CoopPlayers.GetHero(2)
-        if secondHero then
-            HeroContext.RunWithHeroContext(secondHero, SecondPlayerUi.HideGunUI)
-        end
-    end
-
-    local _UpdateGunUI = UpdateGunUI
-    UpdateGunUI = function()
-        local mainHero = CoopPlayers.GetMainHero()
-        local secondHero = CoopPlayers.GetHero(2)
-
-        if HeroContext.IsHeroContextExplicit() then
-            local currentHero = HeroContext.GetCurrentHeroContext()
-            if mainHero == currentHero then
-                HeroContext.RunWithHeroContext(mainHero, _UpdateGunUI)
-            elseif currentHero == secondHero then
-                HeroContext.RunWithHeroContext(currentHero, SecondPlayerUi.UpdateGunUI)
-            end
-        else
-            HeroContext.RunWithHeroContext(mainHero, _UpdateGunUI)
-            if secondHero then
-                HeroContext.RunWithHeroContext(secondHero, SecondPlayerUi.UpdateGunUI)
-            end
-        end
-    end
-
-    EquipPlayerWeaponPresentation = function (weaponData, args)
-        wait(0.02)
-        -- TODO: Fix hero here, maybe
-        PlaySound({ Name = "/SFX/Menu Sounds/WeaponEquipChunk", Id = CurrentRun.Hero.ObjectId })
-        if not args.SkipEquipLines then
-            thread(PlayVoiceLines, weaponData.EquipVoiceLines, false)
-        end
-
-        local function hasHeroWeaponWithIcon(hero)
-            for weaponName in pairs(hero.Weapons) do
-                if WeaponData[weaponName].ActiveReloadTime then
-                    return true
-                end
-            end
-            return false
-        end
-
-        local hero = CoopPlayers.GetMainHero()
-        local execFun = hasHeroWeaponWithIcon(hero) and _ShowGunUI or _HideGunUI
-        thread(function()
-            HeroContext.RunWithHeroContext(hero, execFun)
-        end )
-
-        hero = CoopPlayers.GetHero(2)
-        if hero then
-            execFun = hasHeroWeaponWithIcon(hero) and SecondPlayerUi.ShowGunUI or SecondPlayerUi.HideGunUI
-            thread(function()
-                HeroContext.RunWithHeroContext(hero, execFun)
-            end)
-        end
-    end
-
-    HookUtils.onPostFunction("DestroyGunUI", SecondPlayerUi.DestroyGunUI)
-
-    -- Super meter (God aid)
-    SecondPlayerUi.CreateSimpleHook("DestroySuperMeter")
-    SecondPlayerUi.CreateSimpleHook("HideSuperMeter")
-    SecondPlayerUi.CreateSimpleHook("ShowSuperMeter")
-    SecondPlayerUi.CreateSimpleHook("UpdateSuperMeterUIReal")
-
-    local _UpdateSuperUIComponent = UpdateSuperUIComponent
-    UpdateSuperUIComponent = function(...)
-        local mainHero = CoopPlayers.GetMainHero()
-        local secondHero = CoopPlayers.GetHero(2)
-        if ScreenAnchors.SuperPipBackingIds then
-            HeroContext.RunWithHeroContext(mainHero, _UpdateSuperUIComponent, ...)
-        end
-        if secondHero and ScreenAnchorsSecondPlayer.SuperPipBackingIds then
-            HeroContext.RunWithHeroContext(secondHero, SecondPlayerUi.UpdateSuperUIComponent, ...)
-        end
-    end
-
-    -- Traits
-    HookUtils.onPreFunction("ShowAdvancedTooltip", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIActivateTrait", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIDeactivateTrait", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUICreateComponent", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIUpdateText", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIRemove", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUICreateText", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("UpdateTraitNumber", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("UpdateAdditionalTraitHint", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIActivateTraits", SecondPlayerUi.ChangeHeroInTraitsMenu)
-
-    -- Etc
-    local _PulseText = PulseText
-    PulseText = function(args)
-        if args.ScreenAnchorReference and HeroContext.GetCurrentHeroContext() == CoopPlayers.GetHero(2) then
-            local idOnSecond = ScreenAnchorsSecondPlayer[args.ScreenAnchorReference]
-            if idOnSecond then
-                args.Id = idOnSecond
-            end
-        end
-
-        _PulseText(args)
-    end
-
-    HookUtils.onPostFunction("ShowUseButton", function(objectId, useTarget)
-        if HeroContext.GetDefaultHero() ~= HeroContext.GetCurrentHeroContext() then
-            Move({ Id = ScreenAnchors.UsePrompts[objectId], DestinationId = ScreenAnchors.UsePrompts[objectId], OffsetY = -50 })
-        end
-    end)
-end
-
 ---@private
 function SecondPlayerUi.ChangeHeroInTraitsMenu()
     if SecondPlayerUi.isTraitsContextSwithInFrogress then
@@ -959,24 +774,11 @@ function SecondPlayerUi.ChangeHeroInTraitsMenu()
 
     AddCurrentTraits()
     if CurrentRoom then
+        -- This check is invalid
         TraitUIActivateTraits()
     end
 
     SecondPlayerUi.isTraitsContextSwithInFrogress = false
-end
-
----@private
----@param funcName string
-function SecondPlayerUi.CreateSimpleHook(funcName)
-    local orig = _G[funcName]
-    _G[funcName] = function(...)
-        local mainHero = CoopPlayers.GetMainHero()
-        local secondHero = CoopPlayers.GetHero(2)
-        HeroContext.RunWithHeroContext(mainHero, orig, ...)
-        if secondHero then
-            HeroContext.RunWithHeroContext(secondHero, SecondPlayerUi[funcName], ...)
-        end
-    end
 end
 
 return SecondPlayerUi
