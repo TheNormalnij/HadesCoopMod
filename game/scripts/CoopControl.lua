@@ -47,7 +47,7 @@ function CoopControl.SetPlayerControlSchema(playerId, shemaName)
     CoopSetPlayerGamepad(playerId, shema.ControllerId)
 end
 
--- We need first change player 1 controller to requested plater controller
+-- We need first change player 1 controller to requested player controller
 -- So the player 2 will control the menu
 ---@param playerId number
 function CoopControl.SwitchControlForMenu(playerId)
