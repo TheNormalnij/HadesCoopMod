@@ -6,18 +6,19 @@
 local SelectedGuiControl = {}
 
 local function GetCurrentControl()
-    local isGamepad = GetConfigOptionValue { Name = "UseGamepadGlyphs" }
-    if isGamepad then
-        return
-        {
-            Device = "Gamepad",
-            ControllerId = CoopGetPlayerGamepad(1),
-        }
-    else
+    local isMouseVisible = GetConfigOptionValue { Name = "UseMouse" }
+
+    if isMouseVisible then
         return
         {
             Device = "Keyboard",
             ControllerId = -1,
+        }
+    else
+        return
+        {
+            Device = "Gamepad",
+            ControllerId = CoopGetPlayerGamepad(1),
         }
     end
 end
