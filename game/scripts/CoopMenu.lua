@@ -6,7 +6,8 @@
 local SelectedGuiControl = {}
 
 local function GetCurrentControl()
-    local isMouseVisible = GetConfigOptionValue { Name = "UseMouse" }
+    local isMouseVisible = GetConfigOptionValue { Name = "UseMouse" } or
+        not GetConfigOptionValue { Name = "UseGamepadGlyphs" }
 
     if isMouseVisible then
         return
