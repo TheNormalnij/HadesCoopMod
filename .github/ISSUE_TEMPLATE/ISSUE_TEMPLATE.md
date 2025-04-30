@@ -1,7 +1,7 @@
 ---
 name: Bug Report
 about: Report a bug in HadesCoopMod
-title: "[Bug] <Short description of the issue>"
+title: "<Short description of the issue>"
 labels: bug
 assignees: ''
 
