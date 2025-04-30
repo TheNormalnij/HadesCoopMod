@@ -284,8 +284,10 @@ function RunHooks.RestoreUnlockRoomExitsHook()
     end
     CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
 
+    local spawnPoint = CurrentRun.CurrentRoom.HeroEndPoint or CoopPlayers.GetMainHero().ObjectId
     for playerId = 2, CoopPlayers.GetPlayersCount() do
         CoopPlayers.RestoreSavedHero(playerId)
+        Teleport { Id = CoopPlayers.GetHero(playerId).ObjectId, DestinationId = spawnPoint }
     end
 
     SecondPlayerUi.UpdateHealthUI()
