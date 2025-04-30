@@ -82,4 +82,10 @@ function HookUtils.wrap(funcName, handler)
     end
 end
 
+---@param funcName string
+---@param handler fun(...): any
+function HookUtils.replace(funcName, handler)
+    _G[funcName] = handler
+end
+
 return HookUtils

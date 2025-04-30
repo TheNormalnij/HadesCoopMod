@@ -29,6 +29,8 @@ local EnemyAiHooks = ModRequire "hooks/EnemyAiHooks.lua"
 local LootHooks = ModRequire "hooks/LootHooks.lua"
 ---@type UIHooks
 local UIHooks = ModRequire "hooks/UIHooks.lua"
+---@type VulnerabilityHooks
+local VulnerabilityHooks = ModRequire "hooks/VulnerabilityHooks.lua"
 
 ModRequire "hooks/DamageHooks.lua"
 ModRequire "hooks/UseHooks.lua"
@@ -52,6 +54,7 @@ local function TryInstalBasicHooks()
     UIHooks.InitHooks()
     CoopPlayers.CoopInit()
     LootHooks.InitHooks()
+    VulnerabilityHooks.InitHooks()
 end
 
 OnPreThingCreation
