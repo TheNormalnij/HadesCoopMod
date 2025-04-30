@@ -22,8 +22,8 @@ Attach your save file if possible, as this will help with debugging.
 ## Steps to Reproduce
 List the steps to reproduce the issue:
 1. Go to '...'
-2. Iteract with '....'
-4. See error
+2. Interact with '....'
+3. See error
 
 ## Additional Context
 Add any other context about the problem here.
