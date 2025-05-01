@@ -95,15 +95,6 @@ function HeroEx.CreateFreshHero(args)
         EquipKeepsake(hero, args.keepsake, { SkipNewTraitHighlight = true })
         EquipAssist(hero, args.assist, { SkipNewTraitHighlight = true })
 
-        -- Weapon
-        AddTraitToHero{
-            SkipNewTraitHighlight = true,
-            TraitName = GetWeaponUpgradeTrait(args.weaponName, args.weaponVariant),
-            Rarity = GetRarityKey(
-                GetWeaponUpgradeLevel(args.weaponName, args.weaponVariant)
-            )
-        }
-
         EquipWeaponUpgrade(hero, { SkipTraitHighlight = true })
         InitHeroLastStands(hero)
 

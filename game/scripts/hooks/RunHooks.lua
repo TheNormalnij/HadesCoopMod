@@ -98,7 +98,7 @@ function RunHooks.StartRoomWrapHook(StartRoomFun, run, currentRoom)
         -- TODO ADD ENTER Animation
         for playerId = 2, CoopPlayers.GetPlayersCount() do
             local hero = CoopPlayers.GetHero(playerId)
-            if hero and not hero.IsDead then
+            if not hero or (hero and not hero.IsDead) then
                 CoopCamera.ForceFocus(true)
                 CoopPlayers.InitCoopUnit(playerId)
             end
@@ -135,11 +135,15 @@ end
 
 ---@private
 function RunHooks.StartNewRunWrapHook(StartNewRunFun, prevRun, args)
+    local isNewGame = RunEx.WasTheFirstRunStarted()
     local newRun = StartNewRunFun(prevRun, args)
     HeroContext.InitRunHook()
     LootHooks.Reset(CoopPlayers.GetPlayersCount())
     CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
-    CoopPlayers.RecreateAllAdditionalPlayers()
+
+    if not isNewGame then
+        CoopPlayers.RecreateAllAdditionalPlayers()
+    end
 
     return newRun
 end

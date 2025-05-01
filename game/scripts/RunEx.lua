@@ -13,4 +13,9 @@ function RunEx.IsRunEnded()
     return CurrentRun.EndingMoney and true
 end
 
+---@return boolean
+function RunEx.WasTheFirstRunStarted()
+    return not GameState or (not CurrentRun and IsEmpty(GameState.RunHistory))
+end
+
 return RunEx

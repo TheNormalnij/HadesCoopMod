@@ -13,6 +13,8 @@ local CoopControl = ModRequire "CoopControl.lua"
 local Config = ModRequire "config.lua"
 ---@type HeroEx
 local HeroEx = ModRequire "HeroEx.lua"
+---@type RunEx
+local RunEx = ModRequire "RunEx.lua"
 
 ---@class CoopPlayers
 local CoopPlayers = {}
@@ -227,6 +229,10 @@ end
 
 function CoopPlayers.CoopInit()
     CoopPlayers.InitCoopPlayer()
+
+    if RunEx.WasTheFirstRunStarted() then
+        return
+    end
 
     CoopPlayers.CoopHeroes[1] = CurrentRun.Hero
 
