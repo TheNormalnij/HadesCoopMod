@@ -73,3 +73,4 @@ end
 
 HeroContextWrapper.WrapTriggerHero("OnWeaponFired", "OwnerTable")
 HeroContextWrapper.WrapTriggerHero("OnWeaponTriggerRelease", "OwnerTable")
+HeroContextWrapper.WrapTriggerHero("OnWeaponFailedToFire", "TriggeredByTable")
