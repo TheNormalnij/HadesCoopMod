@@ -153,7 +153,7 @@ function UIHooks.InitHooks()
         end
 
         local hero = CoopPlayers.GetMainHero()
-        local execFun = hasHeroWeaponWithIcon(hero) and _ShowGunUI or _HideGunUI
+        local execFun = hasHeroWeaponWithIcon(hero) and ShowGunUI or _HideGunUI
         thread(function()
             HeroContext.RunWithHeroContext(hero, execFun)
         end)
