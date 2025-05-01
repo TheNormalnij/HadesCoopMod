@@ -69,29 +69,5 @@ function OnProjectileDeath(args)
     end }
 end
 
-local _OnWeaponFired = OnWeaponFired
-function OnWeaponFired(args)
-    local names, fun
-    if type(args[1]) == "function" then
-        fun = args[1]
-    else
-        names = args[1]
-        fun = args[2]
-    end
-
-    local hook = function(triggerArgs)
-        local attacker = triggerArgs.OwnerTable
-
-        if CoopPlayers.IsPlayerHero(attacker) then
-            HeroContext.RunWithHeroContext(attacker, fun, triggerArgs)
-        else
-            fun(triggerArgs)
-        end
-    end
-
-    if names then
-        _OnWeaponFired{names, hook}
-    else
-        _OnWeaponFired { hook }
-    end
-end
+HeroContextWrapper.WrapTriggerHero("OnWeaponFired", "OwnerTable")
+HeroContextWrapper.WrapTriggerHero("OnWeaponTriggerRelease", "OwnerTable")
