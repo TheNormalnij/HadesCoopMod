@@ -9,6 +9,8 @@ local CoopPlayers = ModRequire "../CoopPlayers.lua"
 local HeroContext = ModRequire "../HeroContext.lua"
 ---@type SecondPlayerUi
 local SecondPlayerUi = ModRequire "../SecondPlayerUI.lua"
+---@type HeroContextWrapper
+local HeroContextWrapper = ModRequire "../HeroContextWrapper.lua"
 
 local _OnHit = OnHit
 function OnHit(args)
