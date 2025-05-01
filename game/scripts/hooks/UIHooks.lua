@@ -100,7 +100,22 @@ function UIHooks.InitHooks()
     HookUtils.onPostFunction("HideAmmoUI", SecondPlayerUi.HideAmmoUI)
     HookUtils.onPostFunction("DestroyAmmoUI", SecondPlayerUi.DestroyAmmoUI)
 
-    UIHooks.SimpleHookWithVisibilityCheck("UpdateAmmoUI")
+    local _UpdateAmmoUI = UpdateAmmoUI
+    UpdateAmmoUI = function()
+        local mainHero = CoopPlayers.GetMainHero()
+        if HeroContext.IsHeroContextExplicit() then
+            if HeroContext.GetCurrentHeroContext() == mainHero then
+                _UpdateAmmoUI()
+            else
+                SecondPlayerUi.UpdateAmmoUI()
+            end
+        else
+            HeroContext.RunWithHeroContext(mainHero, function()
+                _UpdateAmmoUI()
+                SecondPlayerUi.UpdateAmmoUI()
+            end)
+        end
+    end
 
     -- Gun
     UIHooks.SimpleHookWithVisibilityCheck("ShowGunUI")
