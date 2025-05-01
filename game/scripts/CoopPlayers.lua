@@ -64,6 +64,12 @@ function CoopPlayers.PlayersIterator()
     return ipairs(CoopPlayers.CoopHeroes)
 end
 
+function CoopPlayers.AdditionalHeroesIterator()
+    local interator, t, prevKey = ipairs(CoopPlayers.CoopHeroes)
+    prevKey = 1
+    return interator, t, prevKey
+end
+
 ---@param hero table
 function CoopPlayers.GetPlayerByHero(hero)
     for playerId = 1, #CoopPlayers.CoopHeroes do
