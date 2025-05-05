@@ -61,20 +61,19 @@ function HeroEx.GetHeroWeaponFull(hero)
         return
     end
 
-    local weaponIndex
+    -- See #46
+    -- Player 2 doesn't have a trait if weapon aspects aren't unlocked
+    -- Use the first weapon aspect by default
+    local weaponIndex = 1
 
     for index in pairs(WeaponUpgradeData[weaponName]) do
         local weaponData = WeaponUpgradeData[weaponName][index]
         local trait = hero.TraitDictionary[weaponData.TraitName or weaponData.RequiredInvestmentTraitName]
         if trait then
+            ---@diagnostic disable-next-line: cast-local-type
             weaponIndex = index
             break
         end
-    end
-
-    if not weaponIndex then
-        DebugPrint { Text = "The player has no rarity!!!!" }
-        return
     end
 
     return weaponName, weaponIndex
