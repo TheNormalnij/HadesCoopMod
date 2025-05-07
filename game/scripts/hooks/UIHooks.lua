@@ -117,6 +117,22 @@ function UIHooks.InitHooks()
         end
     end
 
+    HookUtils.wrap("AddAmmoPresentation", function(baseFun, ...)
+        if CurrentRun.Hero == CoopPlayers.GetHero(2) then
+            thread(SecondPlayerUi.UpdateAmmoUI)
+
+            CreateAnimation({ Name = "QuickFlashRedSmall", DestinationId = CurrentRun.Hero.ObjectId, OffsetZ = -90 })
+
+            if SecondPlayerUi.ScreenAnchors.AmmoIndicatorUI ~= nil then
+                ModifyTextBox({ Id = SecondPlayerUi.ScreenAnchors.AmmoIndicatorUI, ColorTarget = Color.White, ColorDuration = 0.5, AutoSetDataProperties = false, })
+                thread(PulseText,
+                    { ScreenAnchorReference = "AmmoIndicatorUI", ScaleTarget = 1.3, ScaleDuration = 0.125, HoldDuration = 0.1, PulseBias = 0.2 })
+            end
+        else
+            baseFun(...);
+        end
+    end)
+
     -- Gun
     UIHooks.SimpleHookWithVisibilityCheck("ShowGunUI")
 
