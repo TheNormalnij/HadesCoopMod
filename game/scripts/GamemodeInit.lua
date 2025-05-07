@@ -74,9 +74,7 @@ OnAnyLoad {
                 CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
                 CoopPlayers.UpdateMainHero()
                 CoopPlayers.InitCoopUnit(2)
-                SecondPlayerUi.UpdateHealthUI()
-                SecondPlayerUi.RecreateLifePips()
-                SecondPlayerUi.UpdateAmmoUI()
+                SecondPlayerUi.Refresh()
             end)
         end
     end

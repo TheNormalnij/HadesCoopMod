@@ -781,4 +781,10 @@ function SecondPlayerUi.ChangeHeroInTraitsMenu()
     SecondPlayerUi.isTraitsContextSwithInFrogress = false
 end
 
+function SecondPlayerUi.Refresh()
+    SecondPlayerUi.UpdateHealthUI()
+    SecondPlayerUi.RecreateLifePips()
+    SecondPlayerUi.UpdateAmmoUI()
+end
+
 return SecondPlayerUi

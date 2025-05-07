@@ -292,8 +292,7 @@ function RunHooks.RestoreUnlockRoomExitsHook()
         Teleport { Id = CoopPlayers.GetHero(playerId).ObjectId, DestinationId = spawnPoint }
     end
 
-    SecondPlayerUi.UpdateHealthUI()
-    SecondPlayerUi.RecreateLifePips()
+    SecondPlayerUi.Refresh()
 end
 
 return RunHooks
