@@ -22,6 +22,21 @@ local Config = {
         Opacity = 0.6,
         Thickness = 2,
         Threshold = 0.6,
+    };
+    TextAbovePlayersEnabled = false;
+    TextAbovePlayersParams = {
+        -- CreateTextBox params
+        OffsetX = 0,
+        OffsetY = -150,
+        FontSize = 28,
+        Color = { 255, 255, 255, 255 },
+        ShadowColor = { 0, 0, 0, 240 },
+        ShadowOffset = { 0, 2 },
+        ShadowBlur = 0,
+        OutlineThickness = 3,
+        OutlineColor = { 0, 0, 0, 1 },
+        Font = "AlegreyaSansSCRegular",
+        ustification = "Center"
     }
 }
 

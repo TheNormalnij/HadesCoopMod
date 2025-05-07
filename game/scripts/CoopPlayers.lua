@@ -9,12 +9,12 @@ local GameModifed = ModRequire "GameModifed.lua"
 local HeroContext = ModRequire "HeroContext.lua"
 ---@type CoopControl
 local CoopControl = ModRequire "CoopControl.lua"
----@type CoopModConfig
-local Config = ModRequire "config.lua"
 ---@type HeroEx
 local HeroEx = ModRequire "HeroEx.lua"
 ---@type RunEx
 local RunEx = ModRequire "RunEx.lua"
+---@type PlayerVisibilityHelper
+local PlayerVisibilityHelper = ModRequire "PlayerVisibilityHelper.lua"
 
 ---@class CoopPlayers
 local CoopPlayers = {}
@@ -177,11 +177,8 @@ function CoopPlayers.InitCoopUnit(playerId)
     CoopPlayers.CoopHeroes[playerId] = hero
     CurrentRun["Hero" .. playerId] = hero
 
-    if Config.Player2HasOutline then
-        AddOutline(
-            MergeTables(Config.Player2Outline, { Id = unit })
-        )
-    end
+    PlayerVisibilityHelper.AddPlayerMarkers(playerId, unit)
+
     HeroContext.RunWithHeroContext(hero, GameModifed.SetupAdditional, CurrentRun, nil, hero, unit)
 
     SetUntargetable { Id = hero.ObjectId }

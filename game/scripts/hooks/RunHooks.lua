@@ -15,12 +15,12 @@ local CoopCamera = ModRequire "../CoopCamera.lua"
 local EnemyAiHooks = ModRequire "EnemyAiHooks.lua"
 ---@type LootHooks
 local LootHooks = ModRequire "LootHooks.lua"
----@type CoopModConfig
-local Config = ModRequire "../config.lua"
 ---@type SecondPlayerUi
 local SecondPlayerUi = ModRequire "../SecondPlayerUI.lua"
 ---@type RunEx
 local RunEx = ModRequire "../RunEx.lua"
+---@type PlayerVisibilityHelper
+local PlayerVisibilityHelper = ModRequire "../PlayerVisibilityHelper.lua"
 
 ---@class RunHooks
 local RunHooks = {}
@@ -64,11 +64,7 @@ function RunHooks.SetupHeroObjectHook(SetupHeroObjectFun, ...)
     -- Fix unit -> hero table here
     CoopPlayers.UpdateMainHero()
 
-    if Config.Player1HasOutline then
-        AddOutline(
-            MergeTables(Config.Player1Outline, { Id = mainHero.ObjectId })
-        )
-    end
+    PlayerVisibilityHelper.AddPlayerMarkers(1, mainHero.ObjectId)
 
     if mainHero.IsDead and not RunEx.IsRunEnded() then
         RunHooks.HideHero(mainHero)
