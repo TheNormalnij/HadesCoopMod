@@ -6,14 +6,6 @@
 ---@type HeroContext
 local HeroContext = ModRequire "HeroContext.lua"
 
-local WEAPON_RARITY_TO_INDEX = {
-    Common = 0,
-    Rare = 1,
-    Epic = 2,
-    Heroic = 3,
-    Legendary = 4,
-}
-
 ---@class HeroEx
 local HeroEx = {}
 
