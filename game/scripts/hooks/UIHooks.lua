@@ -97,8 +97,11 @@ function UIHooks.InitHooks()
 
     -- Ammo / red crystrals
     UIHooks.SimpleHookWithVisibilityCheck("ShowAmmoUI")
-    HookUtils.onPostFunction("HideAmmoUI", SecondPlayerUi.HideAmmoUI)
-    HookUtils.onPostFunction("DestroyAmmoUI", SecondPlayerUi.DestroyAmmoUI)
+    HookUtils.wrap("HideAmmoUI", function(baseFun)
+        thread(SecondPlayerUi.HideAmmoUI)
+        baseFun()
+    end)
+    HookUtils.onPreFunction("DestroyAmmoUI", SecondPlayerUi.DestroyAmmoUI)
 
     local _UpdateAmmoUI = UpdateAmmoUI
     UpdateAmmoUI = function()
