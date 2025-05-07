@@ -76,6 +76,7 @@ OnAnyLoad {
                 CoopPlayers.InitCoopUnit(2)
                 SecondPlayerUi.UpdateHealthUI()
                 SecondPlayerUi.RecreateLifePips()
+                SecondPlayerUi.UpdateAmmoUI()
             end)
         end
     end

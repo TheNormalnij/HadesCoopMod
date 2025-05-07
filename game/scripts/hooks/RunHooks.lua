@@ -103,6 +103,8 @@ function RunHooks.StartRoomWrapHook(StartRoomFun, run, currentRoom)
                 CoopPlayers.InitCoopUnit(playerId)
             end
         end
+        SecondPlayerUi.UpdateAmmoUI()
+
         CoopPlayers.UpdateMainHero()
 
         local mainHero = CoopPlayers.GetMainHero()
