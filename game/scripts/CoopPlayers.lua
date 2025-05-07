@@ -236,6 +236,10 @@ function CoopPlayers.CoopInit()
 
     CoopPlayers.CoopHeroes[1] = CurrentRun.Hero
 
+    if RunEx.IsRunEnded() then
+        return
+    end
+
     for playerId = 2, CoopPlayers.GetPlayersCount() do
         local hero = CurrentRun["Hero" .. playerId]
         if hero then
