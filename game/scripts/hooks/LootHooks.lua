@@ -149,7 +149,7 @@ function LootHooks.SpawnRoomRewardHook(baseFun, ...)
         end
     end
 
-    HeroContext.RunWithHeroContext(hero, baseFun, ...)
+    HeroContext.RunWithHeroContextAwait(hero, baseFun, ...)
 end
 
 ---@private

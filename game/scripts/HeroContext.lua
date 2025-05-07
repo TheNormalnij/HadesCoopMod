@@ -91,4 +91,25 @@ function HeroContext.RunWithHeroContextReturn(hero, fun, ...)
     return table.unpack(out)
 end
 
+local awaitableThreadId = 0
+
+---@param hero table Hero info
+---@param fun function
+---@param ... unknown params
+function HeroContext.RunWithHeroContextAwait(hero, fun, ...)
+    awaitableThreadId = awaitableThreadId + 1
+    local notifyName = "RunWithHeroContextAwait" .. awaitableThreadId
+
+    local args = { ... }
+    local co = coroutine_create(function()
+        fun(table.unpack(args))
+        notifyExistingWaiters(notifyName)
+    end)
+    CorontinueToHero[co] = hero
+
+    if resume(co, _threads) ~= "done" then
+        waitUntil(notifyName)
+    end
+end
+
 return HeroContext
