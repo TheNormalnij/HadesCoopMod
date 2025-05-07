@@ -237,13 +237,19 @@ function CoopPlayers.CoopInit()
     CoopPlayers.CoopHeroes[1] = CurrentRun.Hero
 
     if RunEx.IsRunEnded() then
-        return
-    end
-
-    for playerId = 2, CoopPlayers.GetPlayersCount() do
-        local hero = CurrentRun["Hero" .. playerId]
-        if hero then
-            CoopPlayers.CoopHeroes[playerId] = hero
+        -- Create fresh hero for all players
+        for playerId = 2, CoopPlayers.GetPlayersCount() do
+            CoopPlayers.CoopHeroes[playerId] = HeroEx.CreateFreshHero {
+                keepsake = GameState.LastAwardTrait,
+                assist = GameState.LastAssistTrait,
+                weaponName = WeaponSets.HeroMeleeWeapons[1],
+                weaponVariant = 1,
+            }
+        end
+    else
+        -- Load saved heroes
+        for playerId = 2, CoopPlayers.GetPlayersCount() do
+            CoopPlayers.CoopHeroes[playerId] = CurrentRun["Hero" .. playerId]
         end
     end
 end
