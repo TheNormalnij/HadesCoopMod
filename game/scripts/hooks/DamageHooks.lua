@@ -49,15 +49,15 @@ end
 local _OnProjectileDeath = OnProjectileDeath
 function OnProjectileDeath(args)
     local originalHandler = args[1]
+
     _OnProjectileDeath { function(triggerArgs)
         local attacker = triggerArgs.AttackerTable
         local isAttackerPlayer = attacker and CoopPlayers.IsPlayerHero(attacker)
+        local victim = triggerArgs.TriggeredByTable
+        local isVictimPlayer = victim and CoopPlayers.IsPlayerHero(victim)
 
         if triggerArgs.name == "RangedWeapon" then
             -- This hack disables PvP for red crystals
-            local victim = triggerArgs.TriggeredByTable
-            local isVictimPlayer = victim and CoopPlayers.IsPlayerHero(victim)
-
             if isAttackerPlayer and isVictimPlayer then
                 triggerArgs.TriggeredByTable = nil
             end
@@ -65,6 +65,8 @@ function OnProjectileDeath(args)
 
         if isAttackerPlayer then
             HeroContext.RunWithHeroContext(attacker, originalHandler, triggerArgs)
+        elseif isVictimPlayer then
+            HeroContext.RunWithHeroContext(victim, originalHandler, triggerArgs)
         else
             originalHandler(triggerArgs)
         end
