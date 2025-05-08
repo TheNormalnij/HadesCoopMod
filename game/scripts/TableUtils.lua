@@ -17,4 +17,33 @@ function TableUtils.find(t, value)
     end
 end
 
+---@param dest table
+---@param from table
+---@return table
+function TableUtils.copyTo(dest, from)
+    for key, value in pairs(from) do
+        dest[key] = value
+    end
+    return dest
+end
+
+---@param dest table
+---@param from table
+---@return table
+function TableUtils.rawCopyTo(dest, from)
+    for key, value in pairs(from) do
+        rawset(dest, key, value)
+    end
+    return dest
+end
+
+---@param t table
+function TableUtils.clean(t)
+    local key = next(t)
+    while key do
+        t[key] = nil
+        key = next(t)
+    end
+end
+
 return TableUtils

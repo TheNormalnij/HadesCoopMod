@@ -31,6 +31,8 @@ local LootHooks = ModRequire "hooks/LootHooks.lua"
 local UIHooks = ModRequire "hooks/UIHooks.lua"
 ---@type VulnerabilityHooks
 local VulnerabilityHooks = ModRequire "hooks/VulnerabilityHooks.lua"
+---@type ResourceLoadingHooks
+local ResourceLoadingHooks = ModRequire "hooks/ResourceLoadingHooks.lua"
 
 ModRequire "hooks/DamageHooks.lua"
 ModRequire "hooks/UseHooks.lua"
@@ -55,6 +57,7 @@ local function TryInstalBasicHooks()
     CoopPlayers.CoopInit()
     LootHooks.InitHooks()
     VulnerabilityHooks.InitHooks()
+    ResourceLoadingHooks.InitHooks()
 end
 
 OnPreThingCreation

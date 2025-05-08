@@ -9,6 +9,8 @@ local HookUtils = ModRequire "../HookUtils.lua"
 local HeroContext = ModRequire "../HeroContext.lua"
 ---@type HeroContextProxy
 local HeroContextProxy = ModRequire "../HeroContextProxy.lua"
+---@type HeroContextProxyStore
+local HeroContextProxyStore = ModRequire "../HeroContextProxyStore.lua"
 ---@type CoopPlayers
 local CoopPlayers = ModRequire "../CoopPlayers.lua"
 
@@ -21,9 +23,6 @@ LootHooks.ForceNextLootHero = nil
 
 ---@private
 LootHooks.LootHeroCount = 1
-
----@private
-LootHooks.LootCounter = 1
 
 function LootHooks.InitHooks()
     -- Select hero for blind loot
@@ -47,13 +46,22 @@ function LootHooks.InitHooks()
 
     -- Spawns room reward for a player selected by room
     HookUtils.wrap("SpawnRoomReward", LootHooks.SpawnRoomRewardHook)
+
+    LootHooks.InitLootHistoryProxy()
 end
 
 ---@param heroesCount number
 function LootHooks.Reset(heroesCount)
-    HeroContextProxy.Make(CurrentRun.LootTypeHistory)
+    LootHooks.InitLootHistoryProxy()
+
     LootHooks.LootHeroCount = heroesCount
-    LootHooks.LootCounter = RandomInt(1, heroesCount)
+    CurrentRun.CoopLootCounter = CurrentRun.CoopLootCounter or RandomInt(1, heroesCount)
+end
+
+---@private
+function LootHooks.InitLootHistoryProxy()
+    local proxyHandler = HeroContextProxy.New(CurrentRun, "LootTypeHistory")
+    HeroContextProxyStore.Set("LootTypeHistory", proxyHandler)
 end
 
 ---@private
@@ -82,7 +90,7 @@ function LootHooks.UseNextHeroForLoot()
         return
     end
 
-    local startPos = LootHooks.LootCounter
+    local startPos = CurrentRun.CoopLootCounter
     local playerIndex = startPos + 1
     while true do
         if playerIndex > LootHooks.LootHeroCount then
@@ -95,7 +103,7 @@ function LootHooks.UseNextHeroForLoot()
 
         local hero = CoopPlayers.GetHero(playerIndex)
         if not hero.IsDead then
-            LootHooks.LootCounter = playerIndex
+            CurrentRun.CoopLootCounter = playerIndex
             return playerIndex
         end
 
