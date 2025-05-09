@@ -2,6 +2,6 @@
 	Name = "Coop mod"
 	Library = "HadesCoopGame.dll"
 	Priority = 0
-	Version = "0.2.3"
+	Version = "0.2.4"
 	Author = "Uladzislau 'TheNormalnij' Nikalayevich"
 }
