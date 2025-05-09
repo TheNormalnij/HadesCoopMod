@@ -225,6 +225,7 @@ function RunHooks.KillHeroHook(baseFun, ...)
         -- Handle death for player 1 only
         local mainHero = CoopPlayers.GetMainHero()
         RunHooks.ShowHero(mainHero, CurrentRun.Hero.ObjectId)
+        RemoveOutline({ Id = mainHero.ObjectId })
         HeroContext.RunWithHeroContext(mainHero, baseFun, ...)
         CoopPlayers.OnAllPlayersDead()
         return
