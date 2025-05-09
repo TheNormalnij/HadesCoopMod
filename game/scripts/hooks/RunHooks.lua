@@ -79,10 +79,23 @@ function RunHooks.StartRoomWrapHook(StartRoomFun, run, currentRoom)
         CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
     end
 
-    local overrides = currentRoom.EncounterSpecificDataOverwrites and currentRoom.EncounterSpecificDataOverwrites[currentRoom.Encounter.Name]
+    if currentRoom.RoomSetName == "Surface" then
+        RunHooks.HandleSurfaceRoom(StartRoomFun, run, currentRoom)
+    else
+        RunHooks.HandleGenericRoom(StartRoomFun, run, currentRoom)
+    end
+end
+
+---@private
+function RunHooks.HandleGenericRoom(StartRoomFun, run, currentRoom)
+    local overrides = currentRoom.EncounterSpecificDataOverwrites and
+    currentRoom.EncounterSpecificDataOverwrites[currentRoom.Encounter.Name]
 
     local prevRoom = GetPreviousRoom(CurrentRun)
-    local roomEntranceFunctionName = (overrides and overrides.EntranceFunctionName) or currentRoom.EntranceFunctionName or "RoomEntranceStandard"
+    local roomEntranceFunctionName = (overrides and overrides.EntranceFunctionName)
+        or currentRoom.EntranceFunctionName
+        or "RoomEntranceStandard"
+
     if prevRoom ~= nil and prevRoom.NextRoomEntranceFunctionName ~= nil then
         roomEntranceFunctionName = prevRoom.NextRoomEntranceFunctionName
     end
@@ -112,7 +125,7 @@ function RunHooks.StartRoomWrapHook(StartRoomFun, run, currentRoom)
                 if not hero.IsDead then
                     Teleport({ Id = hero.ObjectId, DestinationId = currentRoom.HeroEndPoint })
                     if isMainPlayerDead then
-                        RemoveInputBlock({ PlayerIndex = playerId,  Name = "MoveHeroToRoomPosition" })
+                        RemoveInputBlock{ PlayerIndex = playerId, Name = "MoveHeroToRoomPosition" }
                     end
                 end
             end
@@ -129,6 +142,23 @@ function RunHooks.StartRoomWrapHook(StartRoomFun, run, currentRoom)
         local hero = CoopPlayers.GetAliveHeroes()[1] or CoopPlayers.GetMainHero()
         HeroContext.RunWithHeroContext(hero, StartRoomFun, run, currentRoom)
     end
+end
+
+---@private
+function RunHooks.HandleSurfaceRoom(StartRoomFun, run, currentRoom)
+    local mainHero = CoopPlayers.GetMainHero()
+    mainHero.IsDead = false
+    HeroContext.SetDefaultHero(mainHero)
+
+    if mainHero.Health == 0 then
+        mainHero.Health = mainHero.MaxHealth
+    end
+
+    for playerId, hero in CoopPlayers.AdditionalHeroesIterator() do
+        hero.IsDead = true
+    end
+
+    HeroContext.RunWithHeroContext(mainHero, StartRoomFun, run, currentRoom)
 end
 
 ---@private
@@ -290,7 +320,10 @@ function RunHooks.RestoreUnlockRoomExitsHook()
     local spawnPoint = CurrentRun.CurrentRoom.HeroEndPoint or CoopPlayers.GetMainHero().ObjectId
     for playerId = 2, CoopPlayers.GetPlayersCount() do
         CoopPlayers.RestoreSavedHero(playerId)
-        Teleport { Id = CoopPlayers.GetHero(playerId).ObjectId, DestinationId = spawnPoint }
+        local hero = CoopPlayers.GetHero(playerId)
+        if hero and not hero.IsDead then
+            Teleport { Id = hero.ObjectId, DestinationId = spawnPoint }
+        end
     end
 
     SecondPlayerUi.Refresh()
