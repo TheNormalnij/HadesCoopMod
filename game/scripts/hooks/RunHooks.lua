@@ -29,6 +29,7 @@ function RunHooks.InitHooks()
     RunHooks.CreateRoomHooks()
     HookUtils.onPreFunction("LeaveRoom", RunHooks.LeaveRoomHook)
     HookUtils.onPreFunction("DeathAreaRoomTransition", RunHooks.DeathAreaRoomTransitionPreHook)
+    HookUtils.wrap("EndEarlyAccessPresentation", RunHooks.EndEarlyAccessPresentationWrapHook)
     HookUtils.wrap("StartNewRun", RunHooks.StartNewRunWrapHook)
     HookUtils.wrap("StartRoom", RunHooks.StartRoomWrapHook)
     HookUtils.wrap("KillHero", RunHooks.KillHeroHook)
@@ -207,6 +208,17 @@ function RunHooks.CheckRoomExitsReadyHook(baseFun, ...)
     end
 end
 
+---@private
+function RunHooks.EndEarlyAccessPresentationWrapHook(baseFun)
+    local mainHero = CoopPlayers.GetMainHero()
+    mainHero.IsDead = false
+    for playerId, hero in CoopPlayers.AdditionalHeroesIterator() do
+        hero.IsDead = true
+    end
+    HeroContext.RunWithHeroContext(mainHero, baseFun)
+end
+
+---@private
 function RunHooks.KillHeroHook(baseFun, ...)
     CurrentRun.Hero.IsDead = true
     if not CoopPlayers.HasAlivePlayers() then
