@@ -187,11 +187,12 @@ function RunHooks.KillHeroHook(baseFun, ...)
         CoopPlayers.OnAllPlayersDead()
         return
     end
+    local aliveHero = CoopPlayers.GetAliveHeroes()[1]
+
     if CurrentRun.Hero == CoopPlayers.GetMainHero() then
         RunHooks.HideHero(CurrentRun.Hero)
 
-        local heroToChange = CoopPlayers.GetAliveHeroes()[1]
-        HeroContext.SetDefaultHero(heroToChange)
+        HeroContext.SetDefaultHero(aliveHero)
     else
         local playerId = CoopPlayers.GetPlayerByHero(CurrentRun.Hero)
         if playerId then
@@ -199,7 +200,7 @@ function RunHooks.KillHeroHook(baseFun, ...)
         end
     end
     -- Unstuck AI
-    EnemyAiHooks.RefreshAI()
+    HeroContext.RunWithHeroContext(aliveHero, EnemyAiHooks.RefreshAI)
 end
 
 ---@private
