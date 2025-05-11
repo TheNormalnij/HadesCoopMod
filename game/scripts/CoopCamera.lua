@@ -17,6 +17,7 @@ local CoopCamera = {}
 CoopCamera.isFocusEnabled = true
 
 function CoopCamera.InitHooks()
+    HookUtils.wrap("CreateRoom", CoopCamera.CreateRoomWrapHook)
     HookUtils.onPostFunction("draw", CoopCamera.Update)
     CoopCamera.LockCameraOrig = LockCamera
     LockCamera = CoopCamera.LockCamaraHook
@@ -62,6 +63,17 @@ function CoopCamera.Update()
 
     UnlockCamera()
     CoopCamera.LockCameraOrig { Ids = units, Duration = 0.0 }
+end
+
+---@private
+function CoopCamera.CreateRoomWrapHook(baseFunc, ...)
+    local room = baseFunc(...)
+    if not room.ZoomFraction then
+        room.ZoomFraction = 0.6
+    elseif room.ZoomFraction > 0.5 then
+        room.ZoomFraction = room.ZoomFraction * 0.6
+    end
+    return room
 end
 
 return CoopCamera

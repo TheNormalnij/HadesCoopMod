@@ -26,7 +26,6 @@ local PlayerVisibilityHelper = ModRequire "../PlayerVisibilityHelper.lua"
 local RunHooks = {}
 
 function RunHooks.InitHooks()
-    RunHooks.CreateRoomHooks()
     HookUtils.onPreFunction("LeaveRoom", RunHooks.LeaveRoomHook)
     HookUtils.onPreFunction("DeathAreaRoomTransition", RunHooks.DeathAreaRoomTransitionPreHook)
     HookUtils.wrap("EndEarlyAccessPresentation", RunHooks.EndEarlyAccessPresentationWrapHook)
@@ -175,21 +174,6 @@ function RunHooks.StartNewRunWrapHook(StartNewRunFun, prevRun, args)
     end
 
     return newRun
-end
-
----@private
-function RunHooks.CreateRoomHooks()
-    _CreateRoom = CreateRoom
-    CreateRoom = function(...)
-        local room = _CreateRoom(...)
-        if not room.ZoomFraction then
-            room.ZoomFraction = 0.6
-        elseif room.ZoomFraction > 0.5 then
-            room.ZoomFraction = room.ZoomFraction * 0.6
-        end
-
-        return room
-    end
 end
 
 --- Bypass IsAlive check with this hook
