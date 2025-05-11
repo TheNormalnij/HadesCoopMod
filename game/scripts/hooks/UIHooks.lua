@@ -5,6 +5,8 @@
 
 ---@type SecondPlayerUi
 local SecondPlayerUi = ModRequire "../SecondPlayerUI.lua"
+---@type CombinedTraitsUI
+local CombinedTraitsUI = ModRequire "../CombinedTraitsUI.lua"
 ---@type CoopPlayers
 local CoopPlayers = ModRequire "../CoopPlayers.lua"
 ---@type HeroContext
@@ -51,6 +53,13 @@ function UIHooks.SimpleHookWithVisibilityCheck(funcName)
             HeroContext.RunWithHeroContext(secondHero, SecondPlayerUi[funcName], ...)
         end
     end
+end
+
+---@private
+function UIHooks.SimpleCurrentTraitWrapper(funcName)
+    HookUtils.wrap(funcName, function(baseFun, ...)
+        HeroContext.RunWithHeroContext(CombinedTraitsUI.GetCurrentTraitHero(), baseFun, ...)
+    end)
 end
 
 function UIHooks.InitHooks()
@@ -222,16 +231,19 @@ function UIHooks.InitHooks()
     end
 
     -- Traits
-    HookUtils.onPreFunction("ShowAdvancedTooltip", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIActivateTrait", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIDeactivateTrait", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUICreateComponent", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIUpdateText", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIRemove", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUICreateText", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("UpdateTraitNumber", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("UpdateAdditionalTraitHint", SecondPlayerUi.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIActivateTraits", SecondPlayerUi.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("ShowAdvancedTooltip", CombinedTraitsUI.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUIActivateTrait", CombinedTraitsUI.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUIDeactivateTrait", CombinedTraitsUI.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUICreateComponent", CombinedTraitsUI.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUIUpdateText", CombinedTraitsUI.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUIRemove", CombinedTraitsUI.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUICreateText", CombinedTraitsUI.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("UpdateTraitNumber", CombinedTraitsUI.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("UpdateAdditionalTraitHint", CombinedTraitsUI.ChangeHeroInTraitsMenu)
+    HookUtils.onPreFunction("TraitUIActivateTraits", CombinedTraitsUI.ChangeHeroInTraitsMenu)
+
+    UIHooks.SimpleCurrentTraitWrapper("CloseAdvancedTooltipScreen")
+    UIHooks.SimpleCurrentTraitWrapper("PinTraitDetails")
 
     -- Etc
     local _PulseText = PulseText

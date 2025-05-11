@@ -7,12 +7,6 @@ local CoopPlayers = ModRequire "CoopPlayers.lua"
 ---@class SecondPlayerUi
 local SecondPlayerUi = {}
 
----@private
-SecondPlayerUi.isTraitsContextSwithInFrogress = false
-
----@private
-SecondPlayerUi.currentTraitsHero = nil
-
 local ScreenAnchorsSecondPlayer = {}
 
 SecondPlayerUi.ScreenAnchors = ScreenAnchorsSecondPlayer
@@ -695,90 +689,6 @@ function SecondPlayerUi.UpdateSuperMeterUIReal()
     ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.SuperMeterIcon, Text = "UI_SuperText", LuaKey = "TempTextData", LuaValue = { Current = math.floor(superMeterPoints), Maximum = CurrentRun.Hero.SuperMeterLimit } })
 
     UIScriptsDeferred.SuperMeterDirty = false
-end
-
----@private
-function SecondPlayerUi.ChangeHeroInTraitsMenu()
-    if SecondPlayerUi.isTraitsContextSwithInFrogress then
-        return
-    end
-
-    if SecondPlayerUi.currentTraitsHero then
-        if CurrentRun.Hero == SecondPlayerUi.currentTraitsHero then
-            return
-        end
-    else
-        if CurrentRun.Hero == CoopPlayers.GetMainHero() then
-            return
-        end
-    end
-
-    SecondPlayerUi.currentTraitsHero = CurrentRun.Hero
-
-    local function RemoveCurrentTraits(hero)
-        for k, trait in pairs(hero.Traits) do
-            TraitUIRemove(trait)
-        end
-        UpdateNumHiddenTraits()
-    end
-
-    local function AddCurrentTraits()
-        local showingTraits = {}
-
-        for index, traitData in pairs(CurrentRun.Hero.Traits) do
-            if showingTraits[traitData.Name] == nil or not AreTraitsIdentical(traitData, showingTraits[traitData.Name]) or (AreTraitsIdentical(traitData, showingTraits[traitData.Name]) and GetRarityValue(showingTraits[traitData.Name].Rarity) < GetRarityValue(traitData.Rarity)) then
-                if not showingTraits[traitData.Name] then
-                    showingTraits[traitData.Name] = {}
-                end
-                table.insert(showingTraits[traitData.Name], traitData)
-            end
-        end
-
-        for traitName, traitDatas in pairs(showingTraits) do
-            for i, traitData in pairs(traitDatas) do
-                TraitUIAdd(traitData, true)
-            end
-        end
-
-
-        if CurrentRun.EnemyUpgrades then
-            for k, upgradeName in pairs(CurrentRun.EnemyUpgrades) do
-                local upgradeData = EnemyUpgradeData[upgradeName]
-                TraitUIAdd(upgradeData, true)
-            end
-        end
-
-        local numHidden = GetNumHiddenTraits()
-        if numHidden > 0 then
-            UpdateAdditionalTraitHint(numHidden)
-            FadeObstacleIn({
-                Id = ScreenAnchors.AdditionalTraitHint,
-                Duration = CombatUI.FadeInDuration,
-                Distance =
-                    CombatUI.FadeDistance.Trait,
-                Direction = 0
-            })
-        end
-    end
-
-    SecondPlayerUi.isTraitsContextSwithInFrogress = true
-
-    local mainHero = CoopPlayers.GetMainHero()
-    local secondHero = CoopPlayers.GetHero(2)
-    if mainHero then
-        RemoveCurrentTraits(mainHero)
-    end
-    if secondHero then
-        RemoveCurrentTraits(secondHero)
-    end
-
-    AddCurrentTraits()
-    if CurrentRoom then
-        -- This check is invalid
-        TraitUIActivateTraits()
-    end
-
-    SecondPlayerUi.isTraitsContextSwithInFrogress = false
 end
 
 function SecondPlayerUi.Refresh()

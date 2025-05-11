@@ -9,9 +9,15 @@ local CoopPlayers = ModRequire "../CoopPlayers.lua"
 local HeroContext = ModRequire "../HeroContext.lua"
 ---@type HookUtils
 local HookUtils = ModRequire "../HookUtils.lua"
+---@type GameModifed
+local GameModifed = ModRequire "../GameModifed.lua"
 
 local _OnControlPressed = OnControlPressed
 OnControlPressed = function(args)
+    if args[1] == "AdvancedTooltip" then
+        -- override control here
+        args[2] = GameModifed.AdvancedTooltipModifedHandler
+    end
     _OnControlPressed {
         args[1],
         function(triggerArgs)
