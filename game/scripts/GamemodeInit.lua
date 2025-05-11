@@ -46,6 +46,9 @@ local function TryInstalBasicHooks()
 
     hooksInited = true
 
+    -- Fixes crash on loading when the game truing add last stand to a second player
+    ScreenAnchors = {}
+
     EnemyAiHooks.InitHooks()
     SaveHooks.InitHooks()
     CoopCamera.InitHooks()
