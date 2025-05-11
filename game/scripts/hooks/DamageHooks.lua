@@ -79,3 +79,8 @@ HeroContextWrapper.WrapTriggerHero("OnWeaponFailedToFire", "TriggeredByTable")
 HeroContextWrapper.WrapTriggerHero("OnWeaponCharging", "OwnerTable")
 HeroContextWrapper.WrapTriggerHero("OnWeaponChargeCanceled", "OwnerTable")
 HeroContextWrapper.WrapTriggerHero("OnPerfectChargeWindowEntered", "OwnerTable")
+
+HeroContextWrapper.WrapTriggerHero("OnEffectApply", "TriggeredByTable")
+HeroContextWrapper.WrapTriggerHero("OnEffectCleared", "TriggeredByTable")
+HeroContextWrapper.WrapTriggerHero("OnEffectStackDecrease", "TriggeredByTable")
+HeroContextWrapper.WrapTriggerHero("OnEffectDelayedKnockbackForce", "TriggeredByTable")
