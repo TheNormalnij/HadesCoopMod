@@ -9,6 +9,10 @@ local CoopPlayers = ModRequire "../CoopPlayers.lua"
 local HookUtils = ModRequire "../HookUtils.lua"
 ---@type HeroContext
 local HeroContext = ModRequire "../HeroContext.lua"
+---@type HeroContextProxyStore
+local HeroContextProxyStore = ModRequire "../HeroContextProxyStore.lua"
+---@type TableUtils
+local TableUtils = ModRequire "../TableUtils.lua"
 
 ---@class EnemyAiHooks
 local EnemyAiHooks = {}
@@ -17,6 +21,7 @@ function EnemyAiHooks.InitHooks()
     HookUtils.wrap("NotifyWithinDistance", EnemyAiHooks.NotifyWithinDistanceHook)
     HookUtils.wrap("GetTargetId", EnemyAiHooks.GetTargetIdHook)
     HookUtils.wrap("IsAIActive", EnemyAiHooks.IsAIActiveHook)
+    HookUtils.replace("SelectTheseusGod", EnemyAiHooks.SelectTheseusGodHook)
 end
 
 ---@private
@@ -103,6 +108,32 @@ function EnemyAiHooks.IsAIActiveHook(baseFun, ...)
     else
         return baseFun(...)
     end
+end
+
+function EnemyAiHooks.SelectTheseusGodHook(enemy)
+    local allUsedGods
+
+    local LootTypeHistoryProxy = HeroContextProxyStore.Get("LootTypeHistory")
+    if LootTypeHistoryProxy then
+        allUsedGods = {}
+        for playerId = 1, CoopPlayers.GetPlayersCount() do
+            TableUtils.copyTo(allUsedGods, LootTypeHistoryProxy:GetPlayerData(playerId))
+        end
+    else
+        allUsedGods = CurrentRun.LootTypeHistory
+    end
+
+    local unusedGods = {}
+    for name, lootData in pairs(LootData) do
+        if lootData.GodLoot and not lootData.DebugOnly and not allUsedGods[name] and IsGameStateEligible(CurrentRun, lootData) then
+            table.insert(unusedGods, name)
+        end
+    end
+
+    local godName = GetRandomValue(unusedGods) or "ArtemisUpgrade"
+
+    enemy.TheseusGodName = godName
+	LoadPackages{ Names = godName }
 end
 
 return EnemyAiHooks
