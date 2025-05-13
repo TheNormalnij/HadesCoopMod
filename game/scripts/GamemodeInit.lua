@@ -37,6 +37,7 @@ local ResourceLoadingHooks = ModRequire "hooks/ResourceLoadingHooks.lua"
 ModRequire "hooks/DamageHooks.lua"
 ModRequire "hooks/UseHooks.lua"
 ModRequire "hooks/ControlHooks.lua"
+ModRequire "hooks/WeaponHooks.lua"
 
 local hooksInited = false
 local function TryInstalBasicHooks()
