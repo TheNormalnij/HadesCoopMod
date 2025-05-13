@@ -314,9 +314,16 @@ function SecondPlayerUi.UpdateAmmoUI()
     end
     local ammoData =
     {
-        Current = GetWeaponProperty({ Id = hero.ObjectId, WeaponName = "RangedWeapon", Property = "Ammo" }),
-        Maximum = GetWeaponMaxAmmo({ Id = hero.ObjectId, WeaponName = "RangedWeapon" })
+        Current = GetWeaponProperty{ Id = hero.ObjectId, WeaponName = "RangedWeapon", Property = "Ammo" },
+        Maximum = GetWeaponMaxAmmo{ Id = hero.ObjectId, WeaponName = "RangedWeapon" }
     }
+
+    if ammoData.Current == nil then
+        -- The player wasn't initialized yet
+        return
+    end
+
+
     PulseText({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, ScaleTarget = 1.04, ScaleDuration = 0.05, HoldDuration = 0.05, PulseBias = 0.02 })
     ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Text = "UI_AmmoText", OffsetY = -2, LuaKey = "TempTextData", LuaValue =
     ammoData, AutoSetDataProperties = false, })

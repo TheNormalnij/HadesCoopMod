@@ -112,7 +112,7 @@ function RunHooks.HandleGenericRoom(StartRoomFun, run, currentRoom)
                 CoopPlayers.InitCoopUnit(playerId)
             end
         end
-        SecondPlayerUi.UpdateAmmoUI()
+        SecondPlayerUi.Refresh()
 
         CoopPlayers.UpdateMainHero()
 
