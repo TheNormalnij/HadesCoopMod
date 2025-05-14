@@ -36,7 +36,7 @@ local Config = {
         OutlineThickness = 3,
         OutlineColor = { 0, 0, 0, 1 },
         Font = "AlegreyaSansSCRegular",
-        ustification = "Center"
+        Justification = "Center"
     }
 }
 
