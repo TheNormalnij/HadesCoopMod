@@ -5,29 +5,25 @@
 
 ---@type HookUtils
 local HookUtils = ModRequire "../HookUtils.lua"
----@type HeroContext
-local HeroContext = ModRequire "../HeroContext.lua"
 ---@type HeroContextProxy
 local HeroContextProxy = ModRequire "../HeroContextProxy.lua"
 ---@type HeroContextProxyStore
 local HeroContextProxyStore = ModRequire "../HeroContextProxyStore.lua"
----@type CoopPlayers
-local CoopPlayers = ModRequire "../CoopPlayers.lua"
+
+---@type ILootDelivery
+local LootDelivery = ModRequire "../loot/LootInterface.lua"
 
 ---@class LootHooks
 local LootHooks = {}
 
 ---@private
 ---@type table | nil
-LootHooks.ForceNextLootHero = nil
-
----@private
-LootHooks.LootHeroCount = 1
+LootHooks.BlindLootHero = nil
 
 function LootHooks.InitHooks()
     -- Select hero for blind loot
     HookUtils.onPreFunction("UnwrapRandomLoot", function()
-        LootHooks.ForceNextLootHero = CurrentRun.Hero
+        LootHooks.BlindLootHero = CurrentRun.Hero
     end)
 
     HookUtils.onPostFunction("UnwrapRandomLoot", function()
@@ -50,14 +46,6 @@ function LootHooks.InitHooks()
     LootHooks.InitLootHistoryProxy()
 end
 
----@param heroesCount number
-function LootHooks.Reset(heroesCount)
-    LootHooks.InitLootHistoryProxy()
-
-    LootHooks.LootHeroCount = heroesCount
-    CurrentRun.CoopLootCounter = CurrentRun.CoopLootCounter or RandomInt(1, heroesCount)
-end
-
 ---@private
 function LootHooks.InitLootHistoryProxy()
     local proxyHandler = HeroContextProxy.New(CurrentRun, "LootTypeHistory")
@@ -66,48 +54,20 @@ end
 
 ---@private
 function LootHooks.GiveLootHook(baseFun, args)
-    local hero = LootHooks.UseForcedLootHero()
+    local hero = LootHooks.UseBlindLootHero()
     if hero then
-        return HeroContext.RunWithHeroContextReturn(hero, baseFun, args)
+        return LootDelivery.GiveBlindLoot(baseFun, hero, args)
     else
-        return baseFun(args)
+        return LootDelivery.GiveLoot(baseFun, args)
     end
 end
 
 ---@private
-function LootHooks.UseForcedLootHero()
-    if LootHooks.ForceNextLootHero then
-        local hero = LootHooks.ForceNextLootHero
-        LootHooks.ForceNextLootHero = nil
+function LootHooks.UseBlindLootHero()
+    if LootHooks.BlindLootHero then
+        local hero = LootHooks.BlindLootHero
+        LootHooks.BlindLootHero = nil
         return hero
-    end
-end
-
----@private
----@return number | nil
-function LootHooks.UseNextHeroForLoot()
-    if LootHooks.LootHeroCount <= 1 then
-        return
-    end
-
-    local startPos = CurrentRun.CoopLootCounter
-    local playerIndex = startPos + 1
-    while true do
-        if playerIndex > LootHooks.LootHeroCount then
-            playerIndex = 1
-        end
-
-        if playerIndex == startPos then
-            return
-        end
-
-        local hero = CoopPlayers.GetHero(playerIndex)
-        if not hero.IsDead then
-            CurrentRun.CoopLootCounter = playerIndex
-            return playerIndex
-        end
-
-        playerIndex = playerIndex + 1
     end
 end
 
@@ -117,47 +77,15 @@ function LootHooks.DoUnlockRoomExitsHook(baseFun, run, room)
         return baseFun(run, room)
     end
 
-    local playerIndex = LootHooks.UseNextHeroForLoot()
-    if playerIndex then
-        room.CoopModPlayerId = playerIndex
-        HeroContext.RunWithHeroContext(CoopPlayers.GetHero(playerIndex), baseFun, run, room)
-    else
-        baseFun(run, room)
-    end
+    LootDelivery.OnUnlockedRewardedRoom(baseFun, run, room)
 end
 
 ---@private
 function LootHooks.SpawnRoomRewardHook(baseFun, ...)
-    local room = CurrentRun.CurrentRoom
-    local roomRewardPredefinedPlayerId = room.CoopModPlayerId
-
     -- Fix #16
-    room.DisableRewardMagnetisim = true
+    CurrentRun.CurrentRoom.DisableRewardMagnetisim = true
 
-    local hero = roomRewardPredefinedPlayerId and CoopPlayers.GetHero(roomRewardPredefinedPlayerId) or CurrentRun.Hero
-
-    if hero.IsDead then
-        local alternativePlayerIndex
-        if roomRewardPredefinedPlayerId then
-            alternativePlayerIndex = LootHooks.UseNextHeroForLoot()
-
-            if not alternativePlayerIndex then
-                DebugPrint { Text = "Cannot spawn a loot for a player. Cannot choose alternative hero" }
-                return baseFun(...)
-            end
-
-            hero = CoopPlayers.GetHero(alternativePlayerIndex)
-        else
-            hero = CoopPlayers.GetAliveHeroes()[1]
-
-            if not hero then
-                DebugPrint { Text = "Cannot spawn a loot for a player. All players are dead" }
-                return baseFun(...)
-            end
-        end
-    end
-
-    HeroContext.RunWithHeroContextAwait(hero, baseFun, ...)
+    LootDelivery.SpawnRoomReward(baseFun, ...)
 end
 
 ---@private

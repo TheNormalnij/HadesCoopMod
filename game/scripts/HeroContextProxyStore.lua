@@ -3,6 +3,9 @@
 -- Licensed under the MIT license. See LICENSE file in the project root for details.
 --
 
+---@type HeroContextProxy
+local HeroContextProxy = ModRequire "HeroContextProxy.lua"
+
 ---@class HeroContextProxyStore
 local HeroContextProxyStore = {}
 
@@ -19,6 +22,19 @@ end
 ---@return HeroContextProxy | nil
 function HeroContextProxyStore.Get(key)
     return store[key]
+end
+
+---@param key string
+---@return HeroContextProxy
+function HeroContextProxyStore.GetOrCreate(key)
+    local proxy = store[key]
+    if proxy then
+        return proxy
+    else
+        proxy = HeroContextProxy.New(CurrentRun, "LootTypeHistory")
+        HeroContextProxyStore.Set("LootTypeHistory", proxy)
+        return proxy
+    end
 end
 
 ---@return fun(store: table<string, HeroContextProxy>, index?: string): string, HeroContextProxy

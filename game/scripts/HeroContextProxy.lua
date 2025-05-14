@@ -100,4 +100,13 @@ function HeroContextProxy:CleanProxyTable()
     TableUtils.clean(self.target)
 end
 
+function HeroContextProxy:Reset()
+    local separatedData = self.separatedData
+    for playerId = 1, CoopPlayers.GetPlayersCount() do
+        TableUtils.clean(separatedData[playerId])
+    end
+
+    TableUtils.clean(self.target)
+end
+
 return HeroContextProxy

@@ -5,6 +5,7 @@
 
 ---@class CoopModConfig
 local Config = {
+    LootDelivery = "Shared",
     Player1HasOutline = true;
     Player1Outline = {
         R = 0,
