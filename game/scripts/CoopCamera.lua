@@ -20,7 +20,7 @@ function CoopCamera.InitHooks()
     HookUtils.wrap("CreateRoom", CoopCamera.CreateRoomWrapHook)
     HookUtils.onPostFunction("draw", CoopCamera.Update)
     CoopCamera.LockCameraOrig = LockCamera
-    LockCamera = CoopCamera.LockCamaraHook
+    LockCamera = CoopCamera.LockCameraHook
 end
 
 ---@param state boolean
@@ -28,7 +28,7 @@ function CoopCamera.ForceFocus(state)
     CoopCamera.isFocusEnabled = state
 end
 
-function CoopCamera.LockCamaraHook(args)
+function CoopCamera.LockCameraHook(args)
     local mainPlayerId  = CoopPlayers.GetMainHero().ObjectId
     if mainPlayerId and args.Id == mainPlayerId then
         CoopCamera.isFocusEnabled = true

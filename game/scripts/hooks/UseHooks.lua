@@ -7,6 +7,8 @@
 local CoopPlayers = ModRequire "../CoopPlayers.lua"
 ---@type HeroContext
 local HeroContext = ModRequire "../HeroContext.lua"
+---@type ILootDelivery
+local LootDelivery = ModRequire "../loot/LootInterface.lua"
 
 local _OnUsed = OnUsed
 OnUsed = function(args)
@@ -84,13 +86,18 @@ OnUsed = function(args)
         _OnUsed({
             args[1],
             function(triggerArgs)
+                local hero = CoopPlayers.GetHeroByUnit(triggerArgs.UserId)
+                if not LootDelivery.CanUseHeroLoot(triggerArgs.AttachedTable, hero) then
+                    return
+                end
+
                 -- Regenerate traits in loot
-                -- Pregenarated loot can contains unsupported loot
+                -- Pregenerated loot can contains unsupported loot
                 -- for a second hero
                 triggerArgs.AttachedTable.UpgradeOptions = nil
 
                 HeroContext.RunWithHeroContext(
-                    CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
+                    hero,
                     args[2],
                     triggerArgs
                 )

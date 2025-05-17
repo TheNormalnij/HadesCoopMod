@@ -9,19 +9,20 @@ local HeroContext = ModRequire "../HeroContext.lua"
 local CoopPlayers = ModRequire "../CoopPlayers.lua"
 ---@type HeroContextProxyStore
 local HeroContextProxyStore = ModRequire "../HeroContextProxyStore.lua"
+---@type LootQuery
+local LootQuery = ModRequire "LootQuery.lua"
 
 ---@class LootShared : ILootDelivery
 local LootShared = {}
 
----@private
-LootShared.LootHeroCount = 1
+function LootShared.InitHooks()
+end
 
 ---@param baseFun fun(run: table, room: table)
 ---@param run table
 ---@param room table
 function LootShared.OnUnlockedRewardedRoom(baseFun, run, room)
-
-    local playerIndex = LootShared.UseNextHeroForLoot()
+    local playerIndex = LootQuery.UseNextHeroForLoot()
     if playerIndex then
         room.CoopModPlayerId = playerIndex
         HeroContext.RunWithHeroContext(CoopPlayers.GetHero(playerIndex), baseFun, run, room)
@@ -42,7 +43,7 @@ function LootShared.SpawnRoomReward(baseFun, eventSource, args)
     if hero.IsDead then
         local alternativePlayerIndex
         if roomRewardPredefinedPlayerId then
-            alternativePlayerIndex = LootShared.UseNextHeroForLoot()
+            alternativePlayerIndex = LootQuery.UseNextHeroForLoot()
 
             if not alternativePlayerIndex then
                 DebugPrint { Text = "Cannot spawn a loot for a player. Cannot choose alternative hero" }
@@ -63,48 +64,31 @@ function LootShared.SpawnRoomReward(baseFun, eventSource, args)
     HeroContext.RunWithHeroContextAwait(hero, baseFun, eventSource, args)
 end
 
----@private
----@return number | nil
-function LootShared.UseNextHeroForLoot()
-    if LootShared.LootHeroCount <= 1 then
-        return
-    end
-
-    local startPos = CurrentRun.CoopLootCounter
-    local playerIndex = startPos + 1
-    while true do
-        if playerIndex > LootShared.LootHeroCount then
-            playerIndex = 1
-        end
-
-        if playerIndex == startPos then
-            return
-        end
-
-        local hero = CoopPlayers.GetHero(playerIndex)
-        if not hero.IsDead then
-            CurrentRun.CoopLootCounter = playerIndex
-            return playerIndex
-        end
-
-        playerIndex = playerIndex + 1
-    end
-end
-
 ---@param heroesCount number
 function LootShared.Reset(heroesCount)
     HeroContextProxyStore.GetOrCreate("LootTypeHistory"):Reset()
-
-    LootShared.LootHeroCount = heroesCount
-    CurrentRun.CoopLootCounter = CurrentRun.CoopLootCounter or RandomInt(1, heroesCount)
+    LootQuery.Reset(heroesCount)
 end
 
+---@param baseFun fun(args: table): table
+---@param hero table
+---@param args table
+---@return table
 function LootShared.GiveBlindLoot(baseFun, hero, args)
     return HeroContext.RunWithHeroContextReturn(hero, baseFun, args)
 end
 
+---@param baseFun fun(args: table): table
+---@param args table
+---@return table
 function LootShared.GiveLoot(baseFun, args)
     return baseFun(args)
+end
+
+---@param loot table
+---@param hero table
+function LootShared.CanUseHeroLoot(loot, hero)
+    return true
 end
 
 return LootShared

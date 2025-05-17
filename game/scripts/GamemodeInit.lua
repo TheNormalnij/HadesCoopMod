@@ -33,6 +33,8 @@ local UIHooks = ModRequire "hooks/UIHooks.lua"
 local VulnerabilityHooks = ModRequire "hooks/VulnerabilityHooks.lua"
 ---@type ResourceLoadingHooks
 local ResourceLoadingHooks = ModRequire "hooks/ResourceLoadingHooks.lua"
+---@type ILootDelivery
+local LootDelivery = ModRequire "loot/LootInterface.lua"
 
 ModRequire "hooks/DamageHooks.lua"
 ModRequire "hooks/UseHooks.lua"
@@ -62,6 +64,7 @@ local function TryInstalBasicHooks()
     LootHooks.InitHooks()
     VulnerabilityHooks.InitHooks()
     ResourceLoadingHooks.InitHooks()
+    LootDelivery.InitHooks()
 end
 
 OnPreThingCreation
