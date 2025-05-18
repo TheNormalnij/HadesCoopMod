@@ -33,6 +33,15 @@ LootRoomDuplicated.CurrentHeroChooser = nil
 ---@type number?
 LootRoomDuplicated.TagNextLootForPlayer = nil
 
+---@private
+LootRoomDuplicated.DuplicatedRewards = {
+    StackUpgrade = true;
+    WeaponUpgrade = true;
+    HermesUpgrade = true;
+    Boon = true;
+    TrialUpgrade = true;
+}
+
 function LootRoomDuplicated.InitHooks()
     HookUtils.wrap("CheckSpecialDoorRequirement", LootRoomDuplicated.CheckSpecialDoorRequirementWrap)
     HookUtils.wrap("CreateLoot", LootRoomDuplicated.CreateLootWrap)
@@ -63,11 +72,13 @@ end
 ---@param eventSource table
 ---@param args table
 function LootRoomDuplicated.SpawnRoomReward(baseFun, eventSource, args)
-    if eventSource.RewardStoreName == "MetaProgress" then
+    local room = CurrentRun.CurrentRoom
+    local rewardType = room.ChangeReward or room.ChosenRewardType
+
+    if not LootRoomDuplicated.DuplicatedRewards[rewardType] then
         return baseFun(eventSource, args)
     end
 
-    local room = CurrentRun.CurrentRoom
     for playerId, hero in CoopPlayers.PlayersIterator() do
         local lootParams = LootRoomDuplicated.ChosenPlayerLoot[playerId] or {}
         if not hero.IsDead then
