@@ -46,4 +46,29 @@ function TableUtils.clean(t)
     end
 end
 
+---@generic V
+---@param t table<number, V>
+---@return V?
+function TableUtils.last(t)
+    if t == nil or #t == 0 then
+        return nil
+    end
+    return t[#t]
+end
+
+---@generic V
+---@param t table<number, V>
+---@return V?
+function TableUtils.after(t, v)
+    if t == nil then
+        return nil
+    end
+    for i = 1, #t do
+        if t[i] == v then
+            return t[i + 1]
+        end
+    end
+    return nil
+end
+
 return TableUtils

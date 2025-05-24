@@ -13,6 +13,8 @@ local CoopPlayers = ModRequire "../CoopPlayers.lua"
 local HeroContextProxyStore = ModRequire "../HeroContextProxyStore.lua"
 ---@type LootQuery
 local LootQuery = ModRequire "LootQuery.lua"
+---@type TableUtils
+local TableUtils = ModRequire "../TableUtils.lua"
 
 ---@class LootRoomDuplicated : ILootDelivery
 local LootRoomDuplicated = {}
@@ -26,12 +28,20 @@ local LootRoomDuplicated = {}
 LootRoomDuplicated.ChosenPlayerLoot = {}
 
 ---@private
----@type table
+---@type table?
 LootRoomDuplicated.CurrentHeroChooser = nil
 
 ---@private
 ---@type number?
 LootRoomDuplicated.TagNextLootForPlayer = nil
+
+---@private
+---@type boolean?
+LootRoomDuplicated.ShouldSkipLoadingNextMap = nil
+
+---@private
+---@type fun(run: table, room: table)
+LootRoomDuplicated.UnlockRewardedRoomOrig = nil
 
 ---@private
 LootRoomDuplicated.DuplicatedRewards = {
@@ -45,12 +55,23 @@ LootRoomDuplicated.DuplicatedRewards = {
 function LootRoomDuplicated.InitHooks()
     HookUtils.wrap("CheckSpecialDoorRequirement", LootRoomDuplicated.CheckSpecialDoorRequirementWrap)
     HookUtils.wrap("CreateLoot", LootRoomDuplicated.CreateLootWrap)
+    HookUtils.wrap("LeaveRoom", LootRoomDuplicated.LeaveRoomWrap)
+    HookUtils.wrap("FullScreenFadeOutAnimation", LootRoomDuplicated.FullScreenFadeOutAnimationWrap)
+end
+
+---@private
+function LootRoomDuplicated.ResetRoomLootState()
+    LootRoomDuplicated.ShouldSkipLoadingNextMap = CurrentRun.CurrentRoom.SkipLoadNextMap
 end
 
 ---@param baseFun fun(run: table, room: table)
 ---@param run table
 ---@param room table
 function LootRoomDuplicated.OnUnlockedRewardedRoom(baseFun, run, room)
+    LootRoomDuplicated.UnlockRewardedRoomOrig = baseFun
+
+    LootRoomDuplicated.ResetRoomLootState()
+
     local firstAliveHero = CoopPlayers.GetAliveHeroes()[1]
     if not firstAliveHero then
         -- Fallback. This case should not happen.
@@ -88,6 +109,8 @@ function LootRoomDuplicated.SpawnRoomReward(baseFun, eventSource, args)
             HeroContext.RunWithHeroContextAwait(hero, baseFun, eventSource, args)
         end
     end
+
+    LootRoomDuplicated.ChosenPlayerLoot = {}
 end
 
 ---@param heroesCount number
@@ -112,14 +135,19 @@ function LootRoomDuplicated.GiveLoot(baseFun, args)
 end
 
 ---@private
-function LootRoomDuplicated.CheckSpecialDoorRequirementWrap(baseFun, room)
-    local currentBlocker = baseFun(room)
+function LootRoomDuplicated.CheckSpecialDoorRequirementWrap(baseFun, door)
+    local currentBlocker = baseFun(door)
     if currentBlocker then
         return currentBlocker
     end
 
     if LootRoomDuplicated.CurrentHeroChooser == nil then
         return nil
+    end
+
+    -- Special case for secret (chaos) door
+    if LootRoomDuplicated.IsDoorSpecial(door) and not LootRoomDuplicated.IsSpecialDoorAllowed() then
+        return "ExitNotActive"
     end
 
     if LootRoomDuplicated.CurrentHeroChooser ~= CurrentRun.Hero then
@@ -152,6 +180,97 @@ function LootRoomDuplicated.CanUseHeroLoot(loot, hero)
         return true
     end
     return loot.CoopChoosenPlayer == CoopPlayers.GetPlayerByHero(hero)
+end
+
+---@return boolean
+function LootRoomDuplicated.IsSpecialDoorAllowed()
+    -- Any player can choose this door, if any doors wasn't used yet
+    return CoopPlayers.GetAliveHeroes()[1] == LootRoomDuplicated.CurrentHeroChooser
+end
+
+---@return boolean
+function LootRoomDuplicated.IsDoorSpecial(door)
+    -- chaos door or challenge room
+    return door.OnUsedPresentationFunctionName == "SecretDoorUsedPresentation" or
+        door.OnUsedPresentationFunctionName == "ShrinePointDoorUsedPresentation"
+end
+
+---@private
+function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
+    if LootRoomDuplicated.CurrentHeroChooser == nil
+        or LootRoomDuplicated.IsDoorSpecial(door)
+    then
+        CurrentRun.CurrentRoom.SkipLoadNextMap = LootRoomDuplicated.ShouldSkipLoadingNextMap
+        return baseFun(currentRun, door)
+    end
+
+    local playerId = CoopPlayers.GetPlayerByHero(CurrentRun.Hero)
+    local room = door.Room
+
+    LootRoomDuplicated.ChosenPlayerLoot[playerId] = {
+        rewardType = room.ChosenRewardType,
+        lootName = room.ForceLootName
+    }
+
+    local aliveHeroes = CoopPlayers.GetAliveHeroes()
+
+    local isLastChoiser = TableUtils.last(aliveHeroes) == LootRoomDuplicated.CurrentHeroChooser
+    if isLastChoiser then
+        CurrentRun.CurrentRoom.SkipLoadNextMap = LootRoomDuplicated.ShouldSkipLoadingNextMap
+    else
+        CurrentRun.CurrentRoom.SkipLoadNextMap = true
+    end
+
+    baseFun(currentRun, door)
+
+    if isLastChoiser then
+        LootRoomDuplicated.UnlockAllPlayers()
+    else
+        AddInputBlock {
+            PlayerIndex = playerId,
+            Name = "LootRoomDuplicated"
+        }
+
+        LootRoomDuplicated.UnvalidateDoorRewards()
+
+        LootRoomDuplicated.CurrentHeroChooser = TableUtils.after(aliveHeroes, CurrentRun.Hero)
+
+        HeroContext.RunWithHeroContextAwait(LootRoomDuplicated.CurrentHeroChooser, LootRoomDuplicated.UnlockRewardedRoomOrig, currentRun, door)
+    end
+end
+
+---@private
+function LootRoomDuplicated.UnvalidateDoorRewards()
+    for doorObjectId, door in pairs(OfferedExitDoors) do
+        if door.IsDefaultDoor then
+            door.NeedsReward = true
+            door.Room = nil
+        end
+    end
+end
+
+---@private
+function LootRoomDuplicated.UnlockAllPlayers()
+    for playerId, hero in CoopPlayers.PlayersIterator() do
+        if hero and not hero.IsDead then
+            RemoveInputBlock{
+                PlayerIndex = playerId,
+                Name = "LootRoomDuplicated"
+            }
+        end
+    end
+end
+
+---@private
+function LootRoomDuplicated.FullScreenFadeOutAnimationWrap(baseFun, ...)
+    if LootRoomDuplicated.CurrentHeroChooser == nil then
+        return baseFun(...)
+    end
+
+    local isLastChoiser = TableUtils.last(CoopPlayers.GetAliveHeroes()) == LootRoomDuplicated.CurrentHeroChooser
+    if isLastChoiser then
+        baseFun(...)
+    end
 end
 
 return LootRoomDuplicated
