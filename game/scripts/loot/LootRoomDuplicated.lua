@@ -231,11 +231,10 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
             Name = "LootRoomDuplicated"
         }
 
-        LootRoomDuplicated.UnvalidateDoorRewards()
-
         LootRoomDuplicated.CurrentHeroChooser = TableUtils.after(aliveHeroes, CurrentRun.Hero)
 
-        HeroContext.RunWithHeroContextAwait(LootRoomDuplicated.CurrentHeroChooser, LootRoomDuplicated.UnlockRewardedRoomOrig, currentRun, door)
+        HeroContext.RunWithHeroContextAwait(LootRoomDuplicated.CurrentHeroChooser,
+            LootRoomDuplicated.UnvalidateDoorRewards, currentRun, door)
     end
 end
 
@@ -243,8 +242,12 @@ end
 function LootRoomDuplicated.UnvalidateDoorRewards()
     for doorObjectId, door in pairs(OfferedExitDoors) do
         if door.IsDefaultDoor then
-            door.NeedsReward = true
-            door.Room = nil
+            local room = door.Room
+            SetupRoomReward(CurrentRun, room, {},
+                { Door = door, IgnoreForceLootName = room.IgnoreForceLootName })
+            CreateDoorRewardPreview(door)
+            thread(ExitDoorUnlockedPresentation, door)
+            door.ReadyToUse = true
         end
     end
 end
