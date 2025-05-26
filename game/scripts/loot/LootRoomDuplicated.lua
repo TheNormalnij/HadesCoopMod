@@ -44,12 +44,17 @@ LootRoomDuplicated.ShouldSkipLoadingNextMap = nil
 LootRoomDuplicated.UnlockRewardedRoomOrig = nil
 
 ---@private
+LootRoomDuplicated.RewardChoiseInProgress = false
+
+---@private
 LootRoomDuplicated.DuplicatedRewards = {
     StackUpgrade = true;
     WeaponUpgrade = true;
     HermesUpgrade = true;
     Boon = true;
     TrialUpgrade = true;
+    Health = true;
+    Money = true;
 }
 
 function LootRoomDuplicated.InitHooks()
@@ -110,8 +115,6 @@ function LootRoomDuplicated.SpawnRoomReward(baseFun, eventSource, args)
             HeroContext.RunWithHeroContextAwait(hero, baseFun, eventSource, args)
         end
     end
-
-    LootRoomDuplicated.ChosenPlayerLoot = {}
 end
 
 ---@param heroesCount number
@@ -205,6 +208,12 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
         return baseFun(currentRun, door)
     end
 
+    if not LootRoomDuplicated.RewardChoiseInProgress then
+        LootRoomDuplicated.RewardChoiseInProgress = true
+        LootRoomDuplicated.ChosenPlayerLoot = {}
+        SetPlayerInvulnerable("LootRoomDuplicated")
+    end
+
     local playerId = CoopPlayers.GetPlayerByHero(CurrentRun.Hero)
     local room = door.Room
 
@@ -225,7 +234,9 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
     baseFun(currentRun, door)
 
     if isLastChoiser then
+        LootRoomDuplicated.RewardChoiseInProgress = false
         LootRoomDuplicated.UnlockAllPlayers()
+        SetPlayerVulnerable("LootRoomDuplicated")
     else
         AddInputBlock {
             PlayerIndex = playerId,
@@ -241,10 +252,12 @@ end
 
 ---@private
 function LootRoomDuplicated.UnvalidateDoorRewards()
+    local currentRewards = {}
     for doorObjectId, door in pairs(OfferedExitDoors) do
         if door.IsDefaultDoor then
             local room = door.Room
-            SetupRoomReward(CurrentRun, room, {},
+            room.ForceLootName = nil
+            SetupRoomReward(CurrentRun, room, currentRewards,
                 { Door = door, IgnoreForceLootName = room.IgnoreForceLootName })
             CreateDoorRewardPreview(door)
             thread(ExitDoorUnlockedPresentation, door)
