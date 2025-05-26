@@ -57,6 +57,7 @@ function LootRoomDuplicated.InitHooks()
     HookUtils.wrap("CreateLoot", LootRoomDuplicated.CreateLootWrap)
     HookUtils.wrap("LeaveRoom", LootRoomDuplicated.LeaveRoomWrap)
     HookUtils.wrap("FullScreenFadeOutAnimation", LootRoomDuplicated.FullScreenFadeOutAnimationWrap)
+    HookUtils.wrap("IsGameStateEligible", LootRoomDuplicated.IsGameStateEligibleWrap)
 end
 
 ---@private
@@ -274,6 +275,15 @@ function LootRoomDuplicated.FullScreenFadeOutAnimationWrap(baseFun, ...)
     if isLastChoiser then
         baseFun(...)
     end
+end
+
+---@private
+-- Disable this room temporarily
+function LootRoomDuplicated.IsGameStateEligibleWrap(baseFun, currentRun, source, requirements, args)
+    if source and source.Name == "Devotion" then
+        return false
+    end
+    return baseFun(currentRun, source, requirements, args)
 end
 
 return LootRoomDuplicated
