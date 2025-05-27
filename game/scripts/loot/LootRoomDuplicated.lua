@@ -15,6 +15,8 @@ local HeroContextProxyStore = ModRequire "../HeroContextProxyStore.lua"
 local LootQuery = ModRequire "LootQuery.lua"
 ---@type TableUtils
 local TableUtils = ModRequire "../TableUtils.lua"
+---@type HeroEx
+local HeroEx = ModRequire "../HeroEx.lua"
 
 ---@class LootRoomDuplicated : ILootDelivery
 local LootRoomDuplicated = {}
@@ -101,6 +103,8 @@ end
 function LootRoomDuplicated.SpawnRoomReward(baseFun, eventSource, args)
     local room = CurrentRun.CurrentRoom
     local rewardType = room.ChangeReward or room.ChosenRewardType
+
+    DebugPrint{ Text = "rewardType " .. tostring(rewardType) }
 
     if not LootRoomDuplicated.DuplicatedRewards[rewardType] then
         return baseFun(eventSource, args)
@@ -245,8 +249,27 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
 
         LootRoomDuplicated.CurrentHeroChooser = TableUtils.after(aliveHeroes, CurrentRun.Hero)
 
+        LootRoomDuplicated.UnvalidateDoorRewardsPresentation(currentRun, door)
+
         HeroContext.RunWithHeroContextAwait(LootRoomDuplicated.CurrentHeroChooser,
-            LootRoomDuplicated.UnvalidateDoorRewards, currentRun, door)
+            LootRoomDuplicated.UnvalidateDoorRewards)
+    end
+end
+
+---@private
+function LootRoomDuplicated.UnvalidateDoorRewardsPresentation(run, door)
+    if door.ExitFunctionName == "AsphodelLeaveRoomPresentation" then
+        wait(1.0)
+
+        FullScreenFadeOutAnimation()
+
+        local hero = CurrentRun.Hero
+        HeroEx.HideHero(hero)
+
+        local heroExitPointId = GetClosest{ Id = door.ObjectId, DestinationIds = GetIdsByType{ Name = "HeroExit" }, Distance = 500 }
+        Move { Id = door.ObjectId, DestinationId = heroExitPointId, Duration = 0.01 }
+
+        FullScreenFadeInAnimation()
     end
 end
 
@@ -255,8 +278,15 @@ function LootRoomDuplicated.UnvalidateDoorRewards()
     local currentRewards = {}
     for doorObjectId, door in pairs(OfferedExitDoors) do
         if door.IsDefaultDoor then
+            if door.DoorIconId ~= nil then
+                Destroy { Ids = { door.DoorIconBackingId, door.DoorIconId, door.DoorIconFront } }
+                Destroy { Ids = door.AdditionalIcons }
+                Destroy { Ids = door.AdditionalAttractIds }
+            end
+
             local room = door.Room
             room.ForceLootName = nil
+            room.RewardOverrides = nil
             SetupRoomReward(CurrentRun, room, currentRewards,
                 { Door = door, IgnoreForceLootName = room.IgnoreForceLootName })
             CreateDoorRewardPreview(door)

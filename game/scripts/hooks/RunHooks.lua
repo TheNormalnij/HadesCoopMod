@@ -21,6 +21,8 @@ local SecondPlayerUi = ModRequire "../SecondPlayerUI.lua"
 local RunEx = ModRequire "../RunEx.lua"
 ---@type PlayerVisibilityHelper
 local PlayerVisibilityHelper = ModRequire "../PlayerVisibilityHelper.lua"
+---@type HeroEx
+local HeroEx = ModRequire "../HeroEx.lua"
 
 ---@class RunHooks
 local RunHooks = {}
@@ -67,7 +69,7 @@ function RunHooks.SetupHeroObjectHook(SetupHeroObjectFun, ...)
     PlayerVisibilityHelper.AddPlayerMarkers(1, mainHero.ObjectId)
 
     if mainHero.IsDead and not RunEx.IsRunEnded() then
-        RunHooks.HideHero(mainHero)
+        HeroEx.HideHero(mainHero)
     end
 end
 
@@ -208,7 +210,7 @@ function RunHooks.KillHeroHook(baseFun, ...)
     if not CoopPlayers.HasAlivePlayers() then
         -- Handle death for player 1 only
         local mainHero = CoopPlayers.GetMainHero()
-        RunHooks.ShowHero(mainHero, CurrentRun.Hero.ObjectId)
+        HeroEx.ShowHero(mainHero, CurrentRun.Hero.ObjectId)
         RemoveOutline({ Id = mainHero.ObjectId })
         HeroContext.RunWithHeroContext(mainHero, baseFun, ...)
         CoopPlayers.OnAllPlayersDead()
@@ -217,7 +219,7 @@ function RunHooks.KillHeroHook(baseFun, ...)
     local aliveHero = CoopPlayers.GetAliveHeroes()[1]
 
     if CurrentRun.Hero == CoopPlayers.GetMainHero() then
-        RunHooks.HideHero(CurrentRun.Hero)
+        HeroEx.HideHero(CurrentRun.Hero)
 
         HeroContext.SetDefaultHero(aliveHero)
     else
@@ -274,29 +276,6 @@ function RunHooks.CheckForAllEnemiesDeadPostHook()
             ClearEffect({ Id = hero.ObjectId, Name = "DamageOverTime" })
         end
     end
-end
-
----@private
----@param hero table
-function RunHooks.HideHero(hero)
-    local weaponsToHide = { "RangedWeapon" }
-    for _, weaponName in ipairs(WeaponSets.HeroMeleeWeapons) do
-        if hero.Weapons[weaponName] then
-            table.insert(weaponsToHide, weaponName)
-        end
-    end
-
-    UnequipWeapon { DestinationId = hero.ObjectId, Names = weaponsToHide, UnloadPackages = false }
-    SetColor{ Id = hero.ObjectId, Color = { 255, 255, 255, 0 } }
-    Teleport{ Id = hero.ObjectId, DestinationId = hero.ObjectId, OffsetX = -10000 }
-end
-
----@private
----@param hero table
----@param position number
-function RunHooks.ShowHero(hero, position)
-    SetColor { Id = hero.ObjectId, Color = { 255, 255, 255, 255 } }
-    Teleport { Id = hero.ObjectId, DestinationId = position }
 end
 
 ---@private

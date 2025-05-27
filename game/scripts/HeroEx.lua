@@ -97,4 +97,27 @@ function HeroEx.CreateFreshHero(args)
     return hero
 end
 
+---@param hero table
+---@param position number?
+function HeroEx.ShowHero(hero, position)
+    SetColor { Id = hero.ObjectId, Color = { 255, 255, 255, 255 } }
+    if position ~= nil then
+        Teleport { Id = hero.ObjectId, DestinationId = position }
+    end
+end
+
+---@param hero table
+function HeroEx.HideHero(hero)
+    local weaponsToHide = { "RangedWeapon" }
+    for _, weaponName in ipairs(WeaponSets.HeroMeleeWeapons) do
+        if hero.Weapons[weaponName] then
+            table.insert(weaponsToHide, weaponName)
+        end
+    end
+
+    UnequipWeapon { DestinationId = hero.ObjectId, Names = weaponsToHide, UnloadPackages = false }
+    SetColor { Id = hero.ObjectId, Color = { 255, 255, 255, 0 } }
+    Teleport { Id = hero.ObjectId, DestinationId = hero.ObjectId, OffsetX = -10000 }
+end
+
 return HeroEx
