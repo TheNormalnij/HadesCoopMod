@@ -11,8 +11,6 @@ local HookUtils = ModRequire "../HookUtils.lua"
 local CoopPlayers = ModRequire "../CoopPlayers.lua"
 ---@type HeroContextProxyStore
 local HeroContextProxyStore = ModRequire "../HeroContextProxyStore.lua"
----@type LootQuery
-local LootQuery = ModRequire "LootQuery.lua"
 ---@type TableUtils
 local TableUtils = ModRequire "../TableUtils.lua"
 ---@type HeroEx
@@ -86,16 +84,76 @@ function LootRoomDuplicated.OnUnlockedRewardedRoom(baseFun, run, room)
         return baseFun(run, room)
     end
 
-    HeroContext.RunWithHeroContextAwait(firstAliveHero, baseFun, run, room)
-
-    if run.NextRewardStoreName == "MetaProgress" then
+    if room.ChallengeEncounterName =="TimeChallengeStyx" then
+        -- We need save rewards in styx
+        LootRoomDuplicated.HandleStyxRewards(baseFun, run, room)
+        return
+    elseif run.NextRewardStoreName == "MetaProgress" then
+        HeroContext.RunWithHeroContextAwait(firstAliveHero, baseFun, run, room)
         -- Do not duplicate meta progress
         LootRoomDuplicated.CurrentHeroChooser = nil
         return
     end
 
+    HeroContext.RunWithHeroContextAwait(firstAliveHero, baseFun, run, room)
     LootRoomDuplicated.CurrentHeroChooser = firstAliveHero
 end
+
+---@private
+function LootRoomDuplicated.HandleStyxRewards(baseFun, run, room)
+    if CurrentRun.StyxLoot then
+        return
+    end
+
+    DebugPrint{Text = "LootRoomDuplicated: HandleStyxRewards called."}
+    CurrentRun.StyxLoot = {}
+
+    for playerId, hero in CoopPlayers.PlayersIterator() do
+        local playerLoot = {}
+        CurrentRun.StyxLoot[playerId] = playerLoot
+        if not hero.IsDead then
+            HeroContext.RunWithHeroContextAwait(hero, baseFun, run, room)
+            for doorObjectId, door in pairs(OfferedExitDoors) do
+                if door.IsDefaultDoor then
+                    local doorRoom = door.Room
+                    local lootName = doorRoom.ForceLootName or doorRoom.ChosenRewardType
+                    playerLoot[doorObjectId] = {
+                        RewardType = doorRoom.ChosenRewardType,
+                        LootName = lootName
+                    }
+
+                    LootRoomDuplicated.RemoveDoorReward(door)
+                end
+            end
+        end
+    end
+
+    local firstAliveHero = CoopPlayers.GetAliveHeroes()[1]
+    LootRoomDuplicated.ShowStyxRoomsFormPlayer(firstAliveHero)
+    LootRoomDuplicated.CurrentHeroChooser = firstAliveHero
+end
+
+function LootRoomDuplicated.ShowStyxRoomsFormPlayer(hero)
+    local playerId = CoopPlayers.GetPlayerByHero(hero)
+    if not CurrentRun.StyxLoot or not CurrentRun.StyxLoot[playerId] then
+        return
+    end
+
+    local playerLoot = CurrentRun.StyxLoot[playerId]
+    for doorObjectId, loot in pairs(playerLoot) do
+        local door = OfferedExitDoors[doorObjectId]
+        if door then
+            local room = door.Room
+            room.ForceLootName = loot.LootName
+            room.ChosenRewardType = loot.RewardType
+            SetupRoomReward(CurrentRun, room, {}, { Door = door, IgnoreForceLootName = true })
+            CreateDoorRewardPreview(door)
+        end
+    end
+end
+
+-- TODO shop room has no reward for first player.
+-- TODO no first reward when the first room is hard and the second is easy
 
 ---@param baseFun fun(eventSource: table, args: table)
 ---@param eventSource table
@@ -103,8 +161,6 @@ end
 function LootRoomDuplicated.SpawnRoomReward(baseFun, eventSource, args)
     local room = CurrentRun.CurrentRoom
     local rewardType = room.ChangeReward or room.ChosenRewardType
-
-    DebugPrint{ Text = "rewardType " .. tostring(rewardType) }
 
     if not LootRoomDuplicated.DuplicatedRewards[rewardType] then
         return baseFun(eventSource, args)
@@ -124,7 +180,7 @@ end
 ---@param heroesCount number
 function LootRoomDuplicated.Reset(heroesCount)
     HeroContextProxyStore.GetOrCreate("LootTypeHistory"):Reset()
-    LootQuery.Reset(heroesCount)
+    CurrentRun.StyxLoot = {}
 end
 
 ---@param baseFun fun(args: table): table
@@ -238,6 +294,7 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
     baseFun(currentRun, door)
 
     if isLastChoiser then
+        LootRoomDuplicated.CurrentHeroChooser = nil
         LootRoomDuplicated.RewardChoiseInProgress = false
         LootRoomDuplicated.UnlockAllPlayers()
         SetPlayerVulnerable("LootRoomDuplicated")
@@ -259,6 +316,7 @@ end
 ---@private
 function LootRoomDuplicated.UnvalidateDoorRewardsPresentation(run, door)
     if door.ExitFunctionName == "AsphodelLeaveRoomPresentation" then
+        -- Asphodel should have some sort of animation to hide boat teleportation
         wait(1.0)
 
         FullScreenFadeOutAnimation()
@@ -278,15 +336,9 @@ function LootRoomDuplicated.UnvalidateDoorRewards()
     local currentRewards = {}
     for doorObjectId, door in pairs(OfferedExitDoors) do
         if door.IsDefaultDoor then
-            if door.DoorIconId ~= nil then
-                Destroy { Ids = { door.DoorIconBackingId, door.DoorIconId, door.DoorIconFront } }
-                Destroy { Ids = door.AdditionalIcons }
-                Destroy { Ids = door.AdditionalAttractIds }
-            end
+            LootRoomDuplicated.RemoveDoorReward(door)
 
             local room = door.Room
-            room.ForceLootName = nil
-            room.RewardOverrides = nil
             SetupRoomReward(CurrentRun, room, currentRewards,
                 { Door = door, IgnoreForceLootName = room.IgnoreForceLootName })
             CreateDoorRewardPreview(door)
@@ -294,6 +346,19 @@ function LootRoomDuplicated.UnvalidateDoorRewards()
             door.ReadyToUse = true
         end
     end
+end
+
+---@private
+function LootRoomDuplicated.RemoveDoorReward(door)
+    if door.DoorIconId ~= nil then
+        Destroy { Ids = { door.DoorIconBackingId, door.DoorIconId, door.DoorIconFront } }
+        Destroy { Ids = door.AdditionalIcons }
+        Destroy { Ids = door.AdditionalAttractIds }
+    end
+
+    local room = door.Room
+    room.ForceLootName = nil
+    room.RewardOverrides = nil
 end
 
 ---@private
