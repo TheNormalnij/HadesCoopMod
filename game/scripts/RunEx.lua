@@ -18,4 +18,9 @@ function RunEx.WasTheFirstRunStarted()
     return not GameState or (not CurrentRun and IsEmpty(GameState.RunHistory))
 end
 
+---@return boolean
+function RunEx.IsHubRoom(room)
+    return room.Name == "D_Hub"
+end
+
 return RunEx
