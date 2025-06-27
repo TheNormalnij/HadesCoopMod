@@ -132,18 +132,16 @@ function LootRoomDuplicated.HandleStyxRewardsFirstTime(baseFun, run, room)
         end
     end
 
-    for doorId, _ in pairs(CurrentRun.StyxLoot[1]) do
-        DebugPrint { Text = CurrentRun.StyxLoot[1][doorId].LootName .. "  " .. CurrentRun.StyxLoot[2][doorId].LootName }
-    end
-
     local firstAliveHero = CoopPlayers.GetAliveHeroes()[1]
     LootRoomDuplicated.ShowStyxRoomsFormPlayer(firstAliveHero)
     LootRoomDuplicated.CurrentHeroChooser = firstAliveHero
 end
 
 ---@private
---- ERROR: The second player cannot see rewards
 function LootRoomDuplicated.RestoreGeneratedStyxRewards(baseFun, run, room)
+    -- If not disabled, this shit restores wrong loot in SetupRoomReward
+    room.PersistentExitDoorRewards = false
+
     DebugPrint { Text = "LootRoomDuplicated: RestoreGeneratedStyxRewards called." }
     local firstAliveHero = CoopPlayers.GetAliveHeroes()[1]
     HeroContext.RunWithHeroContextAwait(firstAliveHero, baseFun, run, room)
@@ -185,7 +183,7 @@ end
 
 -- TODO shop room has no reward for first player.
 -- TODO no first reward when the first room is hard and the second is easy
--- TODO health can be stolen in the Styx Sack room
+-- TODO health and money are not duplicated
 
 ---@param baseFun fun(eventSource: table, args: table)
 ---@param eventSource table
