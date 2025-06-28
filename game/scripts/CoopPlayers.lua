@@ -143,6 +143,15 @@ function CoopPlayers.GetAliveHeroes()
     return out
 end
 
+---@return table?
+function CoopPlayers.GetFirstAliveHero()
+    for _, hero in CoopPlayers.PlayersIterator() do
+        if hero and not hero.IsDead then
+            return hero
+        end
+    end
+end
+
 function CoopPlayers.RestoreSavedHero(playerId)
     local hero = CurrentRun["Hero" .. playerId]
     DebugPrint { Text = "Restore player hero" .. tostring(playerId) .. " " .. tostring(hero) }

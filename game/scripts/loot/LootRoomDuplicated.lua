@@ -64,9 +64,6 @@ LootRoomDuplicated.CanBeUsedByAnyPlayer = {
     Money = true,
 }
 
--- TODO shop room has no reward for first player.
--- TODO no first reward when the first room is hard and the second is easy
-
 function LootRoomDuplicated.InitHooks()
     HookUtils.wrap("CheckSpecialDoorRequirement", LootRoomDuplicated.CheckSpecialDoorRequirementWrap)
     HookUtils.wrap("CreateLoot", LootRoomDuplicated.CreateRewardWrap)
@@ -93,7 +90,7 @@ function LootRoomDuplicated.OnUnlockedRewardedRoom(baseFun, run, room)
         return baseFun(run, room)
     end
 
-    if RunEx.IsHubRoom(room) then
+    if RunEx.IsStyxTempleHubRoom(room) then
         -- Styx room
         if CurrentRun.StyxLoot then
             LootRoomDuplicated.RestoreGeneratedStyxRewards(baseFun, run, room)
@@ -325,6 +322,8 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
     local playerId = CoopPlayers.GetPlayerByHero(CurrentRun.Hero)
     local room = door.Room
 
+    DebugPrint { Text = "LeaveRoom with reward " .. tostring(room.ChosenRewardType) }
+
     LootRoomDuplicated.ChosenPlayerLoot[playerId] = {
         rewardType = room.ChosenRewardType,
         lootName = room.ForceLootName
@@ -333,7 +332,10 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
     local aliveHeroes = CoopPlayers.GetAliveHeroes()
 
     local isLastChoiser = TableUtils.last(aliveHeroes) == LootRoomDuplicated.CurrentHeroChooser
-    if isLastChoiser then
+
+    -- Only the first player can create shop
+    local isFinishedChoceLoop = isLastChoiser or room.ChosenRewardType == "Shop"
+    if isFinishedChoceLoop then
         CurrentRun.CurrentRoom.SkipLoadNextMap = LootRoomDuplicated.ShouldSkipLoadingNextMap
     else
         CurrentRun.CurrentRoom.SkipLoadNextMap = true
@@ -341,7 +343,7 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
 
     baseFun(currentRun, door)
 
-    if isLastChoiser then
+    if isFinishedChoceLoop then
         LootRoomDuplicated.CurrentHeroChooser = nil
         LootRoomDuplicated.RewardChoiseInProgress = false
         LootRoomDuplicated.UnlockAllPlayers()
@@ -361,6 +363,11 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
             LootRoomDuplicated.ShowStyxRoomsFormPlayer(LootRoomDuplicated.CurrentHeroChooser)
             door.ReadyToUse = true
         else
+            if CurrentRun.Hero == aliveHeroes[1] then
+                -- Only the first player can create shop or story rooms
+                LootRoomDuplicated.RecreateSpecialRooms()
+            end
+
             HeroContext.RunWithHeroContextAwait(LootRoomDuplicated.CurrentHeroChooser,
                 LootRoomDuplicated.RecreateDoorRewards)
         end
@@ -409,6 +416,19 @@ function LootRoomDuplicated.RecreateDoorRewards()
 end
 
 ---@private
+function LootRoomDuplicated.RecreateSpecialRooms()
+    for doorObjectId, door in pairs(OfferedExitDoors) do
+        local room = door.Room
+        if RunEx.IsShopRoomName(room.Name) or RunEx.IsStoryRoomName(room.Name) then
+            door.Room = CreateRoom( ChooseNextRoomData( CurrentRun ), { SkipChooseReward = true, SkipChooseEncounter = true, })
+            AssignRoomToExitDoor(door, door.Room)
+            -- Huh, can be done better
+            door.Room.ChosenRewardType = "Boon"
+        end
+    end
+end
+
+---@private
 function LootRoomDuplicated.UnlockAllPlayers()
     for playerId, hero in CoopPlayers.PlayersIterator() do
         if hero and not hero.IsDead then
@@ -433,11 +453,21 @@ function LootRoomDuplicated.FullScreenFadeOutAnimationWrap(baseFun, ...)
 end
 
 ---@private
--- Disable this room temporarily
 function LootRoomDuplicated.IsGameStateEligibleWrap(baseFun, currentRun, source, requirements, args)
-    if source and source.Name == "Devotion" then
-        return false
+    if source then
+        local name = source.Name
+        if name == "Devotion" then
+            -- Devotion is disabled in this mode
+            return false
+        end
+        if RunEx.IsShopRoomName(name) or RunEx.IsStoryRoomName(name) then
+            -- Shop room and story is not allowed for the second player
+            if LootRoomDuplicated.CurrentHeroChooser and LootRoomDuplicated.CurrentHeroChooser ~= CoopPlayers.GetFirstAliveHero() then
+                return false
+            end
+        end
     end
+
     return baseFun(currentRun, source, requirements, args)
 end
 

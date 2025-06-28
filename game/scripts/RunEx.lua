@@ -19,8 +19,18 @@ function RunEx.WasTheFirstRunStarted()
 end
 
 ---@return boolean
-function RunEx.IsHubRoom(room)
+function RunEx.IsStyxTempleHubRoom(room)
     return room.Name == "D_Hub"
+end
+
+---@return boolean
+function RunEx.IsShopRoomName(name)
+    return name == "A_Shop01" or name == "B_Shop01" or name == "C_Shop01"
+end
+
+---@return boolean
+function RunEx.IsStoryRoomName(name)
+    return name == "A_Story01" or name == "B_Story01" or name == "C_Story01"
 end
 
 function RunEx.RemoveDoorReward(door)
