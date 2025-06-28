@@ -213,7 +213,7 @@ end
 ---@param heroesCount number
 function LootRoomDuplicated.Reset(heroesCount)
     HeroContextProxyStore.GetOrCreate("LootTypeHistory"):Reset()
-    CurrentRun.StyxLoot = {}
+    CurrentRun.StyxLoot = nil
 end
 
 ---@param baseFun fun(args: table): table
