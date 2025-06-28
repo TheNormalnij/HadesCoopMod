@@ -43,4 +43,12 @@ function RunEx.RemoveDoorReward(door)
     room.RewardOverrides = nil
 end
 
+function RunEx.RemoveRewardFromAllDefaultDoors()
+    for _, door in pairs(OfferedExitDoors) do
+        if door.IsDefaultDoor then
+            RunEx.RemoveDoorReward(door)
+        end
+    end
+end
+
 return RunEx
