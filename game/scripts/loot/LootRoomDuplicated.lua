@@ -322,8 +322,6 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
     local playerId = CoopPlayers.GetPlayerByHero(CurrentRun.Hero)
     local room = door.Room
 
-    DebugPrint { Text = "LeaveRoom with reward " .. tostring(room.ChosenRewardType) }
-
     LootRoomDuplicated.ChosenPlayerLoot[playerId] = {
         rewardType = room.ChosenRewardType,
         lootName = room.ForceLootName
