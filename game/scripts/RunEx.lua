@@ -23,4 +23,24 @@ function RunEx.IsHubRoom(room)
     return room.Name == "D_Hub"
 end
 
+function RunEx.RemoveDoorReward(door)
+    if door.DoorIconId ~= nil then
+        Destroy { Id = door.DoorIconBackingId }
+        Destroy { Id = door.DoorIconId }
+        Destroy { Id = door.DoorIconFront }
+        Destroy { Ids = door.AdditionalIcons }
+        Destroy { Ids = door.AdditionalAttractIds }
+
+        door.DoorIconBackingId = nil
+        door.DoorIconId = nil
+        door.DoorIconFront = nil
+        door.AdditionalIcons = {}
+        door.AdditionalAttractIds = {}
+    end
+
+    local room = door.Room
+    room.ForceLootName = nil
+    room.RewardOverrides = nil
+end
+
 return RunEx

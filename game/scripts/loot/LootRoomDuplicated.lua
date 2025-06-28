@@ -129,7 +129,7 @@ function LootRoomDuplicated.HandleStyxRewardsFirstTime(baseFun, run, room)
                         LootName = lootName
                     }
 
-                    LootRoomDuplicated.RemoveDoorReward(door)
+                    RunEx.RemoveDoorReward(door)
                 end
             end
         end
@@ -149,19 +149,10 @@ function LootRoomDuplicated.RestoreGeneratedStyxRewards(baseFun, run, room)
     local firstAliveHero = CoopPlayers.GetAliveHeroes()[1]
     HeroContext.RunWithHeroContextAwait(firstAliveHero, baseFun, run, room)
 
-    LootRoomDuplicated.RemoveRewardFromAllStandartDoors()
+    RunEx.RemoveRewardFromAllDefaultDoors()
     LootRoomDuplicated.ShowStyxRoomsFormPlayer(firstAliveHero)
     LootRoomDuplicated.CurrentHeroChooser = firstAliveHero
     CurrentRun.StyxChoosenDoor = nil
-end
-
----@private
-function LootRoomDuplicated.RemoveRewardFromAllStandartDoors()
-    for _, door in pairs(OfferedExitDoors) do
-        if door.IsDefaultDoor then
-            LootRoomDuplicated.RemoveDoorReward(door)
-        end
-    end
 end
 
 ---@private
@@ -194,6 +185,7 @@ end
 function LootRoomDuplicated.SpawnRoomReward(baseFun, eventSource, args)
     local room = CurrentRun.CurrentRoom
     local rewardType = room.ChangeReward or room.ChosenRewardType
+    DebugPrint{ Text = "LootRoomDuplicated: SpawnRoomReward called with rewardType: " .. tostring(rewardType) }
 
     if not LootRoomDuplicated.DuplicatedRewards[rewardType] then
         return baseFun(eventSource, args)
@@ -357,7 +349,7 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
         LootRoomDuplicated.UnvalidateDoorRewardsPresentation(currentRun, door)
 
         if CurrentRun.StyxLoot then
-            LootRoomDuplicated.RemoveRewardFromAllStandartDoors()
+            RunEx.RemoveRewardFromAllDefaultDoors()
             LootRoomDuplicated.ShowStyxRoomsFormPlayer(LootRoomDuplicated.CurrentHeroChooser)
             door.ReadyToUse = true
         else
@@ -393,7 +385,7 @@ function LootRoomDuplicated.RecreateDoorRewards()
     local currentRewards = {}
     for doorObjectId, door in pairs(OfferedExitDoors) do
         if door.IsDefaultDoor then
-            LootRoomDuplicated.RemoveDoorReward(door)
+            RunEx.RemoveDoorReward(door)
 
             local room = door.Room
             SetupRoomReward(CurrentRun, room, currentRewards,
@@ -406,27 +398,6 @@ function LootRoomDuplicated.RecreateDoorRewards()
             door.ReadyToUse = true
         end
     end
-end
-
----@private
-function LootRoomDuplicated.RemoveDoorReward(door)
-    if door.DoorIconId ~= nil then
-        Destroy { Id = door.DoorIconBackingId }
-        Destroy { Id = door.DoorIconId }
-        Destroy { Id = door.DoorIconFront }
-        Destroy { Ids = door.AdditionalIcons }
-        Destroy { Ids = door.AdditionalAttractIds }
-
-        door.DoorIconBackingId = nil
-        door.DoorIconId = nil
-        door.DoorIconFront = nil
-        door.AdditionalIcons = {}
-        door.AdditionalAttractIds = {}
-    end
-
-    local room = door.Room
-    room.ForceLootName = nil
-    room.RewardOverrides = nil
 end
 
 ---@private
