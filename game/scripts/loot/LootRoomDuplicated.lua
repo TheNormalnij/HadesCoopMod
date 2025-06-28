@@ -142,12 +142,14 @@ end
 
 ---@private
 function LootRoomDuplicated.RestoreGeneratedStyxRewards(baseFun, run, room)
-    -- If not disabled, this shit restores wrong loot in SetupRoomReward
-    room.PersistentExitDoorRewards = false
-
     DebugPrint { Text = "LootRoomDuplicated: RestoreGeneratedStyxRewards called." }
     local firstAliveHero = CoopPlayers.GetAliveHeroes()[1]
+
+    -- Enable to restore miniboss rooms
+    room.PersistentExitDoorRewards = true
     HeroContext.RunWithHeroContextAwait(firstAliveHero, baseFun, run, room)
+    -- If not disabled, this shit restores wrong loot in SetupRoomReward
+    room.PersistentExitDoorRewards = false
 
     RunEx.RemoveRewardFromAllDefaultDoors()
     LootRoomDuplicated.ShowStyxRoomsFormPlayer(firstAliveHero)
