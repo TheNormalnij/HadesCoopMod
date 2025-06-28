@@ -53,6 +53,9 @@ LootRoomDuplicated.DuplicatedRewards = {
     TrialUpgrade = true;
     Health = true;
     Money = true;
+    -- For styx temple
+    RoomRewardMoneyDrop = true;
+    RoomRewardMaxHealthDrop = true;
 }
 
 function LootRoomDuplicated.InitHooks()
@@ -183,7 +186,7 @@ end
 
 -- TODO shop room has no reward for first player.
 -- TODO no first reward when the first room is hard and the second is easy
--- TODO health and money are not duplicated
+-- TODO health can be stolen in styx
 
 ---@param baseFun fun(eventSource: table, args: table)
 ---@param eventSource table
