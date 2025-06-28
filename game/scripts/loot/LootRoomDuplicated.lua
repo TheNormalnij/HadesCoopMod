@@ -58,9 +58,19 @@ LootRoomDuplicated.DuplicatedRewards = {
     RoomRewardMaxHealthDrop = true;
 }
 
+---@private
+LootRoomDuplicated.CanBeUsedByAnyPlayer = {
+    RoomRewardMoneyDrop = true,
+    Money = true,
+}
+
+-- TODO shop room has no reward for first player.
+-- TODO no first reward when the first room is hard and the second is easy
+
 function LootRoomDuplicated.InitHooks()
     HookUtils.wrap("CheckSpecialDoorRequirement", LootRoomDuplicated.CheckSpecialDoorRequirementWrap)
-    HookUtils.wrap("CreateLoot", LootRoomDuplicated.CreateLootWrap)
+    HookUtils.wrap("CreateLoot", LootRoomDuplicated.CreateRewardWrap)
+    HookUtils.wrap("CreateConsumableItem", LootRoomDuplicated.CreateRewardWrap)
     HookUtils.wrap("LeaveRoom", LootRoomDuplicated.LeaveRoomWrap)
     HookUtils.wrap("FullScreenFadeOutAnimation", LootRoomDuplicated.FullScreenFadeOutAnimationWrap)
     HookUtils.wrap("IsGameStateEligible", LootRoomDuplicated.IsGameStateEligibleWrap)
@@ -177,10 +187,6 @@ function LootRoomDuplicated.ShowStyxRoomsFormPlayer(hero)
     end
 end
 
--- TODO shop room has no reward for first player.
--- TODO no first reward when the first room is hard and the second is easy
--- TODO health can be stolen in styx
-
 ---@param baseFun fun(eventSource: table, args: table)
 ---@param eventSource table
 ---@param args table
@@ -198,7 +204,7 @@ function LootRoomDuplicated.SpawnRoomReward(baseFun, eventSource, args)
         if not hero.IsDead then
             room.ChangeReward = lootParams.rewardType
             room.ForceLootName = lootParams.lootName
-            LootRoomDuplicated.TagNextLootForPlayer = playerId
+            LootRoomDuplicated.TagNextLootForPlayer = not LootRoomDuplicated.CanBeUsedByAnyPlayer[rewardType] and playerId or nil
             HeroContext.RunWithHeroContextAwait(hero, baseFun, eventSource, args)
         end
     end
@@ -253,14 +259,14 @@ function LootRoomDuplicated.CheckSpecialDoorRequirementWrap(baseFun, door)
     return nil
 end
 
----@param baseFun fun(args: table): table
----@param args table
+---@param baseFun fun(...): table
+---@param ... any
 ---@return table
-function LootRoomDuplicated.CreateLootWrap(baseFun, args)
+function LootRoomDuplicated.CreateRewardWrap(baseFun, ...)
     if LootRoomDuplicated.TagNextLootForPlayer == nil then
-        return baseFun(args)
+        return baseFun(...)
     else
-        local loot = baseFun(args)
+        local loot = baseFun(...)
         loot.CoopChoosenPlayer = LootRoomDuplicated.TagNextLootForPlayer
         LootRoomDuplicated.TagNextLootForPlayer = nil
         return loot

@@ -39,6 +39,10 @@ OnUsed = function(args)
                 local hero = CoopPlayers.GetHeroByUnit(triggerArgs.UserId)
                 local item = triggerArgs.AttachedTable
 
+                if not LootDelivery.CanUseHeroLoot(item, hero) then
+                    return
+                end
+
                 if item.AddAmmo then
                     -- Do not let a player get the red crystal
                     -- when the player has full ammo
