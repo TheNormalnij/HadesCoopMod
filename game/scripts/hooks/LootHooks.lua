@@ -73,7 +73,7 @@ end
 
 ---@private
 function LootHooks.DoUnlockRoomExitsHook(baseFun, run, room)
-    if not LootHooks.NeedsCurrentRoomExitRewards() then
+    if not LootHooks.NeedsCurrentRoomExitRewards(run) then
         return baseFun(run, room)
     end
 
@@ -88,14 +88,25 @@ function LootHooks.SpawnRoomRewardHook(baseFun, ...)
     LootDelivery.SpawnRoomReward(baseFun, ...)
 end
 
+--- Warning: this function mutates the game state in ChooseNextRoomData
 ---@private
-function LootHooks.NeedsCurrentRoomExitRewards()
-    for _, door in pairs(OfferedExitDoors) do
-        if door.NeedsReward then
-            return true
-        end
+---@param run table
+function LootHooks.NeedsCurrentRoomExitRewards(run)
+    local roomData = ChooseNextRoomData(run)
+
+    if roomData == nil then
+        return false
     end
-    return false
+
+    if roomData.NoReward then
+        return false
+    end
+
+    if roomData.NoReroll then
+        return false
+    end
+
+    return true
 end
 
 return LootHooks

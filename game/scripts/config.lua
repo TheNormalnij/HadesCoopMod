@@ -5,7 +5,15 @@
 
 ---@class CoopModConfig
 local Config = {
-    LootDelivery = "Shared",
+    -- Choose loot delivery type here
+    -- Possible values: "Shared", "RoomDuplicated"
+    --
+    -- Shared - rooms generate one reward. Only one player can pick it up.
+    -- The game has a query that select a player context for a reward.
+    -- E.g. Player 1 boon room, meta progress room, Player 2 boon room, Player 1 boon room...
+    --
+    -- RoomDuplicated - rooms generate two reward for each player.
+    LootDelivery = "RoomDuplicated",
     Player1HasOutline = true;
     Player1Outline = {
         R = 0,

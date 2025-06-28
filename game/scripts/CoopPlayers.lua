@@ -131,7 +131,7 @@ function CoopPlayers.OnAllPlayersDead()
     CoopControl.ResetAllPlayers("UserDefined")
 end
 
----@return table<table>
+---@return table[]
 function CoopPlayers.GetAliveHeroes()
     local out = {}
     for _, hero in CoopPlayers.PlayersIterator() do
@@ -141,6 +141,15 @@ function CoopPlayers.GetAliveHeroes()
     end
 
     return out
+end
+
+---@return table?
+function CoopPlayers.GetFirstAliveHero()
+    for _, hero in CoopPlayers.PlayersIterator() do
+        if hero and not hero.IsDead then
+            return hero
+        end
+    end
 end
 
 function CoopPlayers.RestoreSavedHero(playerId)
