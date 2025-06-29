@@ -19,6 +19,7 @@ CoopCamera.isFocusEnabled = true
 function CoopCamera.InitHooks()
     HookUtils.wrap("CreateRoom", CoopCamera.CreateRoomWrapHook)
     HookUtils.onPostFunction("draw", CoopCamera.Update)
+    HookUtils.onPostFunction("ExitNPCPresentation", CoopCamera.OnExitNPCPresentation)
     CoopCamera.LockCameraOrig = LockCamera
     LockCamera = CoopCamera.LockCameraHook
 end
@@ -37,6 +38,13 @@ function CoopCamera.LockCameraHook(args)
         CoopCamera.isFocusEnabled = false
         CoopCamera.LockCameraOrig(args)
     end
+end
+
+---@private
+function CoopCamera.OnExitNPCPresentation()
+    -- Fixes wrong camera focus after some  NPC dialoges.
+    -- E.g. after feeding the dog in the styx temple hub
+    CoopCamera.LockCameraHook({ Id = CoopPlayers.GetMainHero().ObjectId })
 end
 
 ---@private
