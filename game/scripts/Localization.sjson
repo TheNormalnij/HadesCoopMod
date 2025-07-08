@@ -1,0 +1,367 @@
+{
+    HelpTexts = [
+        {
+        lang = "en"
+        Texts = [
+                {
+                Id = "CoopMenu_MenuHeader"
+                DisplayName = "Controllers"
+                },
+                {
+                Id = "CoopMenu_StartMessage"
+                DisplayName = "At least one player must use a gamepad. Only Player 1 can use a keyboard and mouse. Use RemotePlayWhatever to play with remote players."
+                },
+                {
+                Id = "CoopMenu_P1Press"
+                DisplayName = "Player 1 press this button"
+                },
+                {
+                Id = "CoopMenu_P2Press"
+                DisplayName = "Player 2 press this button"
+                },
+                {
+                Id = "CoopMenu_ErrP1KBOnly"
+                DisplayName = "Only player 1 can use a keyboard"
+                },
+                {
+                Id = "CoopMenu_ErrDeviceCollision"
+                DisplayName = "Both players use the same device"
+                },
+                {
+                Id = "CoopMenu_Again"
+                DisplayName = "Start again"
+                }
+            ]
+        },
+        {
+        lang = "ru"
+        Texts = [
+                {
+                Id = "CoopMenu_MenuHeader"
+                DisplayName = "Контроллеры"
+                },
+                {
+                Id = "CoopMenu_StartMessage"
+                DisplayName = "Как минимум один игрок должен играть на геймпаде. Только первый игрок может играть с клавиатуры и мыши. Используйте RemotePlayWhatever для игры по сети"
+                },
+                {
+                Id = "CoopMenu_P1Press"
+                DisplayName = "Первый игрок, нажми сюда"
+                },
+                {
+                Id = "CoopMenu_P2Press"
+                DisplayName = "Второй игрок, нажми сюда"
+                },
+                {
+                Id = "CoopMenu_ErrP1KBOnly"
+                DisplayName = "Только первый игрок может использовать клавиатуру"
+                },
+                {
+                Id = "CoopMenu_ErrDeviceCollision"
+                DisplayName = "Выбран один девайс для обоих игроков"
+                },
+                {
+                Id = "CoopMenu_Again"
+                DisplayName = "Начать снова"
+                }
+            ]
+        },
+        {
+            lang = "de"
+            Texts = [
+                {
+                    Id = "CoopMenu_MenuHeader"
+                    DisplayName = "Controller"
+                },
+                {
+                    Id = "CoopMenu_StartMessage"
+                    DisplayName = "Mindestens ein Spieler muss einen Gamepad verwenden. Nur Spieler 1 kann Tastatur und Maus nutzen. Verwende RemotePlayWhatever für Online-Spieler."
+                },
+                {
+                    Id = "CoopMenu_P1Press"
+                    DisplayName = "Spieler 1, drücke diese Taste"
+                },
+                {
+                    Id = "CoopMenu_P2Press"
+                    DisplayName = "Spieler 2, drücke diese Taste"
+                },
+                {
+                    Id = "CoopMenu_ErrP1KBOnly"
+                    DisplayName = "Nur Spieler 1 kann eine Tastatur verwenden"
+                },
+                {
+                    Id = "CoopMenu_ErrDeviceCollision"
+                    DisplayName = "Beide Spieler verwenden dasselbe Gerät"
+                },
+                {
+                    Id = "CoopMenu_Again"
+                    DisplayName = "Neu starten"
+                }
+            ]
+        },
+        {
+            lang = "es"
+            Texts = [
+                {
+                    Id = "CoopMenu_MenuHeader"
+                    DisplayName = "Controles"
+                },
+                {
+                    Id = "CoopMenu_StartMessage"
+                    DisplayName = "Al menos un jugador debe usar mando. Solo el Jugador 1 puede usar teclado y ratón. Usa RemotePlayWhatever para jugar en línea."
+                },
+                {
+                    Id = "CoopMenu_P1Press"
+                    DisplayName = "Jugador 1, presiona este botón"
+                },
+                {
+                    Id = "CoopMenu_P2Press"
+                    DisplayName = "Jugador 2, presiona este botón"
+                },
+                {
+                    Id = "CoopMenu_ErrP1KBOnly"
+                    DisplayName = "Solo el jugador 1 puede usar teclado"
+                },
+                {
+                    Id = "CoopMenu_ErrDeviceCollision"
+                    DisplayName = "Ambos jugadores usan el mismo dispositivo"
+                },
+                {
+                    Id = "CoopMenu_Again"
+                    DisplayName = "Reiniciar"
+                }
+            ]
+        },
+        {
+            lang = "fr"
+            Texts = [
+                {
+                    Id = "CoopMenu_MenuHeader"
+                    DisplayName = "Contrôleurs"
+                },
+                {
+                    Id = "CoopMenu_StartMessage"
+                    DisplayName = "Au moins un joueur doit utiliser une manette. Seul le Joueur 1 peut utiliser clavier et souris. Utilisez RemotePlayWhatever pour jouer à distance."
+                },
+                {
+                    Id = "CoopMenu_P1Press"
+                    DisplayName = "Joueur 1, appuyez ici"
+                },
+                {
+                    Id = "CoopMenu_P2Press"
+                    DisplayName = "Joueur 2, appuyez ici"
+                },
+                {
+                    Id = "CoopMenu_ErrP1KBOnly"
+                    DisplayName = "Seul le joueur 1 peut utiliser un clavier"
+                },
+                {
+                    Id = "CoopMenu_ErrDeviceCollision"
+                    DisplayName = "Les deux joueurs utilisent le même appareil"
+                },
+                {
+                    Id = "CoopMenu_Again"
+                    DisplayName = "Recommencer"
+                }
+            ]
+        },
+        {
+            lang = "it"
+            Texts = [
+                {
+                    Id = "CoopMenu_MenuHeader"
+                    DisplayName = "Controller"
+                },
+                {
+                    Id = "CoopMenu_StartMessage"
+                    DisplayName = "Almeno un giocatore deve usare un gamepad. Solo il Giocatore 1 può usare tastiera e mouse. Usa RemotePlayWhatever per giocare online."
+                },
+                {
+                    Id = "CoopMenu_P1Press"
+                    DisplayName = "Giocatore 1, premi questo pulsante"
+                },
+                {
+                    Id = "CoopMenu_P2Press"
+                    DisplayName = "Giocatore 2, premi questo pulsante"
+                },
+                {
+                    Id = "CoopMenu_ErrP1KBOnly"
+                    DisplayName = "Solo il giocatore 1 può usare la tastiera"
+                },
+                {
+                    Id = "CoopMenu_ErrDeviceCollision"
+                    DisplayName = "Entrambi i giocatori usano lo stesso dispositivo"
+                },
+                {
+                    Id = "CoopMenu_Again"
+                    DisplayName = "Ricomincia"
+                }
+            ]
+        },
+        {
+            lang = "pl"
+            Texts = [
+                {
+                    Id = "CoopMenu_MenuHeader"
+                    DisplayName = "Kontrolery"
+                },
+                {
+                    Id = "CoopMenu_StartMessage"
+                    DisplayName = "Co najmniej jeden gracz musi używać gamepada. Tylko Gracz 1 może używać klawiatury i myszy. Użyj RemotePlayWhatever do gry online."
+                },
+                {
+                    Id = "CoopMenu_P1Press"
+                    DisplayName = "Gracz 1, naciśnij ten przycisk"
+                },
+                {
+                    Id = "CoopMenu_P2Press"
+                    DisplayName = "Gracz 2, naciśnij ten przycisk"
+                },
+                {
+                    Id = "CoopMenu_ErrP1KBOnly"
+                    DisplayName = "Tylko gracz 1 może używać klawiatury"
+                },
+                {
+                    Id = "CoopMenu_ErrDeviceCollision"
+                    DisplayName = "Obaj gracze używają tego samego urządzenia"
+                },
+                {
+                    Id = "CoopMenu_Again"
+                    DisplayName = "Zacznij od nowa"
+                }
+            ]
+        },
+        {
+            lang = "pt-BR"
+            Texts = [
+                {
+                    Id = "CoopMenu_MenuHeader"
+                    DisplayName = "Controles"
+                },
+                {
+                    Id = "CoopMenu_StartMessage"
+                    DisplayName = "Pelo menos um jogador deve usar controle. Só o Jogador 1 pode usar teclado e mouse. Use RemotePlayWhatever para jogar online."
+                },
+                {
+                    Id = "CoopMenu_P1Press"
+                    DisplayName = "Jogador 1, pressione aqui"
+                },
+                {
+                    Id = "CoopMenu_P2Press"
+                    DisplayName = "Jogador 2, pressione aqui"
+                },
+                {
+                    Id = "CoopMenu_ErrP1KBOnly"
+                    DisplayName = "Só o jogador 1 pode usar teclado"
+                },
+                {
+                    Id = "CoopMenu_ErrDeviceCollision"
+                    DisplayName = "Ambos jogadores usam o mesmo dispositivo"
+                },
+                {
+                    Id = "CoopMenu_Again"
+                    DisplayName = "Reiniciar"
+                }
+            ]
+        },
+        {
+            lang = "ja"
+            Texts = [
+                {
+                    Id = "CoopMenu_MenuHeader"
+                    DisplayName = "コントローラー"
+                },
+                {
+                    Id = "CoopMenu_StartMessage"
+                    DisplayName = "最低1人はゲームパッドを使用してください。キーボードとマウスはプレイヤー1のみ使用可能です。オンラインプレイにはRemotePlayWhateverをご利用ください。"
+                },
+                {
+                    Id = "CoopMenu_P1Press"
+                    DisplayName = "プレイヤー1、ここを押してください"
+                },
+                {
+                    Id = "CoopMenu_P2Press"
+                    DisplayName = "プレイヤー2、ここを押してください"
+                },
+                {
+                    Id = "CoopMenu_ErrP1KBOnly"
+                    DisplayName = "キーボードはプレイヤー1のみ使用可能"
+                },
+                {
+                    Id = "CoopMenu_ErrDeviceCollision"
+                    DisplayName = "両プレイヤーが同じデバイスを使用しています"
+                },
+                {
+                    Id = "CoopMenu_Again"
+                    DisplayName = "再開する"
+                }
+            ]
+        },
+        {
+            lang = "zh-CN"
+            Texts = [
+                {
+                    Id = "CoopMenu_MenuHeader"
+                    DisplayName = "控制器"
+                },
+                {
+                    Id = "CoopMenu_StartMessage"
+                    DisplayName = "至少一名玩家必须使用手柄。仅玩家1可使用键鼠。使用RemotePlayWhatever进行在线游戏。"
+                },
+                {
+                    Id = "CoopMenu_P1Press"
+                    DisplayName = "玩家1请按此按钮"
+                },
+                {
+                    Id = "CoopMenu_P2Press"
+                    DisplayName = "玩家2请按此按钮"
+                },
+                {
+                    Id = "CoopMenu_ErrP1KBOnly"
+                    DisplayName = "仅玩家1可使用键盘"
+                },
+                {
+                    Id = "CoopMenu_ErrDeviceCollision"
+                    DisplayName = "两名玩家使用相同设备"
+                },
+                {
+                    Id = "CoopMenu_Again"
+                    DisplayName = "重新开始"
+                }
+            ]
+        },
+        {
+            lang = "ko"
+            Texts = [
+                {
+                    Id = "CoopMenu_MenuHeader"
+                    DisplayName = "컨트롤러"
+                },
+                {
+                    Id = "CoopMenu_StartMessage"
+                    DisplayName = "최소 한 명의 플레이어는 게임패드를 사용해야 합니다. 플레이어 1만 키보드와 마우스를 사용할 수 있습니다. 온라인 플레이는 RemotePlayWhatever를 사용하세요."
+                },
+                {
+                    Id = "CoopMenu_P1Press"
+                    DisplayName = "플레이어 1, 여기를 누르세요"
+                },
+                {
+                    Id = "CoopMenu_P2Press"
+                    DisplayName = "플레이어 2, 여기를 누르세요"
+                },
+                {
+                    Id = "CoopMenu_ErrP1KBOnly"
+                    DisplayName = "플레이어 1만 키보드 사용 가능"
+                },
+                {
+                    Id = "CoopMenu_ErrDeviceCollision"
+                    DisplayName = "두 플레이어가 같은 장치를 사용 중"
+                },
+                {
+                    Id = "CoopMenu_Again"
+                    DisplayName = "다시 시작"
+                }
+            ]
+        }
+    ]
+}

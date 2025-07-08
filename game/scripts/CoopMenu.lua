@@ -85,26 +85,25 @@ MainMenuAPIAddGamemode("Coop", function(name)
         CURRENT_MENU_STATE = state
 
         if state == MENU_STATE.START then
-            message:SetText(
-                "At least one player must use a gamepad. Only Player 1 can use a keyboard and mouse. Use RemotePlayWhatever to play with remote players.")
-            btn:SetText("Player 1 press this button")
+            message:SetTextLocalizationKey("CoopMenu_StartMessage")
+            btn:SetTextLocalizationKey("CoopMenu_P1Press")
         elseif state == MENU_STATE.PLAYER_ONE_SELECTED then
             message:SetText("Player 1: " .. TostringPlayerConfiguration(1))
-            btn:SetText("Player 2 press this button")
+            btn:SetTextLocalizationKey("CoopMenu_P2Press")
         elseif state == MENU_STATE.PLAYER_TWO_SELECTED then
             message:SetText("Player 1: " .. TostringPlayerConfiguration(1) ..
                 "\nPlayer 2: " .. TostringPlayerConfiguration(2))
 
             btn:SetText(START_BUTTON_MESSAGES[math.random(1, #START_BUTTON_MESSAGES)])
         elseif state == MENU_STATE.INVALID_STATE_SECOND_KEYBOARD then
-            message:SetText("Only player 1 can use a keyboard")
-            btn:SetText("Start again")
+            message:SetTextLocalizationKey("CoopMenu_ErrP1KBOnly")
+            btn:SetTextLocalizationKey("CoopMenu_Again")
         elseif state == MENU_STATE.INVALID_STATE_SAME_DEVICE then
-            message:SetText("Both players use the same device")
-            btn:SetText("Start again")
+            message:SetTextLocalizationKey("CoopMenu_ErrDeviceCollision")
+            btn:SetTextLocalizationKey("CoopMenu_Again")
         else
-            message:SetText("Error description missing :D")
-            btn:SetText("Start again")
+            message:SetText("Error description is missing :D")
+            btn:SetTextLocalizationKey("CoopMenu_Again")
         end
     end
 

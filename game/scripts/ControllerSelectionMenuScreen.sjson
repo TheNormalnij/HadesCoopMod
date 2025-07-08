@@ -32,7 +32,7 @@
       Y = 400
       Justification = "Center"
       VerticalJustification = "Center"
-      HelpTextId = "Controllers"
+      HelpTextId = "CoopMenu_MenuHeader"
       Font = "SpectralSCLightTitling"
       
       AlwaysUpperCase = false
