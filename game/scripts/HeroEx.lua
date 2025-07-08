@@ -81,6 +81,12 @@ end
 ---@param args ICreateFreshHeroArgs
 function HeroEx.CreateFreshHero(args)
     local hero = CreateNewHero(nil, { WeaponName = args.weaponName })
+    if args.weaponName then
+        local secondaryWeapon = WeaponData[args.weaponName].SecondaryWeapon
+        if secondaryWeapon then
+            hero.Weapons[secondaryWeapon] = true
+        end
+    end
 
     HeroContext.RunWithHeroContext(hero, function()
         EquipKeepsake(hero, args.keepsake, { SkipNewTraitHighlight = true })
