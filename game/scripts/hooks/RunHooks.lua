@@ -37,6 +37,7 @@ function RunHooks.InitHooks()
     HookUtils.wrap("CheckRoomExitsReady", RunHooks.CheckRoomExitsReadyHook)
     HookUtils.wrap("SetupHeroObject", RunHooks.SetupHeroObjectHook)
     HookUtils.wrap("CheckDistanceTrigger", RunHooks.CheckDistanceTriggerWrapHook)
+    HookUtils.wrap("EndEncounterEffects", RunHooks.EndEncounterEffectsWrapHook)
     HookUtils.onPostFunction("StartNewGame", RunHooks.StartNewGameHook)
     HookUtils.onPostFunction("CheckForAllEnemiesDead", RunHooks.CheckForAllEnemiesDeadPostHook)
     HookUtils.onPostFunction("RestoreUnlockRoomExits", RunHooks.RestoreUnlockRoomExitsHook)
@@ -303,6 +304,15 @@ function RunHooks.RestoreUnlockRoomExitsHook()
     end
 
     SecondPlayerUi.Refresh()
+end
+
+---@private
+function RunHooks.EndEncounterEffectsWrapHook(baseFun, currentRun, currentRoom, currentEncounter)
+    for _, hero in ipairs(CoopPlayers.GetAliveHeroes()) do
+        HeroContext.RunWithHeroContextAwait(hero, baseFun, currentRun, currentRoom, currentEncounter)
+        currentRoom.CodexUpdates = nil
+        currentRoom.PendingCodexUpdate = nil
+    end
 end
 
 return RunHooks
