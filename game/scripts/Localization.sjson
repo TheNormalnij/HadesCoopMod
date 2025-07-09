@@ -30,6 +30,18 @@
                 {
                 Id = "CoopMenu_Again"
                 DisplayName = "Start again"
+                },
+                {
+                Id = "CoopMenu_KbAndMouse"
+                DisplayName = "Keyboard + Mouse"
+                },
+                {
+                Id = "CoopMenu_Gamepad"
+                DisplayName = "Gamepad {ParamValue}"
+                },
+                {
+                Id = "CoopMenu_PlayerController"
+                DisplayName = "Player $PlayerIndex: $Controller"
                 }
             ]
         },
@@ -63,6 +75,18 @@
                 {
                 Id = "CoopMenu_Again"
                 DisplayName = "Начать снова"
+                },
+                {
+                Id = "CoopMenu_KbAndMouse"
+                DisplayName = "Клавамышь"
+                },
+                {
+                Id = "CoopMenu_Gamepad"
+                DisplayName = "Геймпад {ParamValue}"
+                },
+                {
+                Id = "CoopMenu_PlayerController"
+                DisplayName = "Игрок $PlayerIndex: $Controller"
                 }
             ]
         },
@@ -96,6 +120,18 @@
                 {
                     Id = "CoopMenu_Again"
                     DisplayName = "Neu starten"
+                },
+                {
+                    Id = "CoopMenu_KbAndMouse"
+                    DisplayName = "Tastatur + Maus"
+                },
+                {
+                    Id = "CoopMenu_Gamepad"
+                    DisplayName = "Gamepad {ParamValue}"
+                },
+                {
+                    Id = "CoopMenu_PlayerController"
+                    DisplayName = "Spieler $PlayerIndex: $Controller"
                 }
             ]
         },
@@ -129,6 +165,18 @@
                 {
                     Id = "CoopMenu_Again"
                     DisplayName = "Reiniciar"
+                },
+                {
+                    Id = "CoopMenu_KbAndMouse"
+                    DisplayName = "Teclado + Ratón"
+                },
+                {
+                    Id = "CoopMenu_Gamepad"
+                    DisplayName = "Gamepad {ParamValue}"
+                },
+                {
+                    Id = "CoopMenu_PlayerController"
+                    DisplayName = "Jugador $PlayerIndex: $Controller"
                 }
             ]
         },
@@ -162,6 +210,18 @@
                 {
                     Id = "CoopMenu_Again"
                     DisplayName = "Recommencer"
+                },
+                {
+                    Id = "CoopMenu_KbAndMouse"
+                    DisplayName = "Clavier + Souris"
+                },
+                {
+                    Id = "CoopMenu_Gamepad"
+                    DisplayName = "Gamepad {ParamValue}"
+                },
+                {
+                    Id = "CoopMenu_PlayerController"
+                    DisplayName = "Joueur $PlayerIndex: $Controller"
                 }
             ]
         },
@@ -195,6 +255,18 @@
                 {
                     Id = "CoopMenu_Again"
                     DisplayName = "Ricomincia"
+                },
+                {
+                    Id = "CoopMenu_KbAndMouse"
+                    DisplayName = "Tastiera + Mouse"
+                    },
+                {
+                    Id = "CoopMenu_Gamepad"
+                    DisplayName = "Gamepad {ParamValue}"
+                },
+                {
+                    Id = "CoopMenu_PlayerController"
+                    DisplayName = "Giocatore $PlayerIndex: $Controller"
                 }
             ]
         },
@@ -228,6 +300,18 @@
                 {
                     Id = "CoopMenu_Again"
                     DisplayName = "Zacznij od nowa"
+                },
+                {
+                    Id = "CoopMenu_KbAndMouse"
+                    DisplayName = "Klawiatura + Mysz"
+                },
+                {
+                    Id = "CoopMenu_Gamepad"
+                    DisplayName = "Gamepad {ParamValue}"
+                },
+                {
+                    Id = "CoopMenu_PlayerController"
+                    DisplayName = "Gracz $PlayerIndex: $Controller"
                 }
             ]
         },
@@ -261,6 +345,18 @@
                 {
                     Id = "CoopMenu_Again"
                     DisplayName = "Reiniciar"
+                },
+                {
+                    Id = "CoopMenu_KbAndMouse"
+                    DisplayName = "Teclado + Mouse"
+                },
+                {
+                    Id = "CoopMenu_Gamepad"
+                    DisplayName = "Gamepad {ParamValue}"
+                },
+                {
+                    Id = "CoopMenu_PlayerController"
+                    DisplayName = "Jogador $PlayerIndex: $Controller"
                 }
             ]
         },
@@ -294,6 +390,18 @@
                 {
                     Id = "CoopMenu_Again"
                     DisplayName = "再開する"
+                },
+                {
+                    Id = "CoopMenu_KbAndMouse"
+                    DisplayName = "キーボード + マウス"
+                },
+                {
+                    Id = "CoopMenu_Gamepad"
+                    DisplayName = "ゲームパッド {ParamValue}"
+                },
+                {
+                    Id = "CoopMenu_PlayerController"
+                    DisplayName = "プレイヤー $PlayerIndex: $Controller"
                 }
             ]
         },
@@ -327,6 +435,18 @@
                 {
                     Id = "CoopMenu_Again"
                     DisplayName = "重新开始"
+                },
+                {
+                    Id = "CoopMenu_KbAndMouse"
+                    DisplayName = "键盘 + 鼠标"
+                },
+                {
+                    Id = "CoopMenu_Gamepad"
+                    DisplayName = "手柄 {ParamValue}"
+                },
+                {
+                    Id = "CoopMenu_PlayerController"
+                    DisplayName = "玩家 $PlayerIndex: $Controller"
                 }
             ]
         },
@@ -360,6 +480,18 @@
                 {
                     Id = "CoopMenu_Again"
                     DisplayName = "다시 시작"
+                },
+                {
+                    Id = "CoopMenu_KbAndMouse"
+                    DisplayName = "키보드 + 마우스"
+                },
+                {
+                    Id = "CoopMenu_Gamepad"
+                    DisplayName = "게임패드 {ParamValue}"
+                },
+                {
+                    Id = "CoopMenu_PlayerController"
+                    DisplayName = "플레이어 $PlayerIndex: $Controller"
                 }
             ]
         }

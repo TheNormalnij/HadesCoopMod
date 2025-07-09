@@ -26,11 +26,11 @@ end
 
 local function TostringPlayerConfiguration(playerId)
     if SelectedGuiControl[playerId].Device == "Keyboard" then
-        return "Keyboard + Mouse"
+        return GetDisplayName { Text = "CoopMenu_KbAndMouse" }
     else
         local index = SelectedGuiControl[playerId].ControllerId
         --return "Gamepad " .. index .. " - " .. CoopGetGamepadName(index)
-        return "Gamepad " .. index
+        return GetDisplayName { Text = "CoopMenu_Gamepad", Param =  index }
     end
 end
 
@@ -88,12 +88,17 @@ MainMenuAPIAddGamemode("Coop", function(name)
             message:SetTextLocalizationKey("CoopMenu_StartMessage")
             btn:SetTextLocalizationKey("CoopMenu_P1Press")
         elseif state == MENU_STATE.PLAYER_ONE_SELECTED then
-            message:SetText("Player 1: " .. TostringPlayerConfiguration(1))
+            local template = GetDisplayName { Text = "CoopMenu_PlayerController" }
+            local text = string.gsub(template, "%$(%w+)", { PlayerIndex = 1, Controller = TostringPlayerConfiguration(1) })
+
+            message:SetText(text)
             btn:SetTextLocalizationKey("CoopMenu_P2Press")
         elseif state == MENU_STATE.PLAYER_TWO_SELECTED then
-            message:SetText("Player 1: " .. TostringPlayerConfiguration(1) ..
-                "\nPlayer 2: " .. TostringPlayerConfiguration(2))
+            local template = GetDisplayName { Text = "CoopMenu_PlayerController" }
+            local text = string.gsub(template, "%$(%w+)", { PlayerIndex = 1, Controller = TostringPlayerConfiguration(1) })
+            local text2 = string.gsub(template, "%$(%w+)", { PlayerIndex = 2, Controller = TostringPlayerConfiguration(2) })
 
+            message:SetText(text .. "\n" .. text2)
             btn:SetText(START_BUTTON_MESSAGES[math.random(1, #START_BUTTON_MESSAGES)])
         elseif state == MENU_STATE.INVALID_STATE_SECOND_KEYBOARD then
             message:SetTextLocalizationKey("CoopMenu_ErrP1KBOnly")
