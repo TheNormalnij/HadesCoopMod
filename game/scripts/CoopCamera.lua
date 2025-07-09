@@ -20,6 +20,7 @@ function CoopCamera.InitHooks()
     HookUtils.wrap("CreateRoom", CoopCamera.CreateRoomWrapHook)
     HookUtils.onPostFunction("draw", CoopCamera.Update)
     HookUtils.onPostFunction("ExitNPCPresentation", CoopCamera.OnExitNPCPresentation)
+    HookUtils.onPostFunction("PanCamera", CoopCamera.PanCameraPostHook)
     CoopCamera.LockCameraOrig = LockCamera
     LockCamera = CoopCamera.LockCameraHook
 end
@@ -32,10 +33,10 @@ end
 function CoopCamera.LockCameraHook(args)
     local mainPlayerId  = CoopPlayers.GetMainHero().ObjectId
     if mainPlayerId and args.Id == mainPlayerId then
-        CoopCamera.isFocusEnabled = true
+        CoopCamera.ForceFocus(true)
         CoopCamera.Update()
     else
-        CoopCamera.isFocusEnabled = false
+        CoopCamera.ForceFocus(false)
         CoopCamera.LockCameraOrig(args)
     end
 end
@@ -82,6 +83,14 @@ function CoopCamera.CreateRoomWrapHook(baseFunc, ...)
         room.ZoomFraction = room.ZoomFraction * 0.6
     end
     return room
+end
+
+---@private
+function CoopCamera.PanCameraPostHook(args)
+    local id = args.Id or args.Ids
+    if id then
+        CoopCamera.ForceFocus(CoopPlayers.IsPlayerUnit(id))
+    end
 end
 
 return CoopCamera
