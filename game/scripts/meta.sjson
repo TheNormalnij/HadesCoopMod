@@ -4,4 +4,7 @@
 	Priority = 0
 	Version = "0.2.4"
 	Author = "Uladzislau 'TheNormalnij' Nikalayevich"
+	Localization = [
+		"Localization.sjson"
+	]
 }
