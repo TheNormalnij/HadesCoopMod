@@ -31,8 +31,8 @@ function HeroContextProxyStore.GetOrCreate(key)
     if proxy then
         return proxy
     else
-        proxy = HeroContextProxy.New(CurrentRun, "LootTypeHistory")
-        HeroContextProxyStore.Set("LootTypeHistory", proxy)
+        proxy = HeroContextProxy.New(CurrentRun, key)
+        HeroContextProxyStore.Set(key, proxy)
         return proxy
     end
 end
