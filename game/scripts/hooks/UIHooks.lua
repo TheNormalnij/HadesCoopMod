@@ -104,10 +104,26 @@ function UIHooks.InitHooks()
         end
     end
 
-    -- Ammo / red crystrals
+    -- Ammo (red crystrals)
     UIHooks.SimpleHookWithVisibilityCheck("ShowAmmoUI")
     HookUtils.onPreFunction("HideAmmoUI", function() thread(SecondPlayerUi.HideAmmoUI) end)
     HookUtils.onPreFunction("DestroyAmmoUI", SecondPlayerUi.DestroyAmmoUI)
+
+    HookUtils.wrap("StartAmmoReloadPresentation", function(baseFun, delay)
+        if CoopPlayers.GetMainHero() == HeroContext.GetCurrentHeroContext() then
+            baseFun(delay)
+        else
+            SecondPlayerUi.StartAmmoReloadPresentation(delay)
+        end
+    end)
+
+    HookUtils.wrap("EndAmmoReloadPresentation", function(baseFun)
+        if CoopPlayers.GetMainHero() == HeroContext.GetCurrentHeroContext() then
+            baseFun()
+        else
+            SecondPlayerUi.EndAmmoReloadPresentation()
+        end
+    end)
 
     local _UpdateAmmoUI = UpdateAmmoUI
     UpdateAmmoUI = function()

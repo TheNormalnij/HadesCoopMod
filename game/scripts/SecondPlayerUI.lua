@@ -349,6 +349,47 @@ function SecondPlayerUi.HideAmmoUI()
     Destroy({ Ids = ids })
 end
 
+function SecondPlayerUi.StartAmmoReloadPresentation(delay)
+    ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads = ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads or {}
+    local reloadTimer = delay
+    local poxX = ScreenWidth - 494 - 150
+    if IsEmpty(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads) then
+        local id = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_Menu", Y = ScreenHeight - 70, X = poxX +
+        40 * #ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads })
+        SetAnimation({ Name = "AmmoReloadTimer", DestinationId = id, PlaySpeed = 100 / reloadTimer })
+        SetColor({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Color = { 0.5, 0.5, 0.5, 1.0 } })
+        table.insert(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads, id)
+    else
+        local id = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_Menu", Y = ScreenHeight - 62 + 35, X = poxX +
+        40 * #ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads })
+        SetAnimation({ Name = "AmmoMultipleReloadTimer", DestinationId = id, PlaySpeed = 100 / reloadTimer })
+        SetColor({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Color = { 0.5, 0.5, 0.5, 1.0 } })
+        table.insert(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads, id)
+    end
+end
+
+function SecondPlayerUi.EndAmmoReloadPresentation()
+	if IsEmpty(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads ) then
+		return
+	end
+
+	SetColor({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Color = {1.0, 1.0, 1.0, 1.0} })
+	CreateAnimation({ DestinationId = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Name = "AmmoReloadFinishedFlare" })
+	table.remove( ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads, 1 )
+
+    local poxX = ScreenWidth - 494 - 150
+	local destroyIds = {}
+	for i, id in pairs( ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads ) do
+        local targetId = SpawnObstacle({ Name = "InvisibleTarget", OffsetX = ScreenWidth + 40 * (i - 1), OffsetY =
+        ScreenHeight - 62 + 40, Group = "Standing" })
+		Move({ Id = id, DestinationId = targetId, Duration = 0.25 })
+		table.insert( destroyIds, targetId )
+	end
+	PlaySound({ Name = "/SFX/BloodstoneAmmoRecharged", Id = CurrentRun.Hero.ObjectId })
+	Destroy({ Ids = destroyIds })
+end
+
+
 function SecondPlayerUi.DestroyAmmoUI()
     if ScreenAnchorsSecondPlayer.AmmoIndicatorUI == nil then
         return
