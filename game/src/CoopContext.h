@@ -9,12 +9,15 @@
 
 #include "interface/MapThing.h"
 
+constexpr size_t INVALID_PLAYER_INDEX = -1;
+constexpr size_t INVALID_UNIT_INDEX = -1;
+
 class lua_State;
 
 class CoopContext {
   public:
     CoopContext();
-    ~CoopContext();
+    ~CoopContext() = default;
 
     PlayerManagerExtension &GetPlayerManager() noexcept { return playerManager; };
 
@@ -38,8 +41,5 @@ class CoopContext {
 
   private:
     PlayerManagerExtension playerManager;
-
-    std::vector<SGG::MapThing *> m_cretedThings;
-
     static std::unique_ptr<CoopContext> instance;
 };

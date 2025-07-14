@@ -8,6 +8,8 @@
 #include "interface/Player.h"
 #include "interface/InputHandler.h"
 
+constexpr size_t MAX_PLAYERS = 2;
+
 class PlayerManagerExtension {
   public:
     PlayerManagerExtension() = default;

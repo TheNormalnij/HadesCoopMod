@@ -10,7 +10,7 @@ bool PlayerManagerExtension::AssignGamepad(size_t playerIndex, uint8_t gamepadIn
     if (GetPlayersCount() < playerIndex + 1)
         return false;
 
-    auto *player = SGG::PlayerManager::Instance()->m_palyers[playerIndex];
+    auto *player = SGG::PlayerManager::Instance()->GetPlayer(playerIndex);
 
     if (!player)
         return false;
@@ -29,7 +29,7 @@ uint8_t PlayerManagerExtension::GetGamepad(size_t playerIndex) {
     if (GetPlayersCount() < playerIndex + 1)
         return -1;
 
-    auto *player = SGG::PlayerManager::Instance()->m_palyers[playerIndex];
+    auto *player = SGG::PlayerManager::Instance()->GetPlayer(playerIndex);
 
     if (!player)
         return -1;
@@ -71,6 +71,9 @@ void PlayerManagerExtension::RemovePlayer(size_t index) {
 
 SGG::Player *PlayerManagerExtension::CreatePlayer(size_t index) {
     auto *instance = SGG::PlayerManager::Instance();
+
+    if (index >= MAX_PLAYERS)
+        return nullptr;
 
     // This struct has size 2 in the game
     if (instance->m_palyers.size() <= index)

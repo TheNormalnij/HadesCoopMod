@@ -30,6 +30,7 @@ class PlayerManager {
             this, player, index);
     }
 
+    SGG::Player *GetPlayer(uint64_t index) const noexcept { return m_palyers[index]; }
   private:
     eastl::vector<SGG::InputHandler*, eastl::allocator_forge> m_inputMethods;
     eastl::vector<SGG::Player *, eastl::allocator_forge> m_palyers;
