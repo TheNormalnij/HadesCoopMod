@@ -13,6 +13,8 @@ local HookUtils = ModRequire "../HookUtils.lua"
 local CoopCamera = ModRequire "../CoopCamera.lua"
 ---@type EnemyAiHooks
 local EnemyAiHooks = ModRequire "EnemyAiHooks.lua"
+---@type LootHooks
+local LootHooks = ModRequire "LootHooks.lua"
 ---@type ILootDelivery
 local LootDelivery = ModRequire "../loot/LootInterface.lua"
 ---@type SecondPlayerUi
@@ -169,6 +171,7 @@ function RunHooks.StartNewRunWrapHook(StartNewRunFun, prevRun, args)
     local isNewGame = RunEx.WasTheFirstRunStarted()
     local newRun = StartNewRunFun(prevRun, args)
     HeroContext.InitRunHook()
+    LootHooks.InitRunHooks()
     LootDelivery.Reset(CoopPlayers.GetPlayersCount())
     CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
 

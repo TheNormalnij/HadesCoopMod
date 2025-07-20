@@ -43,7 +43,13 @@ function LootHooks.InitHooks()
     -- Spawns room reward for a player selected by room
     HookUtils.wrap("SpawnRoomReward", LootHooks.SpawnRoomRewardHook)
 
-    LootHooks.InitLootHistoryProxy()
+    LootHooks.InitRunHooks()
+end
+
+function LootHooks.InitRunHooks()
+    if CurrentRun then
+        LootHooks.InitLootHistoryProxy()
+    end
 end
 
 ---@private
