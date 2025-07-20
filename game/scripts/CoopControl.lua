@@ -63,7 +63,7 @@ end
 function CoopControl.ResetAllPlayers(schema)
     schema = schema or "Current"
     for playerId in pairs(CoopControl.Schemas.Current) do
-        CoopControl.SetPlayerControlSchema(playerId, "Current")
+        CoopControl.SetPlayerControlSchema(playerId, schema)
     end
 end
 

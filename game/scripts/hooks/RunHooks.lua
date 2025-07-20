@@ -25,6 +25,8 @@ local RunEx = ModRequire "../RunEx.lua"
 local PlayerVisibilityHelper = ModRequire "../PlayerVisibilityHelper.lua"
 ---@type HeroEx
 local HeroEx = ModRequire "../HeroEx.lua"
+---@type CoopControl
+local CoopControl = ModRequire "../CoopControl.lua"
 
 ---@class RunHooks
 local RunHooks = {}
@@ -78,6 +80,9 @@ end
 
 ---@private
 function RunHooks.StartRoomWrapHook(StartRoomFun, run, currentRoom)
+    -- Fixes mouse disappearing after level transiction
+    CoopControl.ResetAllPlayers("Current")
+
     -- Initialization after save loading when encounter is active
     if not HeroContext.GetDefaultHero() then
         HeroContext.InitRunHook()
