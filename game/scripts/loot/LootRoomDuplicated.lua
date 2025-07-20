@@ -421,7 +421,7 @@ end
 function LootRoomDuplicated.RecreateSpecialRooms()
     for doorObjectId, door in pairs(OfferedExitDoors) do
         local room = door.Room
-        if RunEx.IsShopRoomName(room.Name) or RunEx.IsStoryRoomName(room.Name) then
+        if RunEx.IsShopRoomName(room.Name) or RunEx.IsStoryRoomName(room.Name) or (RunEx.IsPrebossRoomName(room.Name) and room.ChosenRewardType == "Shop")  then
             door.Room = CreateRoom( ChooseNextRoomData( CurrentRun ), { SkipChooseReward = true, SkipChooseEncounter = true, })
             AssignRoomToExitDoor(door, door.Room)
             -- Huh, can be done better

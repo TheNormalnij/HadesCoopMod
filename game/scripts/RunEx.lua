@@ -33,6 +33,11 @@ function RunEx.IsStoryRoomName(name)
     return name == "A_Story01" or name == "B_Story01" or name == "C_Story01"
 end
 
+---@return boolean
+function RunEx.IsPrebossRoomName(name)
+    return name == "A_PreBoss01" or name == "B_PreBoss01" or name == "C_PreBoss01"
+end
+
 function RunEx.IsDoorSpecial(door)
     -- chaos door or chall aenge room
     return door.OnUsedPresentationFunctionName == "SecretDoorUsedPresentation" or
