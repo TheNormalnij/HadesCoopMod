@@ -692,6 +692,11 @@ function SecondPlayerUi.DestroySuperMeter()
 end
 
 function SecondPlayerUi.UpdateSuperUIComponent(index, filled)
+    if not CurrentRun.Hero.SuperCost then
+        return
+    end
+    --- leave this
+
     local animationName = "WrathPipEmpty"
     if filled >= 1 then
         animationName = "WrathPipFull"
