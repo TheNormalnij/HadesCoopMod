@@ -239,6 +239,10 @@ function LootRoomDuplicated.CheckSpecialDoorRequirementWrap(baseFun, door)
         return nil
     end
 
+    if RunEx.IsFinalBossDoor(door) then
+        return nil
+    end
+
     -- Special case for secret (chaos) door
     if LootRoomDuplicated.IsDoorSpecial(door) and not LootRoomDuplicated.IsSpecialDoorAllowed() then
         return "ExitNotActive"
@@ -307,6 +311,7 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
 
     if LootRoomDuplicated.CurrentHeroChooser == nil
         or LootRoomDuplicated.IsDoorSpecial(door)
+        or RunEx.IsFinalBossDoor(door)
     then
         CurrentRun.CurrentRoom.SkipLoadNextMap = LootRoomDuplicated.ShouldSkipLoadingNextMap
         return baseFun(currentRun, door)

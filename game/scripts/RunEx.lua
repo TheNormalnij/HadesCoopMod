@@ -33,6 +33,11 @@ function RunEx.IsStoryRoomName(name)
     return name == "A_Story01" or name == "B_Story01" or name == "C_Story01"
 end
 
+---@return boolean
+function RunEx.IsFinalBossDoor(door)
+    return door.ForceRoomName == "D_Boss01"
+end
+
 function RunEx.RemoveDoorReward(door)
     if door.DoorIconId ~= nil then
         Destroy { Id = door.DoorIconBackingId }
