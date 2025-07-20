@@ -99,8 +99,14 @@ function LootRoomDuplicated.OnUnlockedRewardedRoom(baseFun, run, room)
         end
     elseif run.NextRewardStoreName == "MetaProgress" then
         HeroContext.RunWithHeroContextAwait(firstAliveHero, baseFun, run, room)
-        -- Do not duplicate meta progress
-        LootRoomDuplicated.CurrentHeroChooser = nil
+        if RunEx.IsDefaultDoorsLeadToRunProgress() then
+            --- NextRewardStoreName can be overrided
+            LootRoomDuplicated.CurrentHeroChooser = firstAliveHero
+        else
+            -- Do not duplicate meta progress
+            LootRoomDuplicated.CurrentHeroChooser = nil
+        end
+
     elseif CurrentRun.StyxChoosenDoor then
         DebugPrint{Text = "LootRoomDuplicated: OnUnlockedRewardedRoom called with styx choosen door."}
         LootRoomDuplicated.CurrentHeroChooser = nil
@@ -244,7 +250,7 @@ function LootRoomDuplicated.CheckSpecialDoorRequirementWrap(baseFun, door)
     end
 
     -- Special case for secret (chaos) door
-    if LootRoomDuplicated.IsDoorSpecial(door) and not LootRoomDuplicated.IsSpecialDoorAllowed() then
+    if RunEx.IsDoorSpecial(door) and not LootRoomDuplicated.IsSpecialDoorAllowed() then
         return "ExitNotActive"
     end
 
@@ -290,13 +296,6 @@ function LootRoomDuplicated.IsSpecialDoorAllowed()
     return CoopPlayers.GetAliveHeroes()[1] == LootRoomDuplicated.CurrentHeroChooser
 end
 
----@return boolean
-function LootRoomDuplicated.IsDoorSpecial(door)
-    -- chaos door or chall aenge room
-    return door.OnUsedPresentationFunctionName == "SecretDoorUsedPresentation" or
-        door.OnUsedPresentationFunctionName == "ShrinePointDoorUsedPresentation"
-end
-
 ---@private
 function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
     if CurrentRun.StyxLoot then
@@ -310,7 +309,7 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
     end
 
     if LootRoomDuplicated.CurrentHeroChooser == nil
-        or LootRoomDuplicated.IsDoorSpecial(door)
+        or RunEx.IsDoorSpecial(door)
         or RunEx.IsFinalBossDoor(door)
     then
         CurrentRun.CurrentRoom.SkipLoadNextMap = LootRoomDuplicated.ShouldSkipLoadingNextMap

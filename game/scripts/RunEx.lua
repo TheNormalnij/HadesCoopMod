@@ -33,9 +33,31 @@ function RunEx.IsStoryRoomName(name)
     return name == "A_Story01" or name == "B_Story01" or name == "C_Story01"
 end
 
+function RunEx.IsDoorSpecial(door)
+    -- chaos door or chall aenge room
+    return door.OnUsedPresentationFunctionName == "SecretDoorUsedPresentation" or
+        door.OnUsedPresentationFunctionName == "ShrinePointDoorUsedPresentation"
+end
+
 ---@return boolean
 function RunEx.IsFinalBossDoor(door)
     return door.ForceRoomName == "D_Boss01"
+end
+
+---@return boolean
+function RunEx.IsDefaultDoorsLeadToRunProgress()
+    for _, door in pairs(OfferedExitDoors) do
+        local room = door.Room
+        if room
+            and not RunEx.IsShopRoomName(room.Name)
+            and not RunEx.IsStoryRoomName(room.Name)
+            and not RunEx.IsDoorSpecial(door)
+            and room.RewardStoreName == "RunProgress"
+            then
+            return true
+        end
+    end
+    return false
 end
 
 function RunEx.RemoveDoorReward(door)
