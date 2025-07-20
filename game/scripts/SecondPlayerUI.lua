@@ -711,6 +711,11 @@ function SecondPlayerUi.UpdateSuperUIComponent(index, filled)
 end
 
 function SecondPlayerUi.UpdateSuperMeterUIReal()
+    if not CurrentRun.Hero.SuperCost then
+        return
+    end
+    --- leave this
+
     if ScreenAnchorsSecondPlayer.SuperMeterIcon == nil then
         return
     end
