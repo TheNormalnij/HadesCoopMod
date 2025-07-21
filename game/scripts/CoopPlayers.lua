@@ -3,8 +3,6 @@
 -- Licensed under the MIT license. See LICENSE file in the project root for details.
 --
 
----@type GameModifed
-local GameModifed = ModRequire "GameModifed.lua"
 ---@type HeroContext
 local HeroContext = ModRequire "HeroContext.lua"
 ---@type CoopControl
@@ -188,7 +186,7 @@ function CoopPlayers.InitCoopUnit(playerId)
 
     PlayerVisibilityHelper.AddPlayerMarkers(playerId, unit)
 
-    HeroContext.RunWithHeroContext(hero, GameModifed.SetupAdditional, CurrentRun, nil, hero, unit)
+    HeroEx.SetupAdditional(CurrentRun, nil, hero, unit)
 
     SetUntargetable { Id = hero.ObjectId }
     -- Disables bow arrow bounces

@@ -5,9 +5,16 @@
 
 ---@type HeroContext
 local HeroContext = ModRequire "HeroContext.lua"
+---@type HookUtils
+local HookUtils = ModRequire "HookUtils.lua"
 
 ---@class HeroEx
 local HeroEx = {}
+
+function HeroEx.Init()
+    -- Save unhooked
+    HeroEx.SetupHeroObject = SetupHeroObject
+end
 
 ---@param hero table
 ---@return string
@@ -27,7 +34,6 @@ function HeroEx.GetGiftAndAssist(hero)
 
         ::continue::
     end
-
 
     return currentGift, currentAssist
 end
@@ -124,6 +130,13 @@ function HeroEx.HideHero(hero)
     UnequipWeapon { DestinationId = hero.ObjectId, Names = weaponsToHide, UnloadPackages = false }
     SetColor { Id = hero.ObjectId, Color = { 255, 255, 255, 0 } }
     Teleport { Id = hero.ObjectId, DestinationId = hero.ObjectId, OffsetX = -10000 }
+end
+
+function HeroEx.SetupAdditional(currentRun, applyLuaUpgrades, hero, ObjectId)
+    HookUtils.wrapOnce("GetIdsByType", function()
+        return { ObjectId }
+    end)
+    HeroContext.RunWithHeroContext(hero, HeroEx.SetupHeroObject, currentRun, applyLuaUpgrades)
 end
 
 return HeroEx

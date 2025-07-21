@@ -5,6 +5,8 @@
 
 ---@type HookUtils
 local HookUtils = ModRequire "HookUtils.lua"
+---@type HeroEx
+local HeroEx = ModRequire "HeroEx.lua"
 ---@type CoopPlayers
 local CoopPlayers = ModRequire "CoopPlayers.lua"
 ---@type SecondPlayerUi
@@ -52,6 +54,7 @@ local function TryInstalBasicHooks()
     -- Fixes crash on loading when the game truing add last stand to a second player
     ScreenAnchors = {}
 
+    HeroEx.Init()
     EnemyAiHooks.InitHooks()
     SaveHooks.InitHooks()
     CoopCamera.InitHooks()

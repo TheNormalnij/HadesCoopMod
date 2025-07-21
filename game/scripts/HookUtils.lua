@@ -83,6 +83,22 @@ function HookUtils.wrap(funcName, handler)
 end
 
 ---@param funcName string
+---@param handler fun(basefun: function, ...): any
+function HookUtils.wrapOnce(funcName, handler)
+    local original = _G[funcName]
+
+    if not original then
+        error("Cannot wrap function: " .. tostring(funcName))
+    end
+
+    _G[funcName] = function(...)
+        local result = { handler(original, ...) }
+        _G[funcName] = original
+        return table.unpack(result)
+    end
+end
+
+---@param funcName string
 ---@param handler fun(...): any
 function HookUtils.replace(funcName, handler)
     _G[funcName] = handler
