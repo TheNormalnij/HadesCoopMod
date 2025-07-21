@@ -55,6 +55,7 @@ local function TryInstalBasicHooks()
     ScreenAnchors = {}
 
     HeroEx.Init()
+    SecondPlayerUi.Init()
     EnemyAiHooks.InitHooks()
     SaveHooks.InitHooks()
     CoopCamera.InitHooks()

@@ -11,6 +11,14 @@ local ScreenAnchorsSecondPlayer = {}
 
 SecondPlayerUi.ScreenAnchors = ScreenAnchorsSecondPlayer
 
+function SecondPlayerUi.Init()
+    SecondPlayerUi.UpdateSuperUIComponentOriginal = UpdateSuperUIComponent
+    SecondPlayerUi.UpdateSuperMeterUIRealOriginal = UpdateSuperMeterUIReal
+    SecondPlayerUi.DestroySuperMeterOriginal = DestroySuperMeter
+    SecondPlayerUi.HideSuperMeterOriginal = HideSuperMeter
+end
+
+--- NOT OK
 function SecondPlayerUi.ShowHealthUI()
     if not ConfigOptionCache.ShowUIAnimations then
         return
@@ -122,6 +130,7 @@ function SecondPlayerUi.ShowHealthUI()
     end
 end
 
+--- NOT OK
 function SecondPlayerUi.UpdateHealthUI()
     local unit = CoopPlayers.GetHero(2)
     if unit == nil then return; end
@@ -151,6 +160,7 @@ function SecondPlayerUi.UpdateHealthUI()
     }
 end
 
+--- NOT OK
 function SecondPlayerUi.UpdateRallyHealthUI()
     local unit = CoopPlayers.GetHero(2)
     if unit == nil then return; end
@@ -170,6 +180,7 @@ function SecondPlayerUi.UpdateRallyHealthUI()
     })
 end
 
+--- NOT OK
 function SecondPlayerUi.HideHealthUI()
     if ScreenAnchorsSecondPlayer.HealthBack == nil then
         return
@@ -203,6 +214,7 @@ function SecondPlayerUi.HideHealthUI()
     Destroy({ Ids = healthAnchorIds })
 end
 
+--- NOT OK
 function SecondPlayerUi.DestroyHealthUI()
     local ids = CombineTables({
         ScreenAnchorsSecondPlayer.HealthBack,
@@ -223,6 +235,7 @@ function SecondPlayerUi.DestroyHealthUI()
     ScreenAnchorsSecondPlayer.BadgeId = nil
 end
 
+--- NOT OK
 function SecondPlayerUi.UpdateLifePips()
     local unit = CoopPlayers.GetHero(2)
     if not unit or not ScreenAnchorsSecondPlayer.LifePipIds or not unit.LastStands then
@@ -247,6 +260,7 @@ function SecondPlayerUi.UpdateLifePips()
     end
 end
 
+--- NOT OK
 function SecondPlayerUi.RecreateLifePips()
     if ScreenAnchorsSecondPlayer.LifePipIds then
         Destroy { Ids = ScreenAnchorsSecondPlayer.LifePipIds }
@@ -275,6 +289,8 @@ function SecondPlayerUi.RecreateLifePips()
 end
 
 -- Ammo
+
+--- NOT OK
 function SecondPlayerUi.ShowAmmoUI()
     if ScreenAnchorsSecondPlayer.AmmoIndicatorUI ~= nil then
         return
@@ -306,6 +322,7 @@ function SecondPlayerUi.ShowAmmoUI()
     CombatUI.FadeDistance.Ammo, Direction = 0 })
 end
 
+--- NOT OK
 function SecondPlayerUi.UpdateAmmoUI()
     local hero = CoopPlayers.GetHero(2)
 
@@ -329,6 +346,7 @@ function SecondPlayerUi.UpdateAmmoUI()
     ammoData, AutoSetDataProperties = false, })
 end
 
+--- NOT OK
 function SecondPlayerUi.HideAmmoUI()
     if ScreenAnchorsSecondPlayer.AmmoIndicatorUI == nil then
         return
@@ -349,6 +367,7 @@ function SecondPlayerUi.HideAmmoUI()
     Destroy({ Ids = ids })
 end
 
+--- NOT OK
 function SecondPlayerUi.StartAmmoReloadPresentation(delay)
     ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads = ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads or {}
     local reloadTimer = delay
@@ -368,6 +387,7 @@ function SecondPlayerUi.StartAmmoReloadPresentation(delay)
     end
 end
 
+--- NOT OK
 function SecondPlayerUi.EndAmmoReloadPresentation()
 	if IsEmpty(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads ) then
 		return
@@ -390,6 +410,7 @@ function SecondPlayerUi.EndAmmoReloadPresentation()
 end
 
 
+--- NOT OK
 function SecondPlayerUi.DestroyAmmoUI()
     if ScreenAnchorsSecondPlayer.AmmoIndicatorUI == nil then
         return
@@ -401,6 +422,7 @@ end
 
 -- Gun
 
+--- NOT OK
 function SecondPlayerUi.ShowGunUI(gunData)
     if not CurrentRun.Hero.Weapons.GunWeapon then
         return
@@ -459,6 +481,7 @@ function SecondPlayerUi.ShowGunUI(gunData)
     })
 end
 
+--- NOT OK
 function SecondPlayerUi.UpdateGunUI(triggerArgs)
     triggerArgs = triggerArgs or {}
     local ammoData =
@@ -509,6 +532,7 @@ function SecondPlayerUi.UpdateGunUI(triggerArgs)
     end
 end
 
+--- NOT OK
 function SecondPlayerUi.HideGunUI()
     if ScreenAnchorsSecondPlayer.GunUI == nil then
         return
@@ -533,6 +557,7 @@ function SecondPlayerUi.HideGunUI()
     ModifyTextBox({ Id = id, FadeTarget = 0, FadeDuration = 0, AutoSetDataProperties = false, })
 end
 
+--- NOT OK
 function SecondPlayerUi.DestroyGunUI()
     if ScreenAnchorsSecondPlayer.GunUI == nil then
         return
@@ -541,6 +566,7 @@ function SecondPlayerUi.DestroyGunUI()
     ScreenAnchorsSecondPlayer.GunUI = nil
 end
 
+--- NOT OK
 function SecondPlayerUi.ShowSuperMeter()
     if not IsSuperValid() then
         return
@@ -640,113 +666,37 @@ end
 
 function SecondPlayerUi.HideSuperMeter()
     if ScreenAnchorsSecondPlayer.SuperMeterIcon == nil then
-        -- Already hidden
         return
     end
+    local actorsBefore = ScreenAnchors
+    ScreenAnchors = ScreenAnchorsSecondPlayer
 
-    HideObstacle({ Id = ScreenAnchorsSecondPlayer.SuperMeterIcon, IncludeText = true, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration =
-    CombatUI.FadeDuration, SmoothStep = true })
-    HideObstacle({ Id = ScreenAnchorsSecondPlayer.SuperMeterCap, IncludeText = true, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration =
-    CombatUI.FadeDuration, SmoothStep = true })
-
-    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipIds) do
-        Move({ Id = pipId, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration = CombatUI.FadeDuration, SmoothStep = true })
-        SetAlpha({ Id = pipId, Fraction = 0, Duration = CombatUI.FadeDuration })
+    local waitOrig = wait
+    wait = function(...)
+        ScreenAnchors = actorsBefore
+        wait = waitOrig
+        waitOrig(...)
     end
 
-    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipBackingIds) do
-        Move({ Id = pipId, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration = CombatUI.FadeDuration, SmoothStep = true })
-        SetAlpha({ Id = pipId, Fraction = 0, Duration = CombatUI.FadeDuration })
-    end
-
-    local ids = CombineTables(ScreenAnchorsSecondPlayer.SuperPipIds, ScreenAnchorsSecondPlayer.SuperPipBackingIds) or {}
-    table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterIcon)
-    table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterCap)
-    table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterHint)
-
-
-    ScreenAnchorsSecondPlayer.SuperMeterIcon = nil
-    ScreenAnchorsSecondPlayer.SuperMeterCap = nil
-    ScreenAnchorsSecondPlayer.SuperMeterHint = nil
-    ScreenAnchorsSecondPlayer.SuperPipIds = nil
-    ScreenAnchorsSecondPlayer.SuperPipBackingIds = nil
-
-    wait(CombatUI.FadeDuration, RoomThreadName)
-
-    Destroy({ Ids = ids })
+    SecondPlayerUi.HideSuperMeterOriginal()
 end
 
 function SecondPlayerUi.DestroySuperMeter()
-    local ids = CombineTables(ScreenAnchorsSecondPlayer.SuperPipIds, ScreenAnchorsSecondPlayer.SuperPipBackingIds) or {}
-    table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterIcon)
-    table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterCap)
-    table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterHint)
-    if not IsEmpty(ids) then
-        Destroy({ Ids = ids })
-    end
-    ScreenAnchorsSecondPlayer.SuperMeterIcon = nil
-    ScreenAnchorsSecondPlayer.SuperMeterCap = nil
-    ScreenAnchorsSecondPlayer.SuperMeterHint = nil
-    ScreenAnchorsSecondPlayer.SuperPipIds = nil
-    ScreenAnchorsSecondPlayer.SuperPipBackingIds = nil
+    SecondPlayerUi.CallWithActorWrap(SecondPlayerUi.DestroySuperMeterOriginal)
 end
 
 function SecondPlayerUi.UpdateSuperUIComponent(index, filled)
     if not CurrentRun.Hero.SuperCost then
         return
     end
-    --- leave this
-
-    local animationName = "WrathPipEmpty"
-    if filled >= 1 then
-        animationName = "WrathPipFull"
-    elseif filled > 0 then
-        animationName = "WrathPipPartial"
-    end
-
-    SetAnimation({ Name = "WrathPipEmpty", DestinationId = ScreenAnchorsSecondPlayer.SuperPipBackingIds[index] })
-    SetAnimation({ Name = animationName, DestinationId = ScreenAnchorsSecondPlayer.SuperPipIds[index] })
-    local baseFraction = CurrentRun.Hero.SuperCost / SuperUI.BaseMoveThreshold * 1.0
-
-    if CurrentRun.Hero.SuperMeterLimit < CurrentRun.Hero.SuperCost * index then
-        baseFraction = (CurrentRun.Hero.SuperMeterLimit % CurrentRun.Hero.SuperCost) / SuperUI.BaseMoveThreshold * 1.0
-    end
-    SetScaleX({ Id = ScreenAnchorsSecondPlayer.SuperPipBackingIds[index], Fraction = baseFraction, Duration = 0 })
-    SetScaleX({ Id = ScreenAnchorsSecondPlayer.SuperPipIds[index], Fraction = baseFraction * filled, Duration = 0 })
+    SecondPlayerUi.CallWithActorWrap(SecondPlayerUi.UpdateSuperUIComponentOriginal)
 end
 
 function SecondPlayerUi.UpdateSuperMeterUIReal()
     if not CurrentRun.Hero.SuperCost then
         return
     end
-    --- leave this
-
-    if ScreenAnchorsSecondPlayer.SuperMeterIcon == nil then
-        return
-    end
-
-    local superMeterPoints = CurrentRun.Hero.SuperMeter
-    if superMeterPoints == nil then
-        superMeterPoints = 0
-    end
-
-    for i = 1, TableLength(ScreenAnchorsSecondPlayer.SuperPipBackingIds) do
-        local fillPercent = 0
-        if superMeterPoints > (i - 1) * CurrentRun.Hero.SuperCost then
-            if CurrentRun.Hero.SuperMeterLimit < CurrentRun.Hero.SuperCost * i and i == math.ceil(CurrentRun.Hero.SuperMeterLimit / CurrentRun.Hero.SuperCost) then
-                fillPercent = math.min(1,
-                    (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) /
-                    (CurrentRun.Hero.SuperMeterLimit % CurrentRun.Hero.SuperCost))
-            else
-                fillPercent = math.min(1,
-                    (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) / CurrentRun.Hero.SuperCost)
-            end
-        end
-        UpdateSuperUIComponent(i, fillPercent)
-    end
-    ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.SuperMeterIcon, Text = "UI_SuperText", LuaKey = "TempTextData", LuaValue = { Current = math.floor(superMeterPoints), Maximum = CurrentRun.Hero.SuperMeterLimit } })
-
-    UIScriptsDeferred.SuperMeterDirty = false
+    SecondPlayerUi.CallWithActorWrap(SecondPlayerUi.UpdateSuperMeterUIRealOriginal)
 end
 
 function SecondPlayerUi.Refresh()
@@ -754,5 +704,14 @@ function SecondPlayerUi.Refresh()
     SecondPlayerUi.RecreateLifePips()
     SecondPlayerUi.UpdateAmmoUI()
 end
+
+---@private
+function SecondPlayerUi.CallWithActorWrap(fun, ...)
+    local actorsBefore = ScreenAnchors
+    ScreenAnchors = ScreenAnchorsSecondPlayer
+    fun(...)
+    ScreenAnchors = actorsBefore
+end
+
 
 return SecondPlayerUi
