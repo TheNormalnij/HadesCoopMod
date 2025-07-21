@@ -9,14 +9,27 @@ local CoopPlayers = ModRequire "../CoopPlayers.lua"
 local HeroContext = ModRequire "../HeroContext.lua"
 ---@type HookUtils
 local HookUtils = ModRequire "../HookUtils.lua"
----@type GameModifed
-local GameModifed = ModRequire "../GameModifed.lua"
 
 local _OnControlPressed = OnControlPressed
 OnControlPressed = function(args)
     if args[1] == "AdvancedTooltip" then
-        -- override control here
-        args[2] = GameModifed.AdvancedTooltipModifedHandler
+        -- Nasty hack here
+        local originalHandler = args[2]
+        args[2] = function()
+            local IsEmptyOriginal = IsEmpty
+            IsEmpty = function(param)
+                local hero = CurrentRun and CurrentRun.Hero
+                if hero and param == hero.Traits then
+                    IsEmpty = IsEmptyOriginal
+                    return false
+                else
+                    return IsEmptyOriginal(param)
+                end
+            end
+
+            originalHandler()
+            IsEmpty = IsEmptyOriginal
+        end
     end
     _OnControlPressed {
         args[1],
