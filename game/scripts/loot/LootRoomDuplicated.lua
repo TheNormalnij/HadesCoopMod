@@ -217,6 +217,25 @@ end
 function LootRoomDuplicated.Reset(heroesCount)
     HeroContextProxyStore.GetOrCreate("LootTypeHistory"):Reset()
     CurrentRun.StyxLoot = nil
+    local room = CurrentRun.CurrentRoom
+    if room and room.ChosenRewardType == "Boon" and room.ForceLootName then
+        LootRoomDuplicated.ChosenPlayerLoot = {{
+            rewardType = room.ChosenRewardType,
+            lootName = room.ForceLootName
+        }}
+        for playerId, hero in CoopPlayers.AdditionalHeroesIterator() do
+            local keepsake = HeroEx.GetGiftAndAssist(hero)
+
+            local trait = keepsake and TraitData[keepsake]
+            if trait and trait.ForceBoonName then
+                LootRoomDuplicated.ChosenPlayerLoot[playerId] = {
+                    rewardType = room.ChosenRewardType,
+                    lootName = trait.ForceBoonName
+                }
+            end
+        end
+    end
+
 end
 
 ---@param baseFun fun(args: table): table
