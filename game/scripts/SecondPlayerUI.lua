@@ -16,6 +16,9 @@ function SecondPlayerUi.Init()
     SecondPlayerUi.UpdateSuperMeterUIRealOriginal = UpdateSuperMeterUIReal
     SecondPlayerUi.DestroySuperMeterOriginal = DestroySuperMeter
     SecondPlayerUi.HideSuperMeterOriginal = HideSuperMeter
+    SecondPlayerUi.HideGunUIOriginal = HideGunUI
+    SecondPlayerUi.DestroyHealthUIOriginal = DestroyHealthUI
+    SecondPlayerUi.DestroyGunUIOriginal = DestroyGunUI
 end
 
 --- NOT OK
@@ -214,25 +217,8 @@ function SecondPlayerUi.HideHealthUI()
     Destroy({ Ids = healthAnchorIds })
 end
 
---- NOT OK
 function SecondPlayerUi.DestroyHealthUI()
-    local ids = CombineTables({
-        ScreenAnchorsSecondPlayer.HealthBack,
-        ScreenAnchorsSecondPlayer.HealthFill,
-        ScreenAnchorsSecondPlayer.HealthFlash 
-        },
-        ScreenAnchorsSecondPlayer.LifePipIds
-        )
-
-    if not IsEmpty(ids) then
-        Destroy({ Ids = ids })
-    end
-    ScreenAnchorsSecondPlayer.HealthBack = nil
-    ScreenAnchorsSecondPlayer.HealthFill = nil
-    ScreenAnchorsSecondPlayer.HealthFlash = nil
-    ScreenAnchorsSecondPlayer.HealthRally = nil
-    ScreenAnchorsSecondPlayer.LifePipIds = nil
-    ScreenAnchorsSecondPlayer.BadgeId = nil
+    SecondPlayerUi.CallWithActorWrap(SecondPlayerUi.DestroyHealthUIOriginal)
 end
 
 --- NOT OK
@@ -532,38 +518,24 @@ function SecondPlayerUi.UpdateGunUI(triggerArgs)
     end
 end
 
---- NOT OK
 function SecondPlayerUi.HideGunUI()
     if ScreenAnchorsSecondPlayer.GunUI == nil then
         return
     end
+    local actorsBefore = ScreenAnchors
+    ScreenAnchors = ScreenAnchorsSecondPlayer
 
-    local id = ScreenAnchorsSecondPlayer.GunUI
-    HideObstacle({
-        Id = id,
-        IncludeText = true,
-        Distance = CombatUI.FadeDistance.Ammo,
-        Angle = 180,
-        Duration = CombatUI
-            .FadeDuration,
-        SmoothStep = true
-    })
+    local waitOriginal = wait
+    wait = function(...)
+        ScreenAnchors = actorsBefore
+        waitOriginal(...)
+    end
 
-
-    ScreenAnchorsSecondPlayer.GunUI = nil
-
-    wait(CombatUI.FadeDuration, RoomThreadName)
-    Destroy({ Id = id })
-    ModifyTextBox({ Id = id, FadeTarget = 0, FadeDuration = 0, AutoSetDataProperties = false, })
+    SecondPlayerUi.HideGunUIOriginal()
 end
 
---- NOT OK
 function SecondPlayerUi.DestroyGunUI()
-    if ScreenAnchorsSecondPlayer.GunUI == nil then
-        return
-    end
-    Destroy({ Id = ScreenAnchorsSecondPlayer.GunUI })
-    ScreenAnchorsSecondPlayer.GunUI = nil
+    SecondPlayerUi.CallWithActorWrap(SecondPlayerUi.DestroyGunUIOriginal)
 end
 
 --- NOT OK
