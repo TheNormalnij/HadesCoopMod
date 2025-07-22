@@ -26,11 +26,22 @@ function MenuHooks.InitHooks()
     MenuHooks.HookUiControl("ShowStoreScreen")
     MenuHooks.HookUiControl("OpenSellTraitMenu")
 
-    HookUtils.onPreFunction("ShowAwardMenu", function()
+    HookUtils.wrap("ShowAwardMenu", function(baseFun, ...)
+        if HeroContext.GetCurrentHeroContext() == CoopPlayers.GetMainHero() then
+            baseFun(...)
+            return
+        end
+
+        local prevGift, prevAssist = GameState.LastAwardTrait, GameState.LastAssistTrait
+
         local currentGift, currentAssist = HeroEx.GetGiftAndAssist(CurrentRun.Hero)
 
         GameState.LastAwardTrait = currentGift
         GameState.LastAssistTrait = currentAssist
+
+        baseFun(...)
+
+        GameState.LastAwardTrait, GameState.LastAssistTrait = prevGift, prevAssist
     end)
 
     HookUtils.wrap("OpenSellTraitMenu", function(base)
