@@ -11,6 +11,8 @@ local HeroContext = ModRequire "../HeroContext.lua"
 local SecondPlayerUi = ModRequire "../SecondPlayerUI.lua"
 ---@type HeroContextWrapper
 local HeroContextWrapper = ModRequire "../HeroContextWrapper.lua"
+---@type CoopModConfig
+local Config = ModRequire "../config.lua"
 
 local _OnHit = OnHit
 function OnHit(args)
@@ -26,6 +28,18 @@ function OnHit(args)
         -- Disable PvP
         if isAttackerPlayer and isVictimPlayer then
             return
+        end
+
+        if Config.Debug.P1GodMode and isVictimPlayer and victim == CoopPlayers.GetHero(1) then
+            return
+        end
+
+        if Config.Debug.P2GodMode and isVictimPlayer and victim == CoopPlayers.GetHero(2) then
+            return
+        end
+
+        if Config.Debug.OneHit then
+            triggerArgs.DamageAmount = 10000
         end
 
         if isAttackerPlayer then

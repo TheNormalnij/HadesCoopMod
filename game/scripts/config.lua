@@ -46,6 +46,11 @@ local Config = {
         OutlineColor = { 0, 0, 0, 1 },
         Font = "AlegreyaSansSCRegular",
         Justification = "Center"
+    },
+    Debug = {
+        OneHit = false,
+        P1GodMode = false,
+        P2GodMode = false,
     }
 }
 
