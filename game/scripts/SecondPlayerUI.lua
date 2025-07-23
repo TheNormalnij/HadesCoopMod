@@ -19,6 +19,7 @@ function SecondPlayerUi.Init()
     SecondPlayerUi.HideGunUIOriginal = HideGunUI
     SecondPlayerUi.DestroyHealthUIOriginal = DestroyHealthUI
     SecondPlayerUi.DestroyGunUIOriginal = DestroyGunUI
+    SecondPlayerUi.DestroyAmmoUIOriginal = DestroyAmmoUI
 end
 
 --- NOT OK
@@ -395,15 +396,11 @@ function SecondPlayerUi.EndAmmoReloadPresentation()
 	Destroy({ Ids = destroyIds })
 end
 
-
---- NOT OK
 function SecondPlayerUi.DestroyAmmoUI()
     if ScreenAnchorsSecondPlayer.AmmoIndicatorUI == nil then
         return
     end
-    Destroy({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI })
-    Destroy({ Ids = ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads })
-    ScreenAnchorsSecondPlayer.AmmoIndicatorUI = nil
+    SecondPlayerUi.CallWithActorWrap(SecondPlayerUi.DestroyAmmoUIOriginal)
 end
 
 -- Gun
