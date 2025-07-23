@@ -97,6 +97,9 @@ function LootRoomDuplicated.OnUnlockedRewardedRoom(baseFun, run, room)
         else
             LootRoomDuplicated.HandleStyxRewardsFirstTime(baseFun, run, room)
         end
+    elseif CurrentRun.StyxChoosenDoor then
+        LootRoomDuplicated.CurrentHeroChooser = nil
+        HeroContext.RunWithHeroContextAwait(firstAliveHero, baseFun, run, room)
     elseif run.NextRewardStoreName == "MetaProgress" then
         HeroContext.RunWithHeroContextAwait(firstAliveHero, baseFun, run, room)
         if RunEx.IsDefaultDoorsLeadToRunProgress() then
@@ -106,11 +109,6 @@ function LootRoomDuplicated.OnUnlockedRewardedRoom(baseFun, run, room)
             -- Do not duplicate meta progress
             LootRoomDuplicated.CurrentHeroChooser = nil
         end
-
-    elseif CurrentRun.StyxChoosenDoor then
-        DebugPrint{Text = "LootRoomDuplicated: OnUnlockedRewardedRoom called with styx choosen door."}
-        LootRoomDuplicated.CurrentHeroChooser = nil
-        HeroContext.RunWithHeroContextAwait(firstAliveHero, baseFun, run, room)
     else
         HeroContext.RunWithHeroContextAwait(firstAliveHero, baseFun, run, room)
         LootRoomDuplicated.CurrentHeroChooser = firstAliveHero
