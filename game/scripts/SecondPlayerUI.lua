@@ -20,6 +20,7 @@ function SecondPlayerUi.Init()
     SecondPlayerUi.DestroyHealthUIOriginal = DestroyHealthUI
     SecondPlayerUi.DestroyGunUIOriginal = DestroyGunUI
     SecondPlayerUi.DestroyAmmoUIOriginal = DestroyAmmoUI
+    SecondPlayerUi.ShowSuperMeterOriginal = ShowSuperMeter
 end
 
 --- NOT OK
@@ -535,102 +536,27 @@ function SecondPlayerUi.DestroyGunUI()
     SecondPlayerUi.CallWithActorWrap(SecondPlayerUi.DestroyGunUIOriginal)
 end
 
---- NOT OK
 function SecondPlayerUi.ShowSuperMeter()
-    if not IsSuperValid() then
-        return
-    end
-
-    if ScreenAnchorsSecondPlayer.SuperMeterIcon ~= nil then
-        -- Already visible
-        return
-    end
+    local CreateScreenObstacleOriginal = CreateScreenObstacle
 
     local posX = ScreenWidth - 500 + 20
-
-    ScreenAnchorsSecondPlayer.SuperMeterIcon = CreateScreenObstacle{
-        Name = "BlankObstacle",
-        Group = "Combat_UI",
-        X = posX - (10 - CombatUI.FadeDistance.Super),
-        Y = ScreenHeight - 10
-    }
-
-    ScreenAnchorsSecondPlayer.SuperMeterCap = CreateScreenObstacle{
-        Name = "BlankObstacle",
-        Group = "Combat_Menu",
-        X = posX - (10 - CombatUI.FadeDistance.Super),
-        Y = ScreenHeight - 10
-    }
-
-    ScreenAnchorsSecondPlayer.SuperMeterHint = CreateScreenObstacle{
-        Name = "BlankObstacle",
-        X = posX - 10,
-        Y = ScreenHeight - 10,
-        Group = "Combat_Menu_Additive"
-    }
-
-    SetAnimation({ Name = "WrathBar", DestinationId = ScreenAnchorsSecondPlayer.SuperMeterIcon })
-
-    if HasHeroTraitValue("SuperMeterCap") then
-        SetAnimation({ Name = "WrathBarRegenCap", DestinationId = ScreenAnchorsSecondPlayer.SuperMeterCap })
-    end
-
-    local superMeterPoints = CurrentRun.Hero.SuperMeter
-    if superMeterPoints == nil then
-        superMeterPoints = 0
-    end
-
-    if CurrentRun.Hero.SuperMeter == CurrentRun.Hero.SuperMeterLimit and IsSuperAvailable(CurrentRun.Hero) and CanCommenceSuper() then
-        SetAnimation({ Name = "WrathBarFullFx", DestinationId = ScreenAnchorsSecondPlayer.SuperMeterHint })
-    end
-
-    ScreenAnchorsSecondPlayer.SuperPipBackingIds = {}
-    ScreenAnchorsSecondPlayer.SuperPipIds = {}
-    local pipXSize = SuperUI.PipXWidth * CurrentRun.Hero.SuperCost / SuperUI.BaseMoveThreshold
-    for i = 1, math.ceil(CurrentRun.Hero.SuperMeterLimit / CurrentRun.Hero.SuperCost) do
-        table.insert(ScreenAnchorsSecondPlayer.SuperPipBackingIds,
-            CreateScreenObstacle{
-                Name = "BlankObstacle",
-                Group = "Combat_UI",
-                X = posX + SuperUI.PipXStart + (i - 1) * pipXSize - CombatUI.FadeDistance.Super + 20,
-                Y = SuperUI.PipY }
-        )
-        table.insert(ScreenAnchorsSecondPlayer.SuperPipIds,
-            CreateScreenObstacle{
-                Name = "BlankObstacle",
-                Group = "Combat_Menu_Additive",
-                X = posX + SuperUI.PipXStart + (i - 1) * pipXSize - CombatUI.FadeDistance.Super + 20,
-                Y = SuperUI.PipY
-            }    
-        )
-        local fillPercent = 0
-        if superMeterPoints > (i - 1) * CurrentRun.Hero.SuperCost then
-            if CurrentRun.Hero.SuperMeterLimit < CurrentRun.Hero.SuperCost * i and i == math.ceil(CurrentRun.Hero.SuperMeterLimit / CurrentRun.Hero.SuperCost) then
-                fillPercent = math.min(1,
-                    (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) /
-                    (CurrentRun.Hero.SuperMeterLimit % CurrentRun.Hero.SuperCost))
-            else
-                fillPercent = math.min(1,
-                    (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) / CurrentRun.Hero.SuperCost)
-            end
+    local element = 0
+    CreateScreenObstacle = function(params)
+        element = element + 1
+        if element <= 3 then
+            params.X = posX - params.X
+        else
+            params.X  = posX + params.X + 20
         end
-        SecondPlayerUi.UpdateSuperUIComponent(i, fillPercent)
+
+        return CreateScreenObstacleOriginal(params)
     end
 
-    UpdateSuperMeterUI()
-
-    FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.SuperMeterIcon, Duration = CombatUI.FadeInDuration, IncludeText = true, Distance =
-    CombatUI.FadeDistance.Super, Direction = 0 })
-    FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.SuperMeterCap, Duration = CombatUI.FadeInDuration, IncludeText = true, Distance =
-    CombatUI.FadeDistance.Super, Direction = 0 })
-    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipIds) do
-        FadeObstacleIn({ Id = pipId, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance = CombatUI
-        .FadeDistance.Super, Direction = 0 })
-    end
-    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipBackingIds) do
-        FadeObstacleIn({ Id = pipId, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance = CombatUI
-        .FadeDistance.Super, Direction = 0 })
-    end
+    local actorsBefore = ScreenAnchors
+    ScreenAnchors = ScreenAnchorsSecondPlayer
+    SecondPlayerUi.ShowSuperMeterOriginal()
+    ScreenAnchors = actorsBefore
+    CreateScreenObstacle = CreateScreenObstacleOriginal
 end
 
 function SecondPlayerUi.HideSuperMeter()
@@ -658,7 +584,7 @@ function SecondPlayerUi.UpdateSuperUIComponent(index, filled)
     if not CurrentRun.Hero.SuperCost then
         return
     end
-    SecondPlayerUi.CallWithActorWrap(SecondPlayerUi.UpdateSuperUIComponentOriginal)
+    SecondPlayerUi.CallWithActorWrap(SecondPlayerUi.UpdateSuperUIComponentOriginal, index, filled)
 end
 
 function SecondPlayerUi.UpdateSuperMeterUIReal()
