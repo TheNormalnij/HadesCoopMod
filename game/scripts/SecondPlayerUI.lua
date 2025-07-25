@@ -23,6 +23,7 @@ function SecondPlayerUi.Init()
     SecondPlayerUi.ShowSuperMeterOriginal = ShowSuperMeter
     SecondPlayerUi.StartAmmoReloadPresentationOriginal = StartAmmoReloadPresentation
     SecondPlayerUi.EndAmmoReloadPresentationOriginal = EndAmmoReloadPresentation
+    SecondPlayerUi.HideAmmoUIOriginal = HideAmmoUI
 end
 
 --- NOT OK
@@ -336,25 +337,20 @@ function SecondPlayerUi.UpdateAmmoUI()
     ammoData, AutoSetDataProperties = false, })
 end
 
---- NOT OK
 function SecondPlayerUi.HideAmmoUI()
     if ScreenAnchorsSecondPlayer.AmmoIndicatorUI == nil then
         return
     end
-    ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads = ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads or {}
+    local actorsBefore = ScreenAnchors
+    ScreenAnchors = ScreenAnchorsSecondPlayer
 
-    local ids = CombineTables({ ScreenAnchorsSecondPlayer.AmmoIndicatorUI }, ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads)
-
-    for i, reloadId in pairs(ids) do
-        HideObstacle({ Id = reloadId, IncludeText = true, Distance = CombatUI.FadeDistance.Ammo, Angle = 180, Duration =
-        CombatUI.FadeDuration, SmoothStep = true })
+    local waitOrig = wait
+    wait = function(...)
+        ScreenAnchors = actorsBefore
+        wait = waitOrig
+        waitOrig(...)
     end
-    ScreenAnchorsSecondPlayer.AmmoIndicatorUI = nil
-    ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads = nil
-
-    wait(CombatUI.FadeDuration, RoomThreadName)
-
-    Destroy({ Ids = ids })
+    SecondPlayerUi.HideAmmoUIOriginal()
 end
 
 function SecondPlayerUi.StartAmmoReloadPresentation(delay)
