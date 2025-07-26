@@ -129,6 +129,10 @@ function RunHooks.HandleGenericRoom(StartRoomFun, run, currentRoom)
 
         local mainHero = CoopPlayers.GetMainHero()
         local isMainPlayerDead = mainHero and mainHero.IsDead
+        if not isMainPlayerDead then
+            -- For some strange reason RoomEntrancePortal keeps the main player invisible
+            SetAlpha{ Id = mainHero.ObjectId, Fraction = 1.0, Duration = 1.0 }
+        end
 
         if currentRoom.HeroEndPoint then
             for playerId = 2, CoopPlayers.GetPlayersCount() do
