@@ -16,6 +16,9 @@ local CoopCamera = {}
 ---@private
 CoopCamera.isFocusEnabled = true
 
+---@private
+CoopCamera.IgnoreHeroes = {}
+
 function CoopCamera.InitHooks()
     HookUtils.wrap("CreateRoom", CoopCamera.CreateRoomWrapHook)
     HookUtils.onPostFunction("draw", CoopCamera.Update)
@@ -61,7 +64,7 @@ function CoopCamera.Update()
     local wasRunFinished = RunEx.IsRunEnded()
 
     for _, hero in CoopPlayers.PlayersIterator() do
-        if hero and (wasRunFinished or not hero.IsDead) then
+        if hero and (wasRunFinished or not hero.IsDead) and not CoopCamera.IgnoreHeroes[hero] then
             table.insert(units, hero.ObjectId)
         end
     end
@@ -91,6 +94,20 @@ function CoopCamera.PanCameraPostHook(args)
     if id then
         CoopCamera.ForceFocus(CoopPlayers.IsPlayerUnit(id))
     end
+end
+
+---@public
+function CoopCamera.SetHeroIgnored(hero, state)
+    if state then
+        CoopCamera.IgnoreHeroes[hero] = state
+    else
+        CoopCamera.IgnoreHeroes[hero] = nil
+    end
+end
+
+---@public
+function CoopCamera.ResetIgnore()
+    CoopCamera.IgnoreHeroes = {}
 end
 
 return CoopCamera

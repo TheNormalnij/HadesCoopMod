@@ -17,6 +17,8 @@ local TableUtils = ModRequire "../TableUtils.lua"
 local HeroEx = ModRequire "../HeroEx.lua"
 ---@type RunEx
 local RunEx = ModRequire "../RunEx.lua"
+---@type CoopCamera
+local CoopCamera = ModRequire "../CoopCamera.lua"
 
 ---@class LootRoomDuplicated : ILootDelivery
 local LootRoomDuplicated = {}
@@ -363,11 +365,15 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
     baseFun(currentRun, door)
 
     if isFinishedChoceLoop then
+        CoopCamera.ResetIgnore()
         LootRoomDuplicated.CurrentHeroChooser = nil
         LootRoomDuplicated.RewardChoiseInProgress = false
         LootRoomDuplicated.UnlockAllPlayers()
         SetPlayerVulnerable("LootRoomDuplicated")
     else
+        CoopCamera.SetHeroIgnored(CurrentRun.Hero, true)
+        CoopCamera.ForceFocus(true)
+
         AddInputBlock {
             PlayerIndex = playerId,
             Name = "LootRoomDuplicated"
