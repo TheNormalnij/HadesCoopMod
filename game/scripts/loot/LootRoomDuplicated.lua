@@ -73,6 +73,7 @@ function LootRoomDuplicated.InitHooks()
     HookUtils.wrap("LeaveRoom", LootRoomDuplicated.LeaveRoomWrap)
     HookUtils.wrap("FullScreenFadeOutAnimation", LootRoomDuplicated.FullScreenFadeOutAnimationWrap)
     HookUtils.wrap("IsGameStateEligible", LootRoomDuplicated.IsGameStateEligibleWrap)
+    HookUtils.onPreFunction("ForbiddenShopItemTaken", LootRoomDuplicated.ForbiddenShopItemTakenPreHook)
 end
 
 ---@private
@@ -365,11 +366,7 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
     baseFun(currentRun, door)
 
     if isFinishedChoceLoop then
-        CoopCamera.ResetIgnore()
-        LootRoomDuplicated.CurrentHeroChooser = nil
-        LootRoomDuplicated.RewardChoiseInProgress = false
-        LootRoomDuplicated.UnlockAllPlayers()
-        SetPlayerVulnerable("LootRoomDuplicated")
+        LootRoomDuplicated.FinishRoomChoices()
     else
         CoopCamera.SetHeroIgnored(CurrentRun.Hero, true)
         CoopCamera.ForceFocus(true)
@@ -398,6 +395,15 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
         end
 
     end
+end
+
+---@private
+function LootRoomDuplicated.FinishRoomChoices()
+    CoopCamera.ResetIgnore()
+    LootRoomDuplicated.CurrentHeroChooser = nil
+    LootRoomDuplicated.RewardChoiseInProgress = false
+    LootRoomDuplicated.UnlockAllPlayers()
+    SetPlayerVulnerable("LootRoomDuplicated")
 end
 
 ---@private
@@ -494,6 +500,13 @@ function LootRoomDuplicated.IsGameStateEligibleWrap(baseFun, currentRun, source,
     end
 
     return baseFun(currentRun, source, requirements, args)
+end
+
+---@private
+function LootRoomDuplicated.ForbiddenShopItemTakenPreHook()
+    -- Fixes softlock in shop rooms
+    LootRoomDuplicated.ChosenPlayerLoot = {}
+    LootRoomDuplicated.FinishRoomChoices()
 end
 
 return LootRoomDuplicated
