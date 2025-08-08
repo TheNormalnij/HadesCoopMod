@@ -13,8 +13,6 @@ local SecondPlayerUi = ModRequire "SecondPlayerUI.lua"
 local HeroContext = ModRequire "HeroContext.lua"
 ---@type CoopCamera
 local CoopCamera = ModRequire "CoopCamera.lua"
----@type PactDoorFix
-local PactDoorFix = ModRequire "hooks/PactDoorFix.lua"
 ---@type FreezeHooks
 local FreezeHooks = ModRequire "hooks/FreezeHooks.lua"
 ---@type RunHooks
