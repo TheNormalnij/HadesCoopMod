@@ -3,6 +3,8 @@
 
 ---@type CoopPlayers
 local CoopPlayers = ModRequire "CoopPlayers.lua"
+---@type HeroContext
+local HeroContext = ModRequire "HeroContext.lua"
 
 ---@class SecondPlayerUi
 local SecondPlayerUi = {}
@@ -25,6 +27,7 @@ function SecondPlayerUi.Init()
     SecondPlayerUi.EndAmmoReloadPresentationOriginal = EndAmmoReloadPresentation
     SecondPlayerUi.ShowAmmoUIOriginal = ShowAmmoUI
     SecondPlayerUi.HideAmmoUIOriginal = HideAmmoUI
+    SecondPlayerUi.UpdateHealthUIUIOriginal = UpdateHealthUI
 end
 
 --- NOT OK
@@ -139,34 +142,13 @@ function SecondPlayerUi.ShowHealthUI()
     end
 end
 
---- NOT OK
 function SecondPlayerUi.UpdateHealthUI()
-    local unit = CoopPlayers.GetHero(2)
-    if unit == nil then return; end
+    local hero = CoopPlayers.GetHero(2)
+    if hero == nil then return; end
 
-    local currentHealth = unit.Health
-    local maxHealth = unit.MaxHealth
-
-    if currentHealth == nil or maxHealth == nil then
-        return
-    end
-
-    local rallyHealth = unit.RallyHealth.Store
-    if ScreenAnchorsSecondPlayer.HealthBack ~= nil then
-        ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.HealthBack, Text = "UI_PlayerHealth", LuaKey = "TempTextData", LuaValue = { Current = math.ceil(currentHealth), Maximum = math.ceil(maxHealth) }, AutoSetDataProperties = false })
-    end
-
-    if ScreenAnchorsSecondPlayer.HealthFill ~= nil then
-        SetAnimationFrameTarget({ Name = "HealthBarFill", Fraction = 1 - (currentHealth) / maxHealth, DestinationId =
-        ScreenAnchorsSecondPlayer.HealthFill })
-    end
-    SetAnimationFrameTarget({ Name = "HealthBarFillWhite", Fraction = 1 - (currentHealth + rallyHealth) / maxHealth, DestinationId =
-    ScreenAnchorsSecondPlayer.HealthRally })
-    unit.RallyHealth.Cache =
-    {
-        CurrentHealth = currentHealth,
-        MaxHealth = maxHealth
-    }
+    HeroContext.RunWithHeroContext(hero, function()
+        SecondPlayerUi.CallWithActorWrap(SecondPlayerUi.UpdateHealthUIUIOriginal)
+    end)
 end
 
 --- NOT OK
