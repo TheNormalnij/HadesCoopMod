@@ -23,6 +23,7 @@ function SecondPlayerUi.Init()
     SecondPlayerUi.ShowSuperMeterOriginal = ShowSuperMeter
     SecondPlayerUi.StartAmmoReloadPresentationOriginal = StartAmmoReloadPresentation
     SecondPlayerUi.EndAmmoReloadPresentationOriginal = EndAmmoReloadPresentation
+    SecondPlayerUi.ShowAmmoUIOriginal = ShowAmmoUI
     SecondPlayerUi.HideAmmoUIOriginal = HideAmmoUI
 end
 
@@ -281,36 +282,19 @@ end
 
 -- Ammo
 
---- NOT OK
 function SecondPlayerUi.ShowAmmoUI()
-    if ScreenAnchorsSecondPlayer.AmmoIndicatorUI ~= nil then
-        return
-    end
-    local poxX = ScreenWidth - 512 - 150
-    ScreenAnchorsSecondPlayer.AmmoIndicatorUI = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_UI", X = poxX, Y =
-    ScreenHeight - 62 })
-    SetAnimation({ Name = "AmmoIndicatorIcon", DestinationId = ScreenAnchorsSecondPlayer.AmmoIndicatorUI })
-    CreateTextBox(MergeTables({
-        Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI,
-        OffsetX = 24,
-        OffsetY = -2,
-        Font = "AlegreyaSansSCBold",
-        FontSize = 24,
-        ShadowRed = 0.1,
-        ShadowBlue = 0.1,
-        ShadowGreen = 0.1,
-        OutlineColor = { 0.113, 0.113, 0.113, 1 },
-        OutlineThickness = 1,
-        ShadowAlpha = 1.0,
-        ShadowBlur = 0,
-        ShadowOffsetY = 2,
-        ShadowOffsetX = 0,
-        Justification = "Left",
-    }, LocalizationData.UIScripts.AmmoUI))
-    thread(SecondPlayerUi.UpdateAmmoUI)
+    local CreateScreenObstacleOriginal = CreateScreenObstacle
+    local actorsBefore = ScreenAnchors
 
-    FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Duration = CombatUI.FadeInDuration, IncludeText = true, Distance =
-    CombatUI.FadeDistance.Ammo, Direction = 0 })
+    CreateScreenObstacle = function(params)
+        params.X = ScreenWidth - 512 - 150
+        return CreateScreenObstacleOriginal(params)
+    end
+
+    ScreenAnchors = ScreenAnchorsSecondPlayer
+    SecondPlayerUi.ShowAmmoUIOriginal()
+    ScreenAnchors = actorsBefore
+    CreateScreenObstacle = CreateScreenObstacleOriginal
 end
 
 --- NOT OK
