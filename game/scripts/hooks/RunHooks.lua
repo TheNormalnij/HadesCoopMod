@@ -27,6 +27,8 @@ local PlayerVisibilityHelper = ModRequire "../PlayerVisibilityHelper.lua"
 local HeroEx = ModRequire "../HeroEx.lua"
 ---@type CoopControl
 local CoopControl = ModRequire "../CoopControl.lua"
+---@type GameFlags
+local GameFlags = ModRequire "../GameFlags.lua"
 
 ---@class RunHooks
 local RunHooks = {}
@@ -250,6 +252,10 @@ end
 function RunHooks.LeaveRoomHook(currentRun, door)
     -- Disables an extit door after use
     door.ReadyToUse = false
+
+    if not GameFlags.LeaveRoomHandlesOnce then
+        return
+    end
 
     -- Updates traits and health
     local nextRoom = door.Room

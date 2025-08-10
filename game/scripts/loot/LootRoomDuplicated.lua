@@ -19,6 +19,8 @@ local HeroEx = ModRequire "../HeroEx.lua"
 local RunEx = ModRequire "../RunEx.lua"
 ---@type CoopCamera
 local CoopCamera = ModRequire "../CoopCamera.lua"
+---@type GameFlags
+local GameFlags = ModRequire "../GameFlags.lua"
 
 ---@class LootRoomDuplicated : ILootDelivery
 local LootRoomDuplicated = {}
@@ -324,6 +326,7 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
         end
 
         if not LootRoomDuplicated.CurrentHeroChooser then
+            GameFlags.LeaveRoomHandlesOnce = true
             return baseFun(currentRun, door)
         end
     end
@@ -333,10 +336,12 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
         or RunEx.IsFinalBossDoor(door)
     then
         CurrentRun.CurrentRoom.SkipLoadNextMap = LootRoomDuplicated.ShouldSkipLoadingNextMap
+        GameFlags.LeaveRoomHandlesOnce = true
         return baseFun(currentRun, door)
     end
 
-    -- TODO Remove this shit here
+    GameFlags.LeaveRoomHandlesOnce = false
+
     if not LootRoomDuplicated.RewardChoiseInProgress then
         LootRoomDuplicated.RewardChoiseInProgress = true
         LootRoomDuplicated.ChosenPlayerLoot = {}
