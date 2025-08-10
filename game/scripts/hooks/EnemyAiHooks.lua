@@ -21,6 +21,7 @@ function EnemyAiHooks.InitHooks()
     HookUtils.wrap("NotifyWithinDistance", EnemyAiHooks.NotifyWithinDistanceHook)
     HookUtils.wrap("GetTargetId", EnemyAiHooks.GetTargetIdHook)
     HookUtils.wrap("IsAIActive", EnemyAiHooks.IsAIActiveHook)
+    HookUtils.onPreFunction("Harpy3MapTransition", EnemyAiHooks.Harpy3MapTransitionPreHook)
     HookUtils.replace("SelectTheseusGod", EnemyAiHooks.SelectTheseusGodHook)
 end
 
@@ -134,6 +135,27 @@ function EnemyAiHooks.SelectTheseusGodHook(enemy)
 
     enemy.TheseusGodName = godName
 	LoadPackages{ Names = godName }
+end
+
+-- Teleport all players to the center to prevent softlocks
+function EnemyAiHooks.Harpy3MapTransitionPreHook()
+    if CurrentRun.CurrentRoom.Name ~= "A_Boss03" then
+        return
+    end
+
+    local mainHero = HeroContext.GetCurrentHeroContext()
+
+    HookUtils.wrap("Teleport", function(baseFun, args)
+        baseFun(args)
+        if args.DestinationId == 40012 and args.Id == mainHero.ObjectId then
+            Teleport = baseFun
+            for _, hero in CoopPlayers.PlayersIterator() do
+                if hero and not hero.IsDead and hero ~= mainHero then
+                    Teleport { Id = hero.ObjectId, DestinationId = args.DestinationId }
+                end
+            end
+        end
+    end)
 end
 
 return EnemyAiHooks
