@@ -359,9 +359,13 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
     local aliveHeroes = CoopPlayers.GetAliveHeroes()
 
     local isLastChoiser = TableUtils.last(aliveHeroes) == LootRoomDuplicated.CurrentHeroChooser
+    -- Only the first player can use shop or story
+    local isP1SelectRoom = room.ChosenRewardType == "Shop" or room.ChosenRewardType == "Story"
+    if isP1SelectRoom then
+        GameFlags.LeaveRoomHandlesOnce = true
+    end
 
-    -- Only the first player can create shop
-    local isFinishedChoceLoop = isLastChoiser or room.ChosenRewardType == "Shop"
+    local isFinishedChoceLoop = isLastChoiser or isP1SelectRoom
     if isFinishedChoceLoop then
         CurrentRun.CurrentRoom.SkipLoadNextMap = LootRoomDuplicated.ShouldSkipLoadingNextMap
     else
