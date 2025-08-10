@@ -21,7 +21,7 @@ OnUsed = function(args)
             if functionName == "UseEscapeDoor" and hero ~= mainHero then
                 -- Pact door
                 -- Disable control for a second player
-                -- A second player in context resets weapon choice for a first player
+                -- A second player in context resets weapon choice for the first player
                 return;
             else
                 HeroContext.RunWithHeroContext(

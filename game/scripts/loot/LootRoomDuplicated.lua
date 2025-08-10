@@ -52,7 +52,7 @@ LootRoomDuplicated.DuplicatedRewards = {
     WeaponUpgrade = true;
     HermesUpgrade = true;
     Boon = true;
-    TrialUpgrade = true;
+    TrialUpgrade = false; -- Chaos
     Health = true;
     Money = true;
     -- For styx temple
