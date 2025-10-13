@@ -14,6 +14,12 @@ local Config = {
     --
     -- RoomDuplicated - rooms generate two reward for each player.
     LootDelivery = "RoomDuplicated",
+
+    -- This config is used for the "RoomDuplicated" loot delivery option
+    RoomDuplicatedDelivery = {
+        -- Enables duplication of the Chaos boons.
+        DuplicateChaosBoon = false;
+    },
     Player1HasOutline = true;
     Player1Outline = {
         R = 0,

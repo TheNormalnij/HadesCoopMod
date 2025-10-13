@@ -21,6 +21,8 @@ local RunEx = ModRequire "../RunEx.lua"
 local CoopCamera = ModRequire "../CoopCamera.lua"
 ---@type GameFlags
 local GameFlags = ModRequire "../GameFlags.lua"
+---@type CoopModConfig
+local Config = ModRequire "../config.lua"
 
 ---@class LootRoomDuplicated : ILootDelivery
 local LootRoomDuplicated = {}
@@ -54,7 +56,7 @@ LootRoomDuplicated.DuplicatedRewards = {
     WeaponUpgrade = true;
     HermesUpgrade = true;
     Boon = true;
-    TrialUpgrade = false; -- Chaos
+    TrialUpgrade = Config.RoomDuplicatedDelivery.DuplicateChaosBoon; -- Chaos
     Health = true;
     Money = true;
     -- For styx temple
