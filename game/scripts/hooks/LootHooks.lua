@@ -79,7 +79,8 @@ end
 
 ---@private
 function LootHooks.DoUnlockRoomExitsHook(baseFun, run, room)
-    if not LootHooks.NeedsCurrentRoomExitRewards(run) then
+    local isRewarderd = LootHooks.CreateRoomsForDoors(run)
+    if not isRewarderd then
         return baseFun(run, room)
     end
 
@@ -94,21 +95,37 @@ function LootHooks.SpawnRoomRewardHook(baseFun, ...)
     LootDelivery.SpawnRoomReward(baseFun, ...)
 end
 
---- Warning: this function mutates the game state in ChooseNextRoomData
 ---@private
 ---@param run table
-function LootHooks.NeedsCurrentRoomExitRewards(run)
-    local roomData = ChooseNextRoomData(run)
+function LootHooks.CreateRoomsForDoors(run)
+    RandomSynchronize()
 
-    if roomData == nil then
-        return false
+    local allRoomsHaveNoReward = true
+    local allRoomsNoRecoil = true
+
+    -- Create rooms here to avoid 
+    for i, door in ipairs(CollapseTableOrdered(OfferedExitDoors)) do
+        if not door.Room then
+            local roomData = door.ForceRoomName and RoomData[door.ForceRoomName] or ChooseNextRoomData(run)
+
+            if not roomData then
+                return false
+            end
+
+            if not roomData.NoReward then
+                allRoomsHaveNoReward = false
+            end
+            if not roomData.NoReroll then
+                allRoomsNoRecoil = false
+            end
+
+            local roomForDoor = CreateRoom(roomData, { SkipChooseReward = true, SkipChooseEncounter = true, })
+            roomForDoor.NeedsReward = true
+            door.Room = roomForDoor
+        end
     end
 
-    if roomData.NoReward then
-        return false
-    end
-
-    if roomData.NoReroll then
+    if allRoomsHaveNoReward and allRoomsNoRecoil then
         return false
     end
 
