@@ -125,7 +125,7 @@ function LootHooks.CreateRoomsForDoors(run)
         end
     end
 
-    if allRoomsHaveNoReward and allRoomsNoRecoil then
+    if allRoomsHaveNoReward or allRoomsNoRecoil then
         return false
     end
 
