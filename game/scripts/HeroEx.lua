@@ -81,6 +81,11 @@ end
 ---@param args ICreateFreshHeroArgs
 function HeroEx.CreateFreshHero(args)
     local hero = CreateNewHero(nil, { WeaponName = args.weaponName })
+    hero.InvulnerableFlags = {}
+    hero.FreezeInputKeys = {}
+    hero.DisableCombatControlsKeys = {}
+    hero.ActiveEffects = {}
+
     if args.weaponName then
         local secondaryWeapon = WeaponData[args.weaponName].SecondaryWeapon
         if secondaryWeapon then
