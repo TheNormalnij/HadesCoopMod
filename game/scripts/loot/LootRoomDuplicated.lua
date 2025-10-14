@@ -70,6 +70,9 @@ LootRoomDuplicated.CanBeUsedByAnyPlayer = {
     Money = true,
 }
 
+---@private
+LootRoomDuplicated.AnimInProgress = false
+
 function LootRoomDuplicated.InitHooks()
     HookUtils.wrap("CheckSpecialDoorRequirement", LootRoomDuplicated.CheckSpecialDoorRequirementWrap)
     HookUtils.wrap("CreateLoot", LootRoomDuplicated.CreateRewardWrap)
@@ -286,6 +289,10 @@ function LootRoomDuplicated.CheckSpecialDoorRequirementWrap(baseFun, door)
         return "ExitNotActive"
     end
 
+    if LootRoomDuplicated.AnimInProgress then
+        return "ExitNotActive"
+    end
+
     -- Ok, the player can use the exit door
     return nil
 end
@@ -420,6 +427,8 @@ end
 ---@private
 function LootRoomDuplicated.UnvalidateDoorRewardsPresentation(run, door)
     if door.ExitFunctionName == "AsphodelLeaveRoomPresentation" then
+        LootRoomDuplicated.AnimInProgress = true
+
         -- Asphodel should have some sort of animation to hide boat teleportation
         wait(1.0)
 
@@ -432,6 +441,8 @@ function LootRoomDuplicated.UnvalidateDoorRewardsPresentation(run, door)
         Move { Id = door.ObjectId, DestinationId = heroExitPointId, Duration = 0.01 }
 
         FullScreenFadeInAnimation()
+
+        LootRoomDuplicated.AnimInProgress = false
     end
 end
 
