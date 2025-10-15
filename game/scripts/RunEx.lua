@@ -24,6 +24,11 @@ function RunEx.IsStyxTempleHubRoom(room)
 end
 
 ---@return boolean
+function RunEx.IsSecretRoom(room)
+    return room.LocationText == "Location_Secret"
+end
+
+---@return boolean
 function RunEx.IsShopRoomName(name)
     return name == "A_Shop01" or name == "B_Shop01" or name == "C_Shop01"
 end

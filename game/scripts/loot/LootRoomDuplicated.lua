@@ -206,6 +206,10 @@ function LootRoomDuplicated.SpawnRoomReward(baseFun, eventSource, args)
     local rewardType = room.ChangeReward or room.ChosenRewardType
     DebugPrint{ Text = "LootRoomDuplicated: SpawnRoomReward called with rewardType: " .. tostring(rewardType) }
 
+    if RunEx.IsSecretRoom(room) then
+        LootRoomDuplicated.FixSecretRoomText()
+    end
+
     if not LootRoomDuplicated.DuplicatedRewards[rewardType] then
         return baseFun(eventSource, args)
     end
@@ -522,6 +526,15 @@ function LootRoomDuplicated.IsGameStateEligibleWrap(baseFun, currentRun, source,
     end
 
     return baseFun(currentRun, source, requirements, args)
+end
+
+--- Swith text from "Locked -<health>" to "Locked"
+function LootRoomDuplicated.FixSecretRoomText()
+    for _, door in pairs(OfferedExitDoors) do
+        if door.LockedUseText == "UseSecretDoor_Locked_PostReward" then
+            door.LockedUseText = "UseSecretDoor_Locked_PreReward"
+        end
+    end
 end
 
 ---@private
