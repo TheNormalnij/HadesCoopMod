@@ -15,6 +15,7 @@ local SaveHooks = {}
 
 function SaveHooks.InitHooks()
     HookUtils.wrap("Save", SaveHooks.SaveWrapper)
+    HookUtils.onPreFunction("DoPatches", SaveHooks.DoPatchesPreHook)
 end
 
 ---@private
@@ -22,6 +23,7 @@ function SaveHooks.SaveWrapper(baseFun)
     local mainHero = CoopPlayers.GetMainHero()
     if mainHero then
         CurrentRun.Hero = mainHero
+        SaveHooks.ApplyMainHeroDeathWorkaround()
 
         for name, instance in HeroContextProxyStore.Iterator() do
             instance:MovePlayerDataToProxy(1)
@@ -33,10 +35,39 @@ function SaveHooks.SaveWrapper(baseFun)
             instance:CleanProxyTable()
         end
 
+        SaveHooks.RemoveMainHeroDeathWorkaround()
+
         CurrentRun.Hero = nil
     else
         baseFun()
     end
+end
+
+---@private
+function SaveHooks.DoPatchesPreHook()
+    local hero = CurrentRun.CoopWorkaroundMainHero
+    if hero then
+        CurrentRun.Hero = hero
+        SaveHooks.RemoveMainHeroDeathWorkaround()
+    end
+end
+
+---@private
+function SaveHooks.ApplyMainHeroDeathWorkaround()
+    local hero = CurrentRun.Hero
+    if hero.IsDead then
+        CurrentRun.CoopWorkaroundMainHero = hero
+        local safeHero = CoopPlayers.GetFirstAliveHero() or hero
+        CurrentRun.Hero = safeHero
+
+        local location = GetLocation{ Id = safeHero.ObjectId }
+        RecordObjectState(CurrentRun.CurrentRoom, hero.ObjectId, "Location", location)
+    end
+end
+
+---@private
+function SaveHooks.RemoveMainHeroDeathWorkaround()
+    CurrentRun.CoopWorkaroundMainHero = nil
 end
 
 return SaveHooks

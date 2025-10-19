@@ -45,9 +45,9 @@ function RunHooks.InitHooks()
     HookUtils.wrap("CheckDistanceTrigger", RunHooks.CheckDistanceTriggerWrapHook)
     HookUtils.wrap("EndEncounterEffects", RunHooks.EndEncounterEffectsWrapHook)
     HookUtils.wrap("StartEncounterEffects", RunHooks.StartEncounterEffectsWrapHook)
+    HookUtils.wrap("RestoreUnlockRoomExits", RunHooks.RestoreUnlockRoomExitsWrapHook)
     HookUtils.onPostFunction("StartNewGame", RunHooks.StartNewGameHook)
     HookUtils.onPostFunction("CheckForAllEnemiesDead", RunHooks.CheckForAllEnemiesDeadPostHook)
-    HookUtils.onPostFunction("RestoreUnlockRoomExits", RunHooks.RestoreUnlockRoomExitsHook)
 end
 
 ---@private
@@ -307,11 +307,27 @@ function RunHooks.StartNewGameHook()
 end
 
 ---@private
-function RunHooks.RestoreUnlockRoomExitsHook()
+function RunHooks.RestoreUnlockRoomExitsWrapHook(baseFun, run, room)
+    local mainHero = CurrentRun.Hero
+    local isMainPlayerShoudlBeHidden = not RunEx.IsRunEnded() and mainHero.IsDead
+    local activeHero = isMainPlayerShoudlBeHidden and CoopPlayers.GetFirstAliveHero() or mainHero
+
+    CoopPlayers.SetMainHero(mainHero)
+
     if not HeroContext.GetDefaultHero() then
         HeroContext.InitRunHook()
     end
-    CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
+
+    if isMainPlayerShoudlBeHidden then
+        HeroContext.SetDefaultHero(activeHero)
+    end
+
+    HeroContext.RunWithHeroContext(mainHero, baseFun, run, room)
+
+    if isMainPlayerShoudlBeHidden then
+        HeroEx.HideHero(mainHero)
+        CoopCamera.ForceFocus(true)
+    end
 
     local spawnPoint = CurrentRun.CurrentRoom.HeroEndPoint or CoopPlayers.GetMainHero().ObjectId
     for playerId = 2, CoopPlayers.GetPlayersCount() do
