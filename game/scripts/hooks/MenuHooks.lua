@@ -25,6 +25,7 @@ function MenuHooks.InitHooks()
     MenuHooks.HookUiControl("ShowAdvancedTooltip")
     MenuHooks.HookUiControl("ShowStoreScreen")
     MenuHooks.HookUiControl("OpenSellTraitMenu")
+    MenuHooks.HookUiControl("OpenShrineUpgradeMenu")
 
     HookUtils.wrap("ShowAwardMenu", function(baseFun, ...)
         if HeroContext.GetCurrentHeroContext() == CoopPlayers.GetMainHero() then
@@ -87,7 +88,7 @@ function MenuHooks.HookUiControl(funName)
         CoopControl.SwitchControlForMenu(playerId)
 
         HookUtils.onPreFunctionOnce("UnfreezePlayerUnit", function()
-            CoopControl.ResetAllPlayers()
+            CoopControl.DisableMenuMode()
         end)
 
         originalFun(...)

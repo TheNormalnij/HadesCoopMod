@@ -26,6 +26,9 @@ CoopControl.Schemas = {
     Current = {};
 }
 
+---@private
+CoopControl.MenuControlDevice = ""
+
 function CoopControl.InitControlSchemas()
     CoopControl.Schemas.UserDefined = eat_true(GetTempRuntimeData("TN_Coop:control"))
     CoopControl.Schemas.Current = DeepCopyTable(CoopControl.Schemas.UserDefined)
@@ -53,10 +56,31 @@ end
 function CoopControl.SwitchControlForMenu(playerId)
     local controllerId = CoopControl.Schemas.Current[playerId].ControllerId
 
+    CoopControl.MenuControlDevice = CoopControl.Schemas.Current[playerId].Device
+
+    if CoopControl.MenuControlDevice == "Keyboard" then
+        SetConfigOption { Name = "AllowControlHotSwap", Value = true }
+        DisableGamepadInput()
+    else
+        SetConfigOption { Name = "UseMouse", Value = false }
+        DisableKeyboardMenuInput()
+    end
+
     CoopSetPlayerGamepad(1, controllerId)
     for playerId = 2, #CoopControl.Schemas.Current do
         CoopSetPlayerGamepad(playerId, -1)
     end
+end
+
+function CoopControl.DisableMenuMode()
+    if CoopControl.MenuControlDevice == "Keyboard" then
+        SetConfigOption { Name = "AllowControlHotSwap", Value = false }
+        EnableGamepadInput()
+    else
+        EnableKeyboardMenuInput()
+    end
+
+    CoopControl.ResetAllPlayers("Current")
 end
 
 ---@param schema ControlSchema?

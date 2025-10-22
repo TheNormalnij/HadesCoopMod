@@ -92,5 +92,7 @@ OnMenuOpened {
     "MainMenuScreen",
     function(triggerArgs)
         SetConfigOption { Name = "AllowControlHotSwap", Value = true }
+        EnableGamepadInput()
+        EnableKeyboardMenuInput()
     end
 }
