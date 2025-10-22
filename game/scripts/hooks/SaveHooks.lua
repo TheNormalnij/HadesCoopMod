@@ -45,7 +45,7 @@ end
 
 ---@private
 function SaveHooks.DoPatchesPreHook()
-    local hero = CurrentRun.CoopWorkaroundMainHero
+    local hero = CurrentRun and CurrentRun.CoopWorkaroundMainHero
     if hero then
         CurrentRun.Hero = hero
         SaveHooks.RemoveMainHeroDeathWorkaround()
@@ -54,7 +54,7 @@ end
 
 ---@private
 function SaveHooks.ApplyMainHeroDeathWorkaround()
-    local hero = CurrentRun.Hero
+    local hero = CurrentRun and CurrentRun.Hero
     if hero.IsDead then
         CurrentRun.CoopWorkaroundMainHero = hero
         local safeHero = CoopPlayers.GetFirstAliveHero() or hero
