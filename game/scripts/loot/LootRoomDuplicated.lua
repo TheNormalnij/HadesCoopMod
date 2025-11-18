@@ -223,6 +223,7 @@ function LootRoomDuplicated.SpawnRoomReward(baseFun, eventSource, args)
             HeroContext.RunWithHeroContextAwait(hero, baseFun, eventSource, args)
         end
     end
+    LootRoomDuplicated.ChosenPlayerLoot = {}
 end
 
 ---@param heroesCount number
