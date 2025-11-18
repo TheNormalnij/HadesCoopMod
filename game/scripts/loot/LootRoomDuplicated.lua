@@ -215,9 +215,6 @@ function LootRoomDuplicated.SpawnRoomReward(baseFun, eventSource, args)
     end
 
     for playerId, hero in CoopPlayers.PlayersIterator() do
-		if RunEx.IsSecretRoom(room) then
-			LootRoomDuplicated.ChosenPlayerLoot[playerId] = nil
-		end
         local lootParams = LootRoomDuplicated.ChosenPlayerLoot[playerId] or {}
         if not hero.IsDead then
             room.ChangeReward = lootParams.rewardType
@@ -226,6 +223,7 @@ function LootRoomDuplicated.SpawnRoomReward(baseFun, eventSource, args)
             HeroContext.RunWithHeroContextAwait(hero, baseFun, eventSource, args)
         end
     end
+    LootRoomDuplicated.ChosenPlayerLoot = {}
 end
 
 ---@param heroesCount number
