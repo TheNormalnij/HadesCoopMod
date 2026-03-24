@@ -447,6 +447,11 @@ function LootRoomDuplicated.UnvalidateDoorRewardsPresentation(run, door)
 
         FullScreenFadeInAnimation()
 
+        if AsphodelBoatSoundId ~= nil then
+            StopSound{ Id = AsphodelBoatSoundId, Duration = 0.2 }
+            AsphodelBoatSoundId = nil
+        end
+
         LootRoomDuplicated.AnimInProgress = false
     end
 end
