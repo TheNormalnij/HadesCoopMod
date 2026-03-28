@@ -9,7 +9,7 @@
                 },
                 {
                 Id = "CoopMenu_StartMessage"
-                DisplayName = "At least one player must use a gamepad. Only Player 1 can use a keyboard and mouse. Use RemotePlayWhatever to play with remote players."
+                DisplayName = "At least one player must use a gamepad. Only Player 1 can use a keyboard and mouse. Use Parsec.app to play with remote players."
                 },
                 {
                 Id = "CoopMenu_P1Press"
@@ -54,7 +54,7 @@
                 },
                 {
                 Id = "CoopMenu_StartMessage"
-                DisplayName = "Как минимум один игрок должен играть на геймпаде. Только первый игрок может играть с клавиатуры и мыши. Используйте RemotePlayWhatever для игры по сети"
+                DisplayName = "Как минимум один игрок должен играть на геймпаде. Только первый игрок может играть с клавиатуры и мыши. Используйте Parsec.app для игры по сети"
                 },
                 {
                 Id = "CoopMenu_P1Press"
@@ -99,7 +99,7 @@
                 },
                 {
                     Id = "CoopMenu_StartMessage"
-                    DisplayName = "Mindestens ein Spieler muss einen Gamepad verwenden. Nur Spieler 1 kann Tastatur und Maus nutzen. Verwende RemotePlayWhatever für Online-Spieler."
+                    DisplayName = "Mindestens ein Spieler muss einen Gamepad verwenden. Nur Spieler 1 kann Tastatur und Maus nutzen. Verwende Parsec.app für Online-Spieler."
                 },
                 {
                     Id = "CoopMenu_P1Press"
@@ -144,7 +144,7 @@
                 },
                 {
                     Id = "CoopMenu_StartMessage"
-                    DisplayName = "Al menos un jugador debe usar mando. Solo el Jugador 1 puede usar teclado y ratón. Usa RemotePlayWhatever para jugar en línea."
+                    DisplayName = "Al menos un jugador debe usar mando. Solo el Jugador 1 puede usar teclado y ratón. Usa Parsec.app para jugar en línea."
                 },
                 {
                     Id = "CoopMenu_P1Press"
@@ -189,7 +189,7 @@
                 },
                 {
                     Id = "CoopMenu_StartMessage"
-                    DisplayName = "Au moins un joueur doit utiliser une manette. Seul le Joueur 1 peut utiliser clavier et souris. Utilisez RemotePlayWhatever pour jouer à distance."
+                    DisplayName = "Au moins un joueur doit utiliser une manette. Seul le Joueur 1 peut utiliser clavier et souris. Utilisez Parsec.app pour jouer à distance."
                 },
                 {
                     Id = "CoopMenu_P1Press"
@@ -234,7 +234,7 @@
                 },
                 {
                     Id = "CoopMenu_StartMessage"
-                    DisplayName = "Almeno un giocatore deve usare un gamepad. Solo il Giocatore 1 può usare tastiera e mouse. Usa RemotePlayWhatever per giocare online."
+                    DisplayName = "Almeno un giocatore deve usare un gamepad. Solo il Giocatore 1 può usare tastiera e mouse. Usa Parsec.app per giocare online."
                 },
                 {
                     Id = "CoopMenu_P1Press"
@@ -279,7 +279,7 @@
                 },
                 {
                     Id = "CoopMenu_StartMessage"
-                    DisplayName = "Co najmniej jeden gracz musi używać gamepada. Tylko Gracz 1 może używać klawiatury i myszy. Użyj RemotePlayWhatever do gry online."
+                    DisplayName = "Co najmniej jeden gracz musi używać gamepada. Tylko Gracz 1 może używać klawiatury i myszy. Użyj Parsec.app do gry online."
                 },
                 {
                     Id = "CoopMenu_P1Press"
@@ -324,7 +324,7 @@
                 },
                 {
                     Id = "CoopMenu_StartMessage"
-                    DisplayName = "Pelo menos um jogador deve usar controle. Só o Jogador 1 pode usar teclado e mouse. Use RemotePlayWhatever para jogar online."
+                    DisplayName = "Pelo menos um jogador deve usar controle. Só o Jogador 1 pode usar teclado e mouse. Use Parsec.app para jogar online."
                 },
                 {
                     Id = "CoopMenu_P1Press"
@@ -369,7 +369,7 @@
                 },
                 {
                     Id = "CoopMenu_StartMessage"
-                    DisplayName = "最低1人はゲームパッドを使用してください。キーボードとマウスはプレイヤー1のみ使用可能です。オンラインプレイにはRemotePlayWhateverをご利用ください。"
+                    DisplayName = "最低1人はゲームパッドを使用してください。キーボードとマウスはプレイヤー1のみ使用可能です。オンラインプレイにはParsec.appをご利用ください。"
                 },
                 {
                     Id = "CoopMenu_P1Press"
@@ -414,7 +414,7 @@
                 },
                 {
                     Id = "CoopMenu_StartMessage"
-                    DisplayName = "至少一名玩家必须使用手柄。仅玩家1可使用键鼠。使用RemotePlayWhatever进行在线游戏。"
+                    DisplayName = "至少一名玩家必须使用手柄。仅玩家1可使用键鼠。使用Parsec.app进行在线游戏。"
                 },
                 {
                     Id = "CoopMenu_P1Press"
@@ -459,7 +459,7 @@
                 },
                 {
                     Id = "CoopMenu_StartMessage"
-                    DisplayName = "최소 한 명의 플레이어는 게임패드를 사용해야 합니다. 플레이어 1만 키보드와 마우스를 사용할 수 있습니다. 온라인 플레이는 RemotePlayWhatever를 사용하세요."
+                    DisplayName = "최소 한 명의 플레이어는 게임패드를 사용해야 합니다. 플레이어 1만 키보드와 마우스를 사용할 수 있습니다. 온라인 플레이는 Parsec.app를 사용하세요."
                 },
                 {
                     Id = "CoopMenu_P1Press"
