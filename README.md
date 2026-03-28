@@ -1,6 +1,17 @@
 
 # Hades coop mod
 
+Play Hades with a friend!
+This mod adds local cooperative multiplayer to Hades, allowing two players to fight through the Underworld together on the same PC.
+
+For online play: Use a streaming tool like [Parsec](https://parsec.app/) to share your game session with a remote friend.
+
+The mod supports the **Steam** and **Epic Games Store** versions of the gamme
+
+**Warning**
+
+You need a gameplay to play this mod.
+
 # Build
 
 ## Using CMake for Windows x64
@@ -37,3 +48,7 @@ ModRequire "dev/game/scripts/init.lua"
 }
 ```
 5. Now you can make changes directly in the repository and load them in the game.
+
+# Suppoort
+
+You can support development using crypto. See [my page](https://thenormalnij.de/donate) for details
