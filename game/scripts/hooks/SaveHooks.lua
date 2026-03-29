@@ -29,7 +29,10 @@ function SaveHooks.SaveWrapper(baseFun)
             instance:MovePlayerDataToProxy(1)
         end
 
-        baseFun()
+        local success = pcall(baseFun)
+        if not success then
+            DebugPrint{ Text = "COOP: The game wasn't saved" }
+        end
 
         for name, instance in HeroContextProxyStore.Iterator() do
             instance:CleanProxyTable()
