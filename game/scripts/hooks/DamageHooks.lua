@@ -46,7 +46,7 @@ function OnHit(args)
 
         if isAttackerPlayer then
             -- Save last attacker to run OnEffectApply with the right hero context
-            victim.CoopLastAttacker = attacker
+            victim.CoopLastAttackerId = attacker.ObjectId
         end
 
         if isAttackerPlayer then
@@ -109,8 +109,13 @@ HookUtils.wrap("OnEffectApply", function(baseFunc, args)
             local target = triggerArgs.TriggeredByTable
             if CoopPlayers.IsPlayerHero(target) then
                 HeroContext.RunWithHeroContext(target, originalHandler, triggerArgs)
-            elseif target and target.CoopLastAttacker then
-                HeroContext.RunWithHeroContext(target.CoopLastAttacker, originalHandler, triggerArgs)
+            elseif target and target.CoopLastAttackerId then
+                local hero = CoopPlayers.GetHeroByUnit(target.CoopLastAttackerId)
+                if hero then
+                    HeroContext.RunWithHeroContext(target.CoopLastAttackerId, originalHandler, triggerArgs)
+                else
+                    originalHandler(triggerArgs)
+                end
             else
                 originalHandler(triggerArgs)
             end
