@@ -41,6 +41,8 @@ function SaveHooks.SaveWrapper(baseFun)
         SaveHooks.RemoveMainHeroDeathWorkaround()
 
         CurrentRun.Hero = nil
+
+        assert(success, "Save progress finished with an error")
     else
         baseFun()
     end
