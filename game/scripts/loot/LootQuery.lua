@@ -9,24 +9,21 @@ local CoopPlayers = ModRequire "../CoopPlayers.lua"
 ---@class LootQuery
 local LootQuery = {}
 
-LootQuery.PlayersCount = 1
-
 ---@param heroesCount number
 function LootQuery.Reset(heroesCount)
-    LootQuery.LootHeroCount = heroesCount
-    CurrentRun.CoopLootCounter = CurrentRun.CoopLootCounter or RandomInt(1, heroesCount)
 end
 
 ---@return number | nil
 function LootQuery.UseNextHeroForLoot()
-    if LootQuery.LootHeroCount <= 1 then
+    local playersCount = CoopPlayers.GetPlayersCount()
+    if playersCount <= 1 then
         return
     end
 
-    local startPos = CurrentRun.CoopLootCounter
+    local startPos = CurrentRun.CoopLootCounter or RandomInt(1, playersCount)
     local playerIndex = startPos + 1
     while true do
-        if playerIndex > LootQuery.LootHeroCount then
+        if playerIndex > playersCount then
             playerIndex = 1
         end
 
