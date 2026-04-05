@@ -112,7 +112,7 @@ HookUtils.wrap("OnEffectApply", function(baseFunc, args)
             elseif target and target.CoopLastAttackerId then
                 local hero = CoopPlayers.GetHeroByUnit(target.CoopLastAttackerId)
                 if hero then
-                    HeroContext.RunWithHeroContext(target.CoopLastAttackerId, originalHandler, triggerArgs)
+                    HeroContext.RunWithHeroContext(hero, originalHandler, triggerArgs)
                 else
                     originalHandler(triggerArgs)
                 end
