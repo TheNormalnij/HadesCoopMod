@@ -43,6 +43,9 @@ function LootHooks.InitHooks()
     -- Spawns room reward for a player selected by room
     HookUtils.wrap("SpawnRoomReward", LootHooks.SpawnRoomRewardHook)
 
+    --
+    HookUtils.wrap("CreateConsumableItem", LootHooks.CreateConsumableItemWrapHook)
+
     LootHooks.InitRunHooks()
 end
 
@@ -130,6 +133,17 @@ function LootHooks.CreateRoomsForDoors(run)
     end
 
     return true
+end
+
+function LootHooks.CreateConsumableItemWrapHook(baseFun, consumableId, consumableName, costOverride)
+    local item = baseFun(consumableId, consumableName, costOverride)
+    if consumableName == 'CerberusKey' then
+        SetObstacleProperty { Property = "Magnetism", Value = 0, DestinationId = consumableId }
+        SetObstacleProperty { Property = "MagnetismSpeedMax", Value = 0, DestinationId = consumableId }
+        SetObstacleProperty { Property = "MagnetismSpeedMin", Value = 0, DestinationId = consumableId }
+    end
+
+    return item
 end
 
 return LootHooks
