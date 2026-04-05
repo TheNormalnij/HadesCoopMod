@@ -74,7 +74,7 @@ function MenuHooks.InitHooks()
                 end
             end)
         end
-        baseFun(screen, source, line, parentLine)
+        return baseFun(screen, source, line, parentLine)
     end)
 end
 
