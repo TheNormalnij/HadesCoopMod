@@ -21,7 +21,9 @@ function EnemyAiHooks.InitHooks()
     HookUtils.wrap("NotifyWithinDistance", EnemyAiHooks.NotifyWithinDistanceHook)
     HookUtils.wrap("GetTargetId", EnemyAiHooks.GetTargetIdHook)
     HookUtils.wrap("IsAIActive", EnemyAiHooks.IsAIActiveHook)
+    HookUtils.wrap("DumbFireAttack", EnemyAiHooks.DumbFireAttackWrapHook)
     HookUtils.onPreFunction("Harpy3MapTransition", EnemyAiHooks.Harpy3MapTransitionPreHook)
+    HookUtils.onPreFunction("HadesKillPresentation", EnemyAiHooks.HadesKillPresentationPreHook)
     HookUtils.replace("SelectTheseusGod", EnemyAiHooks.SelectTheseusGodHook)
 end
 
@@ -156,6 +158,23 @@ function EnemyAiHooks.Harpy3MapTransitionPreHook()
             end
         end
     end)
+end
+
+-- Fixes invisible second player in the EM4 Hades fight
+function EnemyAiHooks.DumbFireAttackWrapHook(baseFun, enemy, currentRun, weaponData)
+    if weaponData.TargetId == 40000 then
+        for _, hero in pairs(CoopPlayers.GetAliveHeroes()) do
+            local copiedData = DeepCopyTable(weaponData)
+            copiedData.TargetId = hero.ObjectId
+            thread(baseFun, enemy, currentRun, copiedData)
+        end
+    end
+end
+
+function EnemyAiHooks.HadesKillPresentationPreHook()
+    for _, hero in pairs(CoopPlayers.GetAliveHeroes()) do
+        StopAnimation{ DestinationId = hero.ObjectId, Name = "HadesReverseDarknessVignetteHold" }
+    end
 end
 
 return EnemyAiHooks
