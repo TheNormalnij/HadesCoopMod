@@ -80,9 +80,26 @@ function EnemyAiHooks.NotifyWithinDistanceHook(baseFun, params)
     end
 end
 
+local IGNORE_REFRESH = {
+    -- ["HydraHeadLavamaker"] = true,
+    -- ["HydraHeadSummoner"] = true,
+    -- ["HydraHeadSlammer"] = true,
+    -- ["HydraHeadWavemaker"] = true,
+    -- ['HydraHeadImmortal'] = true,
+
+    ["HydraHeadImmortalLavamaker"] = true,
+    ["HydraHeadImmortalSummoner"] = true,
+    ["HydraHeadImmortalSlammer"] = true,
+    ["HydraHeadImmortalWavemaker"] = true,
+    ['HydraHeadImmortal'] = true,
+}
+
 function EnemyAiHooks.RefreshAI()
     for _, enemy in pairs(ActiveEnemies) do
-        if not enemy.IsDead then
+        local isNoRefresh = IGNORE_REFRESH[enemy.Name]
+        if isNoRefresh then
+            -- do nothing
+        elseif not enemy.IsDead then
             killTaggedThreads(enemy.AIThreadName)
             killWaitUntilThreads(enemy.AINotifyName)
             Stop({ Id = enemy.ObjectId })
