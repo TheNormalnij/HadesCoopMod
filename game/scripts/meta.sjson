@@ -2,7 +2,7 @@
 	Name = "Coop mod"
 	Library = "HadesCoopGame.dll"
 	Priority = 0
-	Version = "0.4.2"
+	Version = "0.4.3"
 	Author = "Uladzislau 'TheNormalnij' Nikalayevich"
 	Localization = [
 		"Localization.sjson"
