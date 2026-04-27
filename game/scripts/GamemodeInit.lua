@@ -49,6 +49,8 @@ local function TryInstalBasicHooks()
 
     -- Fixes crash on loading when the game truing add last stand to a second player
     ScreenAnchors = {}
+    -- Fixes crash when a keepsake changes player 2 health
+    EnemyHealthDisplayAnchors = {}
 
     EnemyAiHooks.InitHooks()
     SaveHooks.InitHooks()
