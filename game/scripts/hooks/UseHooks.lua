@@ -10,11 +10,17 @@ local HeroContext = ModRequire "../HeroContext.lua"
 ---@type ILootDelivery
 local LootDelivery = ModRequire "../loot/LootInterface.lua"
 
+local function GetTriggerHero(userId)
+    return CoopPlayers.GetHeroByUnit(userId)
+        or CoopPlayers.GetFirstAliveHero()
+        or HeroContext.GetDefaultHero()
+end
+
 local _OnUsed = OnUsed
 OnUsed = function(args)
     if type(args[1]) == "function" then
         _OnUsed { function(triggerArgs)
-            local hero = CoopPlayers.GetHeroByUnit(triggerArgs.UserId)
+            local hero = GetTriggerHero(triggerArgs.UserId)
             local mainHero = HeroContext.GetDefaultHero()
 
             local functionName = triggerArgs.AttachedTable and triggerArgs.AttachedTable.OnUsedFunctionName
@@ -25,7 +31,7 @@ OnUsed = function(args)
                 return;
             else
                 HeroContext.RunWithHeroContext(
-                    CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
+                    GetTriggerHero(triggerArgs.UserId),
                     args[1],
                     triggerArgs
                 )
@@ -36,7 +42,7 @@ OnUsed = function(args)
         _OnUsed {
             args[1],
             function(triggerArgs)
-                local hero = CoopPlayers.GetHeroByUnit(triggerArgs.UserId)
+                local hero = GetTriggerHero(triggerArgs.UserId)
                 local item = triggerArgs.AttachedTable
 
                 if not LootDelivery.CanUseHeroLoot(item, hero) then
@@ -90,7 +96,7 @@ OnUsed = function(args)
         _OnUsed({
             args[1],
             function(triggerArgs)
-                local hero = CoopPlayers.GetHeroByUnit(triggerArgs.UserId)
+                local hero = GetTriggerHero(triggerArgs.UserId)
                 if not LootDelivery.CanUseHeroLoot(triggerArgs.AttachedTable, hero) then
                     return
                 end
@@ -112,7 +118,7 @@ OnUsed = function(args)
             args[1],
             function(triggerArgs)
                 HeroContext.RunWithHeroContext(
-                    CoopPlayers.GetHeroByUnit(triggerArgs.UserId),
+                    GetTriggerHero(triggerArgs.UserId),
                     args[2],
                     triggerArgs
                 )
@@ -126,7 +132,7 @@ OnActiveUseTarget = function(args)
     if type(args[1]) == "function" then
         _OnActiveUseTarget{
             function (triggerArgs)
-                local hero = CoopPlayers.GetHeroByUnit(triggerArgs.UserId)
+                local hero = GetTriggerHero(triggerArgs.UserId)
                 local mainHero = HeroContext.GetDefaultHero()
                 local functionName = triggerArgs.AttachedTable and triggerArgs.AttachedTable.OnUsedFunctionName
                 if functionName == "UseEscapeDoor" and hero ~= mainHero then
@@ -150,7 +156,7 @@ OnActiveUseTargetLost = function(args)
     if type(args[1]) == "function" then
         _OnActiveUseTargetLost {
             function(triggerArgs)
-                local hero = CoopPlayers.GetHeroByUnit(triggerArgs.UserId)
+                local hero = GetTriggerHero(triggerArgs.UserId)
                 local mainHero = HeroContext.GetDefaultHero()
                 local functionName = triggerArgs.AttachedTable and triggerArgs.AttachedTable.OnUsedFunctionName
                 if functionName == "UseEscapeDoor" and hero ~= mainHero then

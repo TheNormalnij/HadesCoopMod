@@ -27,6 +27,18 @@ function MenuHooks.InitHooks()
     MenuHooks.HookUiControl("OpenSellTraitMenu")
     MenuHooks.HookUiControl("OpenShrineUpgradeMenu")
 
+    -- Both controllers can submit Gift on the same target. Serialize the
+    -- interaction so a second input cannot start another dialogue sequence.
+    HookUtils.wrap("AttemptGift", function(baseFun, currentRun, target)
+        if target == nil or target.ReceivingGift or target.CoopGiftInProgress then
+            return
+        end
+        target.CoopGiftInProgress = true
+        local results = { baseFun(currentRun, target) }
+        target.CoopGiftInProgress = nil
+        return table.unpack(results)
+    end)
+
     HookUtils.wrap("ShowAwardMenu", function(baseFun, ...)
         if HeroContext.GetCurrentHeroContext() == CoopPlayers.GetMainHero() then
             baseFun(...)

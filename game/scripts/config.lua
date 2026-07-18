@@ -18,7 +18,7 @@ local Config = {
     -- This config is used for the "RoomDuplicated" loot delivery option
     RoomDuplicatedDelivery = {
         -- Enables duplication of the Chaos boons.
-        DuplicateChaosBoon = false;
+        DuplicateChaosBoon = true;
     },
     Player1HasOutline = true;
     Player1Outline = {

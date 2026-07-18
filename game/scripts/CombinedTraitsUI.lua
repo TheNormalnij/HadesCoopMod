@@ -21,7 +21,13 @@ function CombinedTraitsUI.ChangeHeroInTraitsMenu()
         return
     end
 
+    if not CurrentRun or not CurrentRun.Hero then
+        return
+    end
     local currentHeroInMenu = CombinedTraitsUI.GetCurrentTraitHero()
+    if not currentHeroInMenu then
+        return
+    end
     if CurrentRun.Hero == currentHeroInMenu then
         return
     end
@@ -43,7 +49,7 @@ end
 ---@private
 ---@param hero table
 function CombinedTraitsUI.RemoveHeroTrait(hero)
-    for _, trait in pairs(hero.Traits) do
+    for _, trait in pairs((hero and hero.Traits) or {}) do
         TraitUIRemove(trait)
     end
     UpdateNumHiddenTraits()
@@ -54,7 +60,7 @@ end
 function CombinedTraitsUI.AddHeroTraits(hero)
     local showingTraits = {}
 
-    for _, traitData in pairs(hero.Traits) do
+    for _, traitData in pairs((hero and hero.Traits) or {}) do
         if showingTraits[traitData.Name] == nil or not AreTraitsIdentical(traitData, showingTraits[traitData.Name]) or (AreTraitsIdentical(traitData, showingTraits[traitData.Name]) and GetRarityValue(showingTraits[traitData.Name].Rarity) < GetRarityValue(traitData.Rarity)) then
             if not showingTraits[traitData.Name] then
                 showingTraits[traitData.Name] = {}
@@ -69,10 +75,12 @@ function CombinedTraitsUI.AddHeroTraits(hero)
         end
     end
 
-    if CurrentRun.EnemyUpgrades then
+    if CurrentRun and CurrentRun.EnemyUpgrades then
         for k, upgradeName in pairs(CurrentRun.EnemyUpgrades) do
             local upgradeData = EnemyUpgradeData[upgradeName]
-            TraitUIAdd(upgradeData, true)
+            if upgradeData then
+                TraitUIAdd(upgradeData, true)
+            end
         end
     end
 

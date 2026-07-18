@@ -32,7 +32,9 @@ function UIHooks.CreateSimpleHook(funcName)
     _G[funcName] = function(...)
         local mainHero = CoopPlayers.GetMainHero()
         local secondHero = CoopPlayers.GetHero(2)
-        HeroContext.RunWithHeroContext(mainHero, orig, ...)
+        if mainHero then
+            HeroContext.RunWithHeroContext(mainHero, orig, ...)
+        end
         if secondHero then
             HeroContext.RunWithHeroContext(secondHero, SecondPlayerUi[funcName], ...)
         end
@@ -58,7 +60,11 @@ end
 ---@private
 function UIHooks.SimpleCurrentTraitWrapper(funcName)
     HookUtils.wrap(funcName, function(baseFun, ...)
-        HeroContext.RunWithHeroContext(CombinedTraitsUI.GetCurrentTraitHero(), baseFun, ...)
+        local hero = CombinedTraitsUI.GetCurrentTraitHero()
+        if hero then
+            return HeroContext.RunWithHeroContext(hero, baseFun, ...)
+        end
+        return baseFun(...)
     end)
 end
 
@@ -78,7 +84,7 @@ function UIHooks.InitHooks()
 
     HookUtils.wrap("UpdateLifePips", function(basefun, unit)
         local mainHero = CoopPlayers.GetMainHero()
-        if not mainHero or not unit or mainHero == unit then
+        if mainHero and (not unit or mainHero == unit) then
             basefun(mainHero)
         end
         SecondPlayerUi.UpdateLifePips()
@@ -93,6 +99,7 @@ function UIHooks.InitHooks()
             ScreenAnchors.LifePipIds = SecondPlayerUi.ScreenAnchors.LifePipIds
             CreateScreenObstacle = function(args)
                 args.X = (ScreenWidth - 80) - (args.X - 70)
+                return _CreateScreenObstacle(args)
             end
         end
 
@@ -135,10 +142,12 @@ function UIHooks.InitHooks()
                 SecondPlayerUi.UpdateAmmoUI()
             end
         else
-            HeroContext.RunWithHeroContext(mainHero, function()
-                _UpdateAmmoUI()
-                SecondPlayerUi.UpdateAmmoUI()
-            end)
+            if mainHero then
+                HeroContext.RunWithHeroContext(mainHero, _UpdateAmmoUI)
+            end
+            if CoopPlayers.GetHero(2) then
+                HeroContext.RunWithHeroContext(CoopPlayers.GetHero(2), SecondPlayerUi.UpdateAmmoUI)
+            end
         end
     end
 
@@ -164,7 +173,9 @@ function UIHooks.InitHooks()
     local _HideGunUI = HideGunUI
     HideGunUI = function()
         local mainHero = CoopPlayers.GetMainHero()
-        HeroContext.RunWithHeroContext(mainHero, _HideGunUI)
+        if mainHero then
+            HeroContext.RunWithHeroContext(mainHero, _HideGunUI)
+        end
         local secondHero = CoopPlayers.GetHero(2)
         if secondHero then
             HeroContext.RunWithHeroContext(secondHero, SecondPlayerUi.HideGunUI)
@@ -184,7 +195,9 @@ function UIHooks.InitHooks()
                 HeroContext.RunWithHeroContext(currentHero, SecondPlayerUi.UpdateGunUI)
             end
         else
-            HeroContext.RunWithHeroContext(mainHero, _UpdateGunUI)
+            if mainHero then
+                HeroContext.RunWithHeroContext(mainHero, _UpdateGunUI)
+            end
             if secondHero then
                 HeroContext.RunWithHeroContext(secondHero, SecondPlayerUi.UpdateGunUI)
             end
@@ -192,16 +205,24 @@ function UIHooks.InitHooks()
     end
 
     EquipPlayerWeaponPresentation = function(weaponData, args)
+        args = args or {}
         wait(0.02)
         -- TODO: Fix hero here, maybe
-        PlaySound({ Name = "/SFX/Menu Sounds/WeaponEquipChunk", Id = CurrentRun.Hero.ObjectId })
-        if not args.SkipEquipLines then
+        local currentHero = CurrentRun and CurrentRun.Hero
+        if currentHero and currentHero.ObjectId then
+            PlaySound({ Name = "/SFX/Menu Sounds/WeaponEquipChunk", Id = currentHero.ObjectId })
+        end
+        if not args.SkipEquipLines and weaponData and weaponData.EquipVoiceLines then
             thread(PlayVoiceLines, weaponData.EquipVoiceLines, false)
         end
 
         local function hasHeroWeaponWithIcon(hero)
+            if not hero or not hero.Weapons then
+                return false
+            end
             for weaponName in pairs(hero.Weapons) do
-                if WeaponData[weaponName].ActiveReloadTime then
+                local weaponData = WeaponData[weaponName]
+                if weaponData and weaponData.ActiveReloadTime then
                     return true
                 end
             end
@@ -209,17 +230,15 @@ function UIHooks.InitHooks()
         end
 
         local hero = CoopPlayers.GetMainHero()
-        local execFun = hasHeroWeaponWithIcon(hero) and ShowGunUI or _HideGunUI
-        thread(function()
+        if hero then
+            local execFun = hasHeroWeaponWithIcon(hero) and ShowGunUI or _HideGunUI
             HeroContext.RunWithHeroContext(hero, execFun)
-        end)
+        end
 
         hero = CoopPlayers.GetHero(2)
         if hero then
-            execFun = hasHeroWeaponWithIcon(hero) and SecondPlayerUi.ShowGunUI or SecondPlayerUi.HideGunUI
-            thread(function()
-                HeroContext.RunWithHeroContext(hero, execFun)
-            end)
+            local execFun = hasHeroWeaponWithIcon(hero) and SecondPlayerUi.ShowGunUI or SecondPlayerUi.HideGunUI
+            HeroContext.RunWithHeroContext(hero, execFun)
         end
     end
 
@@ -235,7 +254,7 @@ function UIHooks.InitHooks()
     UpdateSuperUIComponent = function(...)
         local mainHero = CoopPlayers.GetMainHero()
         local secondHero = CoopPlayers.GetHero(2)
-        if ScreenAnchors.SuperPipBackingIds then
+        if mainHero and ScreenAnchors.SuperPipBackingIds then
             HeroContext.RunWithHeroContext(mainHero, _UpdateSuperUIComponent, ...)
         end
         if secondHero and SecondPlayerUi.ScreenAnchors.SuperPipBackingIds then
@@ -273,7 +292,10 @@ function UIHooks.InitHooks()
 
     HookUtils.onPostFunction("ShowUseButton", function(objectId, useTarget)
         if HeroContext.GetDefaultHero() ~= HeroContext.GetCurrentHeroContext() then
-            Move({ Id = ScreenAnchors.UsePrompts[objectId], DestinationId = ScreenAnchors.UsePrompts[objectId], OffsetY = -50 })
+            local promptId = ScreenAnchors.UsePrompts and ScreenAnchors.UsePrompts[objectId]
+            if promptId then
+                Move({ Id = promptId, DestinationId = promptId, OffsetY = -50 })
+            end
         end
     end)
 end

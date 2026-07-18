@@ -65,10 +65,28 @@ function HeroContext.GetDefaultHero()
     return defaultHero
 end
 
+-- Move already-running gameplay coroutines off a hero that has died. This lets
+-- staged boss AI keep its current phase instead of being killed and restarted.
+function HeroContext.ReassignHeroContexts(fromHero, toHero)
+    if fromHero == nil or toHero == nil or fromHero == toHero then
+        return
+    end
+
+    for co, hero in pairs(CorontinueToHero) do
+        if hero == fromHero then
+            CorontinueToHero[co] = toHero
+        end
+    end
+end
+
 ---@param hero table Hero info
 ---@param fun function
 ---@param ... unknown params
 function HeroContext.RunWithHeroContext(hero, fun, ...)
+    hero = hero or defaultHero
+    if hero == nil then
+        return fun(...)
+    end
     local args = {...}
     local co = coroutine_create(function()
         fun(table.unpack(args))
@@ -97,6 +115,10 @@ local awaitableThreadId = 0
 ---@param fun function
 ---@param ... unknown params
 function HeroContext.RunWithHeroContextAwait(hero, fun, ...)
+    hero = hero or defaultHero
+    if hero == nil then
+        return fun(...)
+    end
     awaitableThreadId = awaitableThreadId + 1
     local notifyName = "RunWithHeroContextAwait" .. awaitableThreadId
 

@@ -16,12 +16,20 @@ local HookUtils = ModRequire "../HookUtils.lua"
 ---@type CoopModConfig
 local Config = ModRequire "../config.lua"
 
+local function GetAttackingHero(triggerArgs)
+    local attacker = triggerArgs.AttackerTable or triggerArgs.OwnerTable or triggerArgs.SourceTable
+    if CoopPlayers.IsPlayerHero(attacker) then
+        return attacker
+    end
+    return CoopPlayers.GetHeroByUnit(triggerArgs.AttackerId)
+end
+
 local _OnHit = OnHit
 function OnHit(args)
     -- Only one usage
     local fun = args[1]
     _OnHit { function(triggerArgs)
-        local attacker = triggerArgs.AttackerTable
+        local attacker = GetAttackingHero(triggerArgs)
         local victim = triggerArgs.TriggeredByTable
 
         local isAttackerPlayer = attacker and CoopPlayers.IsPlayerHero(attacker)
@@ -72,7 +80,7 @@ function OnProjectileDeath(args)
     local originalHandler = args[1]
 
     _OnProjectileDeath { function(triggerArgs)
-        local attacker = triggerArgs.AttackerTable
+        local attacker = GetAttackingHero(triggerArgs)
         local isAttackerPlayer = attacker and CoopPlayers.IsPlayerHero(attacker)
         local victim = triggerArgs.TriggeredByTable
         local isVictimPlayer = victim and CoopPlayers.IsPlayerHero(victim)
@@ -107,6 +115,14 @@ HookUtils.wrap("OnEffectApply", function(baseFunc, args)
     baseFunc{
         function(triggerArgs)
             local target = triggerArgs.TriggeredByTable
+            local attacker = GetAttackingHero(triggerArgs)
+
+            -- Some attacks (notably Poseidon special knockback) reach this path
+            -- without producing a normal OnHit. Do not apply player-owned effects
+            -- to either co-op hero.
+            if CoopPlayers.IsPlayerHero(target) and CoopPlayers.IsPlayerHero(attacker) then
+                return
+            end
             if CoopPlayers.IsPlayerHero(target) then
                 HeroContext.RunWithHeroContext(target, originalHandler, triggerArgs)
             elseif target and target.CoopLastAttackerId then

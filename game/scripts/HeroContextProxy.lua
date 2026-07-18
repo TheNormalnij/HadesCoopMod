@@ -20,6 +20,10 @@ local HeroContextProxy = {}
 ---@return HeroContextProxy
 function HeroContextProxy.New(owner, keyInOwner)
     local target = owner[keyInOwner]
+    if target == nil then
+        target = {}
+        owner[keyInOwner] = target
+    end
 
     local handler = {
         separatedData = {};
@@ -103,7 +107,9 @@ end
 function HeroContextProxy:Reset()
     local separatedData = self.separatedData
     for playerId = 1, CoopPlayers.GetPlayersCount() do
-        TableUtils.clean(separatedData[playerId])
+        if separatedData[playerId] then
+            TableUtils.clean(separatedData[playerId])
+        end
     end
 
     TableUtils.clean(self.target)

@@ -97,7 +97,13 @@ local IGNORE_REFRESH = {
 function EnemyAiHooks.RefreshAI()
     for _, enemy in pairs(ActiveEnemies) do
         local isNoRefresh = IGNORE_REFRESH[enemy.Name]
-        if isNoRefresh then
+        local isStagedBoss = enemy.AIStages ~= nil or enemy.IsBoss or enemy.UseBossHealthBar
+        local isImpervious = enemy.InvulnerableFlags ~= nil or enemy.PersistentInvulnerableFlags ~= nil
+        if IsInvulnerable ~= nil and enemy.ObjectId ~= nil then
+            isImpervious = isImpervious or IsInvulnerable({ Id = enemy.ObjectId })
+        end
+
+        if isNoRefresh or isStagedBoss or isImpervious then
             -- do nothing
         elseif not enemy.IsDead then
             killTaggedThreads(enemy.AIThreadName)
@@ -107,13 +113,9 @@ function EnemyAiHooks.RefreshAI()
 
             enemy.TargetId = nil
             thread(function()
-                if enemy.AIStages ~= nil then
-                    thread(StagedAI, enemy, CurrentRun)
-                else
-                    local aiBehavior = enemy.AIBehavior
-                    if aiBehavior ~= nil then
-                        thread(SetAI, aiBehavior, enemy, CurrentRun)
-                    end
+                local aiBehavior = enemy.AIBehavior
+                if aiBehavior ~= nil then
+                    thread(SetAI, aiBehavior, enemy, CurrentRun)
                 end
             end)
 

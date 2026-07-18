@@ -52,6 +52,9 @@ end
 
 function CoopPlayers.SetMainHero(hero)
     DebugPrint{Text = "Set main hero: " .. tostring(hero) }
+    if not hero then
+        return false
+    end
     CoopPlayers.CoopHeroes[1] = hero
     if hero.ObjectId then
         CoopPlayers.PlayerUnitIdToHero[hero.ObjectId] = hero
@@ -123,7 +126,9 @@ function CoopPlayers.OnAllPlayersDead()
 
     -- Heal all players in the Hades home
     for _, hero in CoopPlayers.PlayersIterator() do
-        hero.Health = hero.MaxHealth or 50
+        if hero then
+            hero.Health = hero.MaxHealth or 50
+        end
     end
 
     -- Sometimes we change control schemas during the run
@@ -200,6 +205,9 @@ end
 ---@param playerId number
 function CoopPlayers.RecreateFreshHeroWithCurrentMeta(playerId)
     local hero = CoopPlayers.CoopHeroes[playerId]
+    if not hero then
+        return false
+    end
     local currentUnit = hero.ObjectId
     local keepsake, assist = HeroEx.GetGiftAndAssist(hero)
     local weaponName, weaponIndex = HeroEx.GetHeroWeaponFull(hero)
@@ -229,6 +237,9 @@ end
 
 function CoopPlayers.UpdateMainHero()
     local hero = CoopPlayers.GetMainHero()
+    if not hero or not hero.ObjectId then
+        return false
+    end
     CoopPlayers.PlayerUnitIdToHero[hero.ObjectId] = hero
     SetUntargetable { Id = hero.ObjectId }
 end
