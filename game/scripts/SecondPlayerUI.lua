@@ -12,6 +12,10 @@ local ScreenAnchorsSecondPlayer = {}
 SecondPlayerUi.ScreenAnchors = ScreenAnchorsSecondPlayer
 
 function SecondPlayerUi.ShowHealthUI()
+    local currentHero = CurrentRun and CurrentRun.Hero
+    if not currentHero or not currentHero.MaxHealth or currentHero.MaxHealth <= 0 then
+        return
+    end
     if not ConfigOptionCache.ShowUIAnimations then
         return
     end
@@ -87,7 +91,11 @@ function SecondPlayerUi.ShowHealthUI()
 
     SetAnimation({ Name = "HealthBar", DestinationId = ScreenAnchorsSecondPlayer.HealthBack })
 
-    local frameTarget = 1 - (CurrentRun.Hero.Health / CurrentRun.Hero.MaxHealth)
+    local hero = CurrentRun and CurrentRun.Hero
+    if not hero or not hero.MaxHealth or hero.MaxHealth <= 0 then
+        return
+    end
+    local frameTarget = 1 - ((hero.Health or 0) / hero.MaxHealth)
     SetAnimation({ Name = "HealthBarFill", DestinationId = ScreenAnchorsSecondPlayer.HealthFill, FrameTarget = frameTarget, Instant = true, Color =
     Color.Black })
     SetAnimation({ Name = "HealthBarFillWhite", DestinationId = ScreenAnchorsSecondPlayer.HealthRally, FrameTarget = frameTarget, Instant = true, Color =
@@ -95,7 +103,7 @@ function SecondPlayerUi.ShowHealthUI()
 
     SecondPlayerUi.UpdateHealthUI()
 
-    if CurrentRun.CurrentRoom.LoadedAmmo then
+    if CurrentRun.CurrentRoom and CurrentRun.CurrentRoom.LoadedAmmo then
         for i = 1, CurrentRun.CurrentRoom.LoadedAmmo do
             local offsetX = 600 + 380 -- Some random shit
             local offsetY = -50
@@ -133,7 +141,7 @@ function SecondPlayerUi.UpdateHealthUI()
         return
     end
 
-    local rallyHealth = unit.RallyHealth.Store
+    local rallyHealth = (unit.RallyHealth and unit.RallyHealth.Store) or 0
     if ScreenAnchorsSecondPlayer.HealthBack ~= nil then
         ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.HealthBack, Text = "UI_PlayerHealth", LuaKey = "TempTextData", LuaValue = { Current = math.ceil(currentHealth), Maximum = math.ceil(maxHealth) }, AutoSetDataProperties = false })
     end
@@ -142,8 +150,11 @@ function SecondPlayerUi.UpdateHealthUI()
         SetAnimationFrameTarget({ Name = "HealthBarFill", Fraction = 1 - (currentHealth) / maxHealth, DestinationId =
         ScreenAnchorsSecondPlayer.HealthFill })
     end
-    SetAnimationFrameTarget({ Name = "HealthBarFillWhite", Fraction = 1 - (currentHealth + rallyHealth) / maxHealth, DestinationId =
-    ScreenAnchorsSecondPlayer.HealthRally })
+    if ScreenAnchorsSecondPlayer.HealthRally ~= nil and maxHealth > 0 then
+        SetAnimationFrameTarget({ Name = "HealthBarFillWhite", Fraction = 1 - (currentHealth + rallyHealth) / maxHealth, DestinationId =
+        ScreenAnchorsSecondPlayer.HealthRally })
+    end
+    unit.RallyHealth = unit.RallyHealth or {}
     unit.RallyHealth.Cache =
     {
         CurrentHealth = currentHealth,
@@ -155,7 +166,7 @@ function SecondPlayerUi.UpdateRallyHealthUI()
     local unit = CoopPlayers.GetHero(2)
     if unit == nil then return; end
 
-    local rallyHealth = unit.RallyHealth.Store
+    local rallyHealth = (unit.RallyHealth and unit.RallyHealth.Store) or 0
     local currentHealth = unit.Health
     local maxHealth = unit.MaxHealth
     if unit.RallyHealth.Cache ~= nil then
@@ -163,6 +174,9 @@ function SecondPlayerUi.UpdateRallyHealthUI()
         maxHealth = unit.RallyHealth.Cache.MaxHealth
     end
 
+    if not currentHealth or not maxHealth or maxHealth <= 0 or not ScreenAnchorsSecondPlayer.HealthRally then
+        return
+    end
     SetAnimationFrameTarget({
         Name = "HealthBarFillWhite",
         Fraction = 1 - (currentHealth + rallyHealth) / maxHealth,
@@ -179,11 +193,11 @@ function SecondPlayerUi.HideHealthUI()
     for i, id in pairs(healthIds) do
         table.insert(healthAnchorIds, ScreenAnchorsSecondPlayer[id])
     end
-    for i, id in pairs(ScreenAnchorsSecondPlayer.LifePipIds) do
+    for i, id in pairs(ScreenAnchorsSecondPlayer.LifePipIds or {}) do
         table.insert(healthAnchorIds, id)
     end
 
-    for i, id in pairs(ScreenAnchorsSecondPlayer.SelfStoredAmmo) do
+    for i, id in pairs(ScreenAnchorsSecondPlayer.SelfStoredAmmo or {}) do
         table.insert(healthAnchorIds, id)
     end
 
@@ -259,7 +273,7 @@ function SecondPlayerUi.RecreateLifePips()
 
     local numLastStands = 0
     if unit.IsDead then
-        numLastStands = TableLength(unit.LastStands) + GetNumMetaUpgradeLastStands()
+        numLastStands = TableLength(unit.LastStands or {}) + GetNumMetaUpgradeLastStands()
     elseif unit.MaxLastStands then
         numLastStands = unit.MaxLastStands
     end
@@ -350,6 +364,9 @@ function SecondPlayerUi.HideAmmoUI()
 end
 
 function SecondPlayerUi.StartAmmoReloadPresentation(delay)
+    if not delay or delay <= 0 or not ScreenAnchorsSecondPlayer.AmmoIndicatorUI then
+        return
+    end
     ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads = ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads or {}
     local reloadTimer = delay
     local poxX = ScreenWidth - 494 - 150
@@ -369,7 +386,7 @@ function SecondPlayerUi.StartAmmoReloadPresentation(delay)
 end
 
 function SecondPlayerUi.EndAmmoReloadPresentation()
-	if IsEmpty(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads ) then
+	if not ScreenAnchorsSecondPlayer.AmmoIndicatorUI or IsEmpty(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads ) then
 		return
 	end
 
@@ -402,7 +419,7 @@ end
 -- Gun
 
 function SecondPlayerUi.ShowGunUI(gunData)
-    if not CurrentRun.Hero.Weapons.GunWeapon then
+    if not CurrentRun or not CurrentRun.Hero or not CurrentRun.Hero.Weapons or not CurrentRun.Hero.Weapons.GunWeapon then
         return
     end
     if ScreenAnchorsSecondPlayer.GunUI ~= nil then
@@ -461,6 +478,9 @@ end
 
 function SecondPlayerUi.UpdateGunUI(triggerArgs)
     triggerArgs = triggerArgs or {}
+    if not CurrentRun or not CurrentRun.Hero or not CurrentRun.Hero.ObjectId or not ScreenAnchorsSecondPlayer.GunUI then
+        return
+    end
     local ammoData =
     {
         Current = triggerArgs.Ammo or
@@ -542,6 +562,9 @@ function SecondPlayerUi.DestroyGunUI()
 end
 
 function SecondPlayerUi.ShowSuperMeter()
+    if not CurrentRun or not CurrentRun.Hero or not CurrentRun.Hero.SuperCost or CurrentRun.Hero.SuperCost <= 0 or not CurrentRun.Hero.SuperMeterLimit then
+        return
+    end
     if not IsSuperValid() then
         return
     end
@@ -628,11 +651,11 @@ function SecondPlayerUi.ShowSuperMeter()
     CombatUI.FadeDistance.Super, Direction = 0 })
     FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.SuperMeterCap, Duration = CombatUI.FadeInDuration, IncludeText = true, Distance =
     CombatUI.FadeDistance.Super, Direction = 0 })
-    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipIds) do
+    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipIds or {}) do
         FadeObstacleIn({ Id = pipId, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance = CombatUI
         .FadeDistance.Super, Direction = 0 })
     end
-    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipBackingIds) do
+    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipBackingIds or {}) do
         FadeObstacleIn({ Id = pipId, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance = CombatUI
         .FadeDistance.Super, Direction = 0 })
     end
@@ -649,12 +672,12 @@ function SecondPlayerUi.HideSuperMeter()
     HideObstacle({ Id = ScreenAnchorsSecondPlayer.SuperMeterCap, IncludeText = true, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration =
     CombatUI.FadeDuration, SmoothStep = true })
 
-    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipIds) do
+    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipIds or {}) do
         Move({ Id = pipId, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration = CombatUI.FadeDuration, SmoothStep = true })
         SetAlpha({ Id = pipId, Fraction = 0, Duration = CombatUI.FadeDuration })
     end
 
-    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipBackingIds) do
+    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipBackingIds or {}) do
         Move({ Id = pipId, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration = CombatUI.FadeDuration, SmoothStep = true })
         SetAlpha({ Id = pipId, Fraction = 0, Duration = CombatUI.FadeDuration })
     end
@@ -692,7 +715,7 @@ function SecondPlayerUi.DestroySuperMeter()
 end
 
 function SecondPlayerUi.UpdateSuperUIComponent(index, filled)
-    if not CurrentRun.Hero.SuperCost then
+    if not CurrentRun or not CurrentRun.Hero or not CurrentRun.Hero.SuperCost then
         return
     end
     --- leave this

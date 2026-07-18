@@ -34,7 +34,9 @@ function CoopCamera.ForceFocus(state)
 end
 
 function CoopCamera.LockCameraHook(args)
-    local mainPlayerId  = CoopPlayers.GetMainHero().ObjectId
+    args = args or {}
+    local mainHero = CoopPlayers.GetMainHero()
+    local mainPlayerId = mainHero and mainHero.ObjectId
     if mainPlayerId and args.Id == mainPlayerId then
         CoopCamera.ForceFocus(true)
         CoopCamera.Update()
@@ -48,7 +50,10 @@ end
 function CoopCamera.OnExitNPCPresentation()
     -- Fixes wrong camera focus after some  NPC dialoges.
     -- E.g. after feeding the dog in the styx temple hub
-    CoopCamera.LockCameraHook({ Id = CoopPlayers.GetMainHero().ObjectId })
+    local mainHero = CoopPlayers.GetMainHero()
+    if mainHero and mainHero.ObjectId then
+        CoopCamera.LockCameraHook({ Id = mainHero.ObjectId })
+    end
 end
 
 ---@private
@@ -65,7 +70,9 @@ function CoopCamera.Update()
 
     for _, hero in CoopPlayers.PlayersIterator() do
         if hero and (wasRunFinished or not hero.IsDead) and not CoopCamera.IgnoreHeroes[hero] then
-            table.insert(units, hero.ObjectId)
+            if hero.ObjectId then
+                table.insert(units, hero.ObjectId)
+            end
         end
     end
 
@@ -80,6 +87,9 @@ end
 ---@private
 function CoopCamera.CreateRoomWrapHook(baseFunc, ...)
     local room = baseFunc(...)
+    if not room then
+        return room
+    end
     if not room.ZoomFraction then
         room.ZoomFraction = 0.6
     elseif room.ZoomFraction > 0.5 then
@@ -90,6 +100,9 @@ end
 
 ---@private
 function CoopCamera.PanCameraPostHook(args)
+    if not args then
+        return
+    end
     local id = args.Id or args.Ids
     if id then
         CoopCamera.ForceFocus(CoopPlayers.IsPlayerUnit(id))

@@ -30,7 +30,8 @@ function ResourceLoadingHooks.InitHooks()
         end
 
         for playerId = 1, CoopPlayers.GetPlayersCount() do
-            for lootName, i in pairs(lootHistory:GetPlayerData(playerId)) do
+            local playerLootHistory = lootHistory:GetPlayerData(playerId)
+            for lootName, i in pairs(playerLootHistory or {}) do
                 if not GameData.MissingPackages[lootName] then
                     LoadPackages{ Name = lootName }
                 end

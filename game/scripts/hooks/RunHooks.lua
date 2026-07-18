@@ -46,6 +46,13 @@ function RunHooks.InitHooks()
     HookUtils.wrap("EndEncounterEffects", RunHooks.EndEncounterEffectsWrapHook)
     HookUtils.wrap("StartEncounterEffects", RunHooks.StartEncounterEffectsWrapHook)
     HookUtils.wrap("RestoreUnlockRoomExits", RunHooks.RestoreUnlockRoomExitsWrapHook)
+    HookUtils.wrap("UpdateWeaponHistory", function(baseFun, currentRun)
+        local mainHero = CoopPlayers.GetMainHero()
+        if mainHero == nil then
+            return baseFun(currentRun)
+        end
+        return HeroContext.RunWithHeroContextReturn(mainHero, baseFun, currentRun)
+    end)
     HookUtils.onPostFunction("StartNewGame", RunHooks.StartNewGameHook)
     HookUtils.onPostFunction("CheckForAllEnemiesDead", RunHooks.CheckForAllEnemiesDeadPostHook)
 end
@@ -63,7 +70,8 @@ function RunHooks.CheckDistanceTriggerWrapHook(CheckDistanceTriggerFun, ...)
     -- This hack fixes crashes like #21 when the player 1 is dead.
     -- The crash is caused by invalid reference to the second player.
     -- The game cannot find a player unit and triggers NotifyWithinDistance instantly without result
-    HeroContext.RunWithHeroContext(CoopPlayers.GetMainHero(), CheckDistanceTriggerFun, ...)
+    local hero = CoopPlayers.GetMainHero() or CoopPlayers.GetFirstAliveHero()
+    return HeroContext.RunWithHeroContext(hero, CheckDistanceTriggerFun, ...)
 end
 
 ---@private
@@ -164,6 +172,9 @@ end
 ---@private
 function RunHooks.HandleSurfaceRoom(StartRoomFun, run, currentRoom)
     local mainHero = CoopPlayers.GetMainHero()
+    if not mainHero then
+        return StartRoomFun(run, currentRoom)
+    end
     mainHero.IsDead = false
     HeroContext.SetDefaultHero(mainHero)
 
@@ -222,7 +233,8 @@ end
 
 ---@private
 function RunHooks.KillHeroHook(baseFun, ...)
-    CurrentRun.Hero.IsDead = true
+    local deadHero = CurrentRun.Hero
+    deadHero.IsDead = true
     if not CoopPlayers.HasAlivePlayers() then
         -- Handle death for player 1 only
         local mainHero = CoopPlayers.GetMainHero()
@@ -234,12 +246,16 @@ function RunHooks.KillHeroHook(baseFun, ...)
     end
     local aliveHero = CoopPlayers.GetAliveHeroes()[1]
 
-    if CurrentRun.Hero == CoopPlayers.GetMainHero() then
-        HeroEx.HideHero(CurrentRun.Hero)
+    -- Preserve existing staged boss coroutines, but make their CurrentRun.Hero
+    -- context resolve to the survivor after the player that owned them dies.
+    HeroContext.ReassignHeroContexts(deadHero, aliveHero)
+
+    if deadHero == CoopPlayers.GetMainHero() then
+        HeroEx.HideHero(deadHero)
 
         HeroContext.SetDefaultHero(aliveHero)
     else
-        local playerId = CoopPlayers.GetPlayerByHero(CurrentRun.Hero)
+        local playerId = CoopPlayers.GetPlayerByHero(deadHero)
         if playerId then
             CoopRemovePlayerUnit(playerId)
         end
@@ -309,6 +325,9 @@ end
 ---@private
 function RunHooks.RestoreUnlockRoomExitsWrapHook(baseFun, run, room)
     local mainHero = CurrentRun.Hero
+    if not mainHero then
+        return baseFun(run, room)
+    end
     local isMainPlayerShoudlBeHidden = not RunEx.IsRunEnded() and mainHero.IsDead
     local activeHero = isMainPlayerShoudlBeHidden and CoopPlayers.GetFirstAliveHero() or mainHero
 
@@ -329,7 +348,11 @@ function RunHooks.RestoreUnlockRoomExitsWrapHook(baseFun, run, room)
         CoopCamera.ForceFocus(true)
     end
 
-    local spawnPoint = CurrentRun.CurrentRoom.HeroEndPoint or CoopPlayers.GetMainHero().ObjectId
+    local mainHero = CoopPlayers.GetMainHero()
+    local spawnPoint = (CurrentRun.CurrentRoom and CurrentRun.CurrentRoom.HeroEndPoint) or (mainHero and mainHero.ObjectId)
+    if not spawnPoint then
+        return
+    end
     for playerId = 2, CoopPlayers.GetPlayersCount() do
         CoopPlayers.RestoreSavedHero(playerId)
         local hero = CoopPlayers.GetHero(playerId)
