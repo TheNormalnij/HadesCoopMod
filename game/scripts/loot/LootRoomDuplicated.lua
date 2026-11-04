@@ -233,11 +233,11 @@ function LootRoomDuplicated.CreateSharedDoorIcons(door, ownerId)
             local side = (slot % 2 == 1) and -1 or 1
             local distance = 85 * math.ceil(slot / 2)
 
-            local iconId = SpawnObstacle({ Name = "BlankGeoObstacle", Group = "Standing" })
+            -- Drawn above the world (like enemy health bars), otherwise the door frame covers it
+            local iconId = SpawnObstacle({ Name = "BlankGeoObstacle", Group = "Combat_UI_World" })
             SetAnimation({ DestinationId = iconId, Name = LootRoomDuplicated.GetDoorRewardAnimation(reward) })
             Attach({ Id = iconId, DestinationId = door.DoorIconId, DynamicScaleOffset = true, OffsetX = side * distance, OffsetZ = -15 })
             SetScale({ Id = iconId, Fraction = 0.75 })
-            SetThingProperty({ Property = "SortMode", Value = "FromParent", DestinationId = iconId })
             table.insert(door.AdditionalIcons, iconId)
             table.insert(door.AdditionalAttractIds, iconId)
 
