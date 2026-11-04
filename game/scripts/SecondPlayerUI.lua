@@ -121,7 +121,7 @@ local function CreatePlayerUi(playerId)
             ShadowOffsetX = 0,
             Justification = "Left",
         }, LocalizationData.UIScripts.HealthUI))
-        PlayerVisibilityHelper.AddHealthBarLabel(playerId, ScreenAnchorsSecondPlayer.HealthBack, 470, SecondPlayerUi.AboveBarOffsetY)
+        PlayerVisibilityHelper.AddHealthBarLabel(playerId, ScreenAnchorsSecondPlayer.HealthBack, 210, SecondPlayerUi.AboveBarOffsetY)
 
         SetAnimation({ Name = "HealthBar", DestinationId = ScreenAnchorsSecondPlayer.HealthBack })
 

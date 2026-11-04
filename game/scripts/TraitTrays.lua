@@ -2,13 +2,14 @@
 -- Boon tray (the column of boon icons) for every player.
 --
 -- Player 1 uses the vanilla tray on the left side of the screen.
--- Additional players get the same tray mirrored on the right side:
--- player 2 at the screen edge, player 3 next to it.
+-- Player 2 gets the same tray mirrored on the right side.
+-- Player 3 gets the tray turned by 90 degrees along the top edge
+-- (slots go from left to right, recent boons are the row below).
 --
 -- Vanilla tray functions are reused. While they run for an additional player:
 --  * tray related ScreenAnchors point to the player's own tray
---  * X coordinates of created/moved obstacles are mirrored to the right side
---  * fade directions are mirrored
+--  * positions of created/moved obstacles are transformed to the player's layout
+--  * fade directions are transformed the same way
 -- Only functions that never wait are run this way, because the globals are
 -- swapped while they run.
 --
@@ -25,11 +26,34 @@ local RunEx = ModRequire "RunEx.lua"
 ---@class TraitTrays
 local TraitTrays = {}
 
--- Distance from the right screen edge, per player
-local TrayShiftX = {
-    [2] = 0,
-    [3] = 200,
+-- Tray layout per player
+--  Mirror: vanilla tray mirrored to the right screen edge, ShiftX from the edge
+--  Top: vanilla tray turned by 90 degrees, the first slot column starts at X, the slot row at Y
+local TrayLayouts = {
+    [2] = { Kind = "Mirror", ShiftX = 0 },
+    [3] = { Kind = "Top", X = 560, Y = 70 },
 }
+
+local function GetLayout(playerId)
+    return TrayLayouts[playerId] or { Kind = "Mirror", ShiftX = (playerId - 2) * 200 }
+end
+
+--- Screen position of a vanilla (left side) tray position in the player's layout
+local function MapPoint(layout, x, y)
+    if layout.Kind == "Top" then
+        -- Vanilla Y (slot index) becomes X, vanilla X (slot / recent column) becomes Y
+        return layout.X + ((y or TraitUI.IconStartY) - TraitUI.IconStartY), layout.Y + (x - CombatUI.TraitUIStart)
+    end
+    return ScreenWidth - x - layout.ShiftX, y
+end
+
+--- Movement angle in the player's layout. Angles: 0 right, 90 up, 180 left, 270 down.
+local function MapAngle(layout, angle)
+    if layout.Kind == "Top" then
+        return (270 - angle) % 360
+    end
+    return (180 - angle) % 360
+end
 
 local TrayAnchorKeys = { "TraitAnchorIds", "TraitBacking", "TraitPlaceholderIcons", "TraitPlaceholderFrames", "AdditionalTraitHint" }
 
@@ -111,10 +135,7 @@ function TraitTrays.RunForHero(hero, fun, ...)
         return fun(...)
     end
 
-    local shiftX = TrayShiftX[playerId] or (playerId - 2) * 200
-    local function mirrorX(x)
-        return ScreenWidth - x - shiftX
-    end
+    local layout = GetLayout(playerId)
 
     local tray = GetTrayAnchors(playerId)
     local backup = {}
@@ -135,10 +156,14 @@ function TraitTrays.RunForHero(hero, fun, ...)
     SpawnObstacle = function(args)
         local isBacking = args.Group == "Combat_UI_Backing" and args.OffsetY == TraitUI.StartY
         if args.OffsetX and not args.DestinationId then
-            args.OffsetX = mirrorX(args.OffsetX)
+            args.OffsetX, args.OffsetY = MapPoint(layout, args.OffsetX, args.OffsetY)
+        end
+        if isBacking and layout.Kind == "Top" then
+            -- The vertical backing image doesn't fit a horizontal tray
+            args.Name = "BlankObstacle"
         end
         local id = _SpawnObstacle(args)
-        if isBacking and id then
+        if isBacking and id and layout.Kind == "Mirror" then
             -- The tray backing is drawn for the left screen edge
             SetScaleX({ Id = id, Fraction = -1 })
         end
@@ -146,19 +171,19 @@ function TraitTrays.RunForHero(hero, fun, ...)
     end
     Teleport = function(args)
         if args.OffsetX and not args.DestinationId then
-            args.OffsetX = mirrorX(args.OffsetX)
+            args.OffsetX, args.OffsetY = MapPoint(layout, args.OffsetX, args.OffsetY)
         end
         return _Teleport(args)
     end
     FadeObstacleIn = function(args)
         if args.Direction then
-            args.Direction = 180 - args.Direction
+            args.Direction = MapAngle(layout, args.Direction)
         end
         return _FadeObstacleIn(args)
     end
     HideObstacle = function(args)
         if args.Angle then
-            args.Angle = 180 - args.Angle
+            args.Angle = MapAngle(layout, args.Angle)
         end
         return _HideObstacle(args)
     end
@@ -202,11 +227,12 @@ local function HideAdditionalTray(playerId, hero)
     if tray.TraitBacking == nil then
         return
     end
+    local hideAngle = MapAngle(GetLayout(playerId), 180)
 
     local ids = {}
     for _, trait in pairs(hero.Traits or {}) do
         if trait.AnchorId ~= nil then
-            HideObstacle({ Id = trait.AnchorId, IncludeText = true, Distance = CombatUI.FadeDistance.Trait, Angle = 0, Duration = CombatUI.TraitFadeDuration, SmoothStep = true })
+            HideObstacle({ Id = trait.AnchorId, IncludeText = true, Distance = CombatUI.FadeDistance.Trait, Angle = hideAngle, Duration = CombatUI.TraitFadeDuration, SmoothStep = true })
         end
         if trait.TraitIconOverlay ~= nil then
             SetAlpha({ Id = trait.TraitIconOverlay, Fraction = 0, Duration = CombatUI.TraitFadeDuration })
@@ -216,7 +242,7 @@ local function HideAdditionalTray(playerId, hero)
             table.insert(ids, trait.TraitActiveOverlay)
         end
         if trait.TraitInfoCardId ~= nil then
-            HideObstacle({ Id = trait.TraitInfoCardId, IncludeText = true, Distance = CombatUI.FadeDistance.Trait, Angle = 0, Duration = CombatUI.TraitFadeDuration, SmoothStep = true })
+            HideObstacle({ Id = trait.TraitInfoCardId, IncludeText = true, Distance = CombatUI.FadeDistance.Trait, Angle = hideAngle, Duration = CombatUI.TraitFadeDuration, SmoothStep = true })
             table.insert(ids, trait.TraitInfoCardId)
         end
         trait.AnchorId = nil
@@ -236,7 +262,7 @@ local function HideAdditionalTray(playerId, hero)
         table.insert(backingIds, id)
     end
     for _, id in pairs(backingIds) do
-        HideObstacle({ Id = id, IncludeText = true, Distance = CombatUI.FadeDistance.Trait, Angle = 0, Duration = CombatUI.TraitFadeDuration, SmoothStep = true })
+        HideObstacle({ Id = id, IncludeText = true, Distance = CombatUI.FadeDistance.Trait, Angle = hideAngle, Duration = CombatUI.TraitFadeDuration, SmoothStep = true })
         table.insert(ids, id)
     end
 
