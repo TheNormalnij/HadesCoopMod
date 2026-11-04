@@ -38,6 +38,15 @@ local Config = {
         Thickness = 2,
         Threshold = 0.6,
     };
+    Player3HasOutline = true,
+    Player3Outline = {
+        R = 200,
+        G = 0,
+        B = 0,
+        Opacity = 0.6,
+        Thickness = 2,
+        Threshold = 0.6,
+    };
     TextAbovePlayersEnabled = false;
     TextAbovePlayersParams = {
         -- CreateTextBox params

@@ -4,449 +4,321 @@
 ---@type CoopPlayers
 local CoopPlayers = ModRequire "CoopPlayers.lua"
 
----@class SecondPlayerUi
-local SecondPlayerUi = {}
+---@type HeroContext
+local HeroContext = ModRequire "HeroContext.lua"
 
-local ScreenAnchorsSecondPlayer = {}
+-- HUD offsets of additional players. Player 2 uses the bottom right corner,
+-- player 3 is placed above player 2.
+local PlayerHudOffsets = {
+    [2] = { X = 0, Y = 0 },
+    [3] = { X = 0, Y = -140 },
+}
 
-SecondPlayerUi.ScreenAnchors = ScreenAnchorsSecondPlayer
+---@param playerId number
+local function CreatePlayerUi(playerId)
+    local SecondPlayerUi = {}
+    local ScreenAnchorsSecondPlayer = {}
+    SecondPlayerUi.ScreenAnchors = ScreenAnchorsSecondPlayer
+    SecondPlayerUi.PlayerId = playerId
 
-function SecondPlayerUi.ShowHealthUI()
-    if not ConfigOptionCache.ShowUIAnimations then
-        return
-    end
+    local offset = PlayerHudOffsets[playerId] or { X = 0, Y = -140 * (playerId - 2) }
+    local hudOffsetX, hudOffsetY = offset.X, offset.Y
+    SecondPlayerUi.OffsetX = hudOffsetX
+    SecondPlayerUi.OffsetY = hudOffsetY
 
-    if ScreenAnchorsSecondPlayer.HealthBack ~= nil then
-        return
-    end
+    local function SW() return ScreenWidth + hudOffsetX end
+    local function SH() return ScreenHeight + hudOffsetY end
 
-    local posX = ScreenWidth - 500
+    function SecondPlayerUi.ShowHealthUI()
+        if not ConfigOptionCache.ShowUIAnimations then
+            return
+        end
 
-    if ScreenAnchorsSecondPlayer.Shadow == nil then
-        ScreenAnchorsSecondPlayer.Shadow = CreateScreenObstacle({
+        if ScreenAnchorsSecondPlayer.HealthBack ~= nil then
+            return
+        end
+
+        local posX = SW() - 500
+
+        if playerId == 2 and ScreenAnchorsSecondPlayer.Shadow == nil then
+            ScreenAnchorsSecondPlayer.Shadow = CreateScreenObstacle({
+                Name = "BlankObstacle",
+                Group = "Combat_UI_Backing",
+                X = SW(),
+                Y = SH()
+            })
+            SetAnimation({ Name = "BarShadow", DestinationId = ScreenAnchorsSecondPlayer.Shadow })
+            SetScaleX({ Ids = { ScreenAnchorsSecondPlayer.Shadow }, Fraction = -1 })
+        end
+
+        ScreenAnchorsSecondPlayer.HealthBack = CreateScreenObstacle({
             Name = "BlankObstacle",
-            Group = "Combat_UI_Backing",
-            X = ScreenWidth,
-            Y = ScreenHeight
+            Group = "Combat_UI",
+            X = posX - (10 - CombatUI.FadeDistance.Health),
+            --X = SW() - 266,
+            Y = SH() - 50
         })
-        SetAnimation({ Name = "BarShadow", DestinationId = ScreenAnchorsSecondPlayer.Shadow })
-        SetScaleX({ Ids = { ScreenAnchorsSecondPlayer.Shadow }, Fraction = -1 })
-    end
 
-    ScreenAnchorsSecondPlayer.HealthBack = CreateScreenObstacle({
-        Name = "BlankObstacle",
-        Group = "Combat_UI",
-        X = posX - (10 - CombatUI.FadeDistance.Health),
-        --X = ScreenWidth - 266,
-        Y = ScreenHeight - 50
-    })
+        ScreenAnchorsSecondPlayer.HealthRally = CreateScreenObstacle({
+            Name = "BlankObstacle",
+            Group = "Combat_UI",
+            X = posX - (10 - CombatUI.FadeDistance.Health),
+            Y = SH() - 50
+        })
 
-    ScreenAnchorsSecondPlayer.HealthRally = CreateScreenObstacle({
-        Name = "BlankObstacle",
-        Group = "Combat_UI",
-        X = posX - (10 - CombatUI.FadeDistance.Health),
-        Y = ScreenHeight - 50
-    })
+        ScreenAnchorsSecondPlayer.HealthFill = CreateScreenObstacle({
+            Name = "BlankObstacle",
+            Group = "Combat_UI",
+            X = posX - (10 - CombatUI.FadeDistance.Health),
+            Y = SH() - 50
+        })
 
-    ScreenAnchorsSecondPlayer.HealthFill = CreateScreenObstacle({
-        Name = "BlankObstacle",
-        Group = "Combat_UI",
-        X = posX - (10 - CombatUI.FadeDistance.Health),
-        Y = ScreenHeight - 50
-    })
+        ScreenAnchorsSecondPlayer.HealthFlash = CreateScreenObstacle({
+            Name = "BlankObstacle",
+            Group = "Combat_UI",
+            X = posX - (10 - CombatUI.FadeDistance.Health),
+            Y = SH() - 50
+        })
 
-    ScreenAnchorsSecondPlayer.HealthFlash = CreateScreenObstacle({
-        Name = "BlankObstacle",
-        Group = "Combat_UI",
-        X = posX - (10 - CombatUI.FadeDistance.Health),
-        Y = ScreenHeight - 50
-    })
+        ScreenAnchorsSecondPlayer.StoredAmmo = ScreenAnchorsSecondPlayer.StoredAmmo or {}
+        ScreenAnchorsSecondPlayer.SelfStoredAmmo = ScreenAnchorsSecondPlayer.SelfStoredAmmo or {}
 
-    ScreenAnchorsSecondPlayer.StoredAmmo = ScreenAnchorsSecondPlayer.StoredAmmo or {}
-    ScreenAnchorsSecondPlayer.SelfStoredAmmo = ScreenAnchorsSecondPlayer.SelfStoredAmmo or {}
+        SecondPlayerUi.RecreateLifePips()
 
-    SecondPlayerUi.RecreateLifePips()
+        CreateTextBox(MergeTables({
+            Id = ScreenAnchorsSecondPlayer.HealthBack,
+            OffsetX = -90,
+            OffsetY = -13,
+            Font = "AlegreyaSansSCBold",
+            FontSize = 24,
+            ShadowRed = 0.1,
+            ShadowBlue = 0.1,
+            ShadowGreen = 0.1,
+            OutlineColor = { 0.113, 0.113, 0.113, 1 },
+            OutlineThickness = 1,
+            ShadowAlpha = 1.0,
+            ShadowBlur = 0,
+            ShadowOffsetY = 2,
+            ShadowOffsetX = 0,
+            Justification = "Left",
+        }, LocalizationData.UIScripts.HealthUI))
 
-    CreateTextBox(MergeTables({
-        Id = ScreenAnchorsSecondPlayer.HealthBack,
-        OffsetX = -90,
-        OffsetY = -13,
-        Font = "AlegreyaSansSCBold",
-        FontSize = 24,
-        ShadowRed = 0.1,
-        ShadowBlue = 0.1,
-        ShadowGreen = 0.1,
-        OutlineColor = { 0.113, 0.113, 0.113, 1 },
-        OutlineThickness = 1,
-        ShadowAlpha = 1.0,
-        ShadowBlur = 0,
-        ShadowOffsetY = 2,
-        ShadowOffsetX = 0,
-        Justification = "Left",
-    }, LocalizationData.UIScripts.HealthUI))
+        SetAnimation({ Name = "HealthBar", DestinationId = ScreenAnchorsSecondPlayer.HealthBack })
 
-    SetAnimation({ Name = "HealthBar", DestinationId = ScreenAnchorsSecondPlayer.HealthBack })
+        local frameTarget = 1 - (CurrentRun.Hero.Health / CurrentRun.Hero.MaxHealth)
+        SetAnimation({ Name = "HealthBarFill", DestinationId = ScreenAnchorsSecondPlayer.HealthFill, FrameTarget = frameTarget, Instant = true, Color =
+        Color.Black })
+        SetAnimation({ Name = "HealthBarFillWhite", DestinationId = ScreenAnchorsSecondPlayer.HealthRally, FrameTarget = frameTarget, Instant = true, Color =
+        Color.RallyHealth })
 
-    local frameTarget = 1 - (CurrentRun.Hero.Health / CurrentRun.Hero.MaxHealth)
-    SetAnimation({ Name = "HealthBarFill", DestinationId = ScreenAnchorsSecondPlayer.HealthFill, FrameTarget = frameTarget, Instant = true, Color =
-    Color.Black })
-    SetAnimation({ Name = "HealthBarFillWhite", DestinationId = ScreenAnchorsSecondPlayer.HealthRally, FrameTarget = frameTarget, Instant = true, Color =
-    Color.RallyHealth })
+        SecondPlayerUi.UpdateHealthUI()
 
-    SecondPlayerUi.UpdateHealthUI()
-
-    if CurrentRun.CurrentRoom.LoadedAmmo then
-        for i = 1, CurrentRun.CurrentRoom.LoadedAmmo do
-            local offsetX = 600 + 380 -- Some random shit
-            local offsetY = -50
-            offsetX = offsetX + (#ScreenAnchorsSecondPlayer.SelfStoredAmmo * 22)
-            local screenId = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_UI", DestinationId =
-            ScreenAnchorsSecondPlayer.HealthBack, X = 10 + offsetX, Y = ScreenHeight - 50 + offsetY })
-            SetThingProperty({ Property = "SortMode", Value = "Id", DestinationId = screenId })
-            table.insert(ScreenAnchorsSecondPlayer.SelfStoredAmmo, screenId)
-            SetAnimation({ Name = "AmmoEmbeddedInEnemyIcon", DestinationId = screenId })
+        if CurrentRun.CurrentRoom.LoadedAmmo then
+            for i = 1, CurrentRun.CurrentRoom.LoadedAmmo do
+                local offsetX = 600 + 380 -- Some random shit
+                local offsetY = -50
+                offsetX = offsetX + (#ScreenAnchorsSecondPlayer.SelfStoredAmmo * 22)
+                local screenId = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_UI", DestinationId =
+                ScreenAnchorsSecondPlayer.HealthBack, X = 10 + offsetX, Y = SH() - 50 + offsetY })
+                SetThingProperty({ Property = "SortMode", Value = "Id", DestinationId = screenId })
+                table.insert(ScreenAnchorsSecondPlayer.SelfStoredAmmo, screenId)
+                SetAnimation({ Name = "AmmoEmbeddedInEnemyIcon", DestinationId = screenId })
+            end
         end
-    end
 
-    FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.HealthBack, Duration = CombatUI.FadeInDuration, IncludeText = true, Distance =
-    CombatUI.FadeDistance.Health, Direction = 0 })
-    FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.HealthRally, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance =
-    CombatUI.FadeDistance.Health, Direction = 0 })
-    FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.HealthFill, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance =
-    CombatUI.FadeDistance.Health, Direction = 0 })
-    FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.HealthFlash, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance =
-    CombatUI.FadeDistance.Health, Direction = 0 })
-    if ScreenAnchorsSecondPlayer.BadgeId ~= nil then
-        FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.BadgeId, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance =
+        FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.HealthBack, Duration = CombatUI.FadeInDuration, IncludeText = true, Distance =
         CombatUI.FadeDistance.Health, Direction = 0 })
-    end
-end
-
-function SecondPlayerUi.UpdateHealthUI()
-    local unit = CoopPlayers.GetHero(2)
-    if unit == nil then return; end
-
-    local currentHealth = unit.Health
-    local maxHealth = unit.MaxHealth
-
-    if currentHealth == nil or maxHealth == nil then
-        return
-    end
-
-    local rallyHealth = (unit.RallyHealth and unit.RallyHealth.Store) or 0
-    if ScreenAnchorsSecondPlayer.HealthBack ~= nil then
-        ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.HealthBack, Text = "UI_PlayerHealth", LuaKey = "TempTextData", LuaValue = { Current = math.ceil(currentHealth), Maximum = math.ceil(maxHealth) }, AutoSetDataProperties = false })
-    end
-
-    if ScreenAnchorsSecondPlayer.HealthFill ~= nil then
-        SetAnimationFrameTarget({ Name = "HealthBarFill", Fraction = 1 - (currentHealth) / maxHealth, DestinationId =
-        ScreenAnchorsSecondPlayer.HealthFill })
-    end
-    if ScreenAnchorsSecondPlayer.HealthRally ~= nil then
-        SetAnimationFrameTarget({ Name = "HealthBarFillWhite", Fraction = 1 - (currentHealth + rallyHealth) / maxHealth, DestinationId =
-        ScreenAnchorsSecondPlayer.HealthRally })
-    end
-    if unit.RallyHealth == nil then
-        return
-    end
-    unit.RallyHealth.Cache =
-    {
-        CurrentHealth = currentHealth,
-        MaxHealth = maxHealth
-    }
-end
-
-function SecondPlayerUi.UpdateRallyHealthUI()
-    local unit = CoopPlayers.GetHero(2)
-    if unit == nil or unit.RallyHealth == nil or ScreenAnchorsSecondPlayer.HealthRally == nil then return; end
-
-    local rallyHealth = unit.RallyHealth.Store or 0
-    local currentHealth = unit.Health
-    local maxHealth = unit.MaxHealth
-    if unit.RallyHealth.Cache ~= nil then
-        currentHealth = unit.RallyHealth.Cache.CurrentHealth
-        maxHealth = unit.RallyHealth.Cache.MaxHealth
-    end
-
-    SetAnimationFrameTarget({
-        Name = "HealthBarFillWhite",
-        Fraction = 1 - (currentHealth + rallyHealth) / maxHealth,
-        DestinationId = ScreenAnchorsSecondPlayer.HealthRally
-    })
-end
-
-function SecondPlayerUi.HideHealthUI()
-    if ScreenAnchorsSecondPlayer.HealthBack == nil then
-        return
-    end
-    local healthIds = { "HealthBack", "HealthFill", "HealthFlash", "HealthRally", "BadgeId" }
-    local healthAnchorIds = {}
-    for i, id in pairs(healthIds) do
-        table.insert(healthAnchorIds, ScreenAnchorsSecondPlayer[id])
-    end
-    for i, id in pairs(ScreenAnchorsSecondPlayer.LifePipIds or {}) do
-        table.insert(healthAnchorIds, id)
-    end
-
-    for i, id in pairs(ScreenAnchorsSecondPlayer.SelfStoredAmmo or {}) do
-        table.insert(healthAnchorIds, id)
-    end
-
-    ScreenAnchorsSecondPlayer.HealthBack = nil
-    ScreenAnchorsSecondPlayer.HealthFill = nil
-    ScreenAnchorsSecondPlayer.HealthFlash = nil
-    ScreenAnchorsSecondPlayer.HealthRally = nil
-    ScreenAnchorsSecondPlayer.LifePipIds = nil
-    ScreenAnchorsSecondPlayer.SelfStoredAmmo = nil
-    ScreenAnchorsSecondPlayer.BadgeId = nil
-
-    HideObstacle({ Ids = healthAnchorIds, IncludeText = true, FadeTarget = 0, Duration = CombatUI.FadeDuration, Angle = 180, Distance =
-    CombatUI.FadeDistance.Health })
-
-    wait(CombatUI.FadeDuration, RoomThreadName)
-
-    Destroy({ Ids = healthAnchorIds })
-end
-
-function SecondPlayerUi.DestroyHealthUI()
-    -- CombineTables returns nil when LifePipIds is nil, which leaked the whole P2 health bar.
-    -- HealthRally, BadgeId and SelfStoredAmmo were never destroyed at all.
-    local ids = {}
-    for _, key in ipairs({ "HealthBack", "HealthFill", "HealthFlash", "HealthRally", "BadgeId" }) do
-        if ScreenAnchorsSecondPlayer[key] then
-            table.insert(ids, ScreenAnchorsSecondPlayer[key])
+        FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.HealthRally, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance =
+        CombatUI.FadeDistance.Health, Direction = 0 })
+        FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.HealthFill, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance =
+        CombatUI.FadeDistance.Health, Direction = 0 })
+        FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.HealthFlash, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance =
+        CombatUI.FadeDistance.Health, Direction = 0 })
+        if ScreenAnchorsSecondPlayer.BadgeId ~= nil then
+            FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.BadgeId, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance =
+            CombatUI.FadeDistance.Health, Direction = 0 })
         end
     end
-    for _, id in pairs(ScreenAnchorsSecondPlayer.LifePipIds or {}) do
-        table.insert(ids, id)
-    end
-    for _, id in pairs(ScreenAnchorsSecondPlayer.SelfStoredAmmo or {}) do
-        table.insert(ids, id)
+
+    function SecondPlayerUi.UpdateHealthUI()
+        local unit = CoopPlayers.GetHero(playerId)
+        if unit == nil then return; end
+
+        local currentHealth = unit.Health
+        local maxHealth = unit.MaxHealth
+
+        if currentHealth == nil or maxHealth == nil then
+            return
+        end
+
+        local rallyHealth = (unit.RallyHealth and unit.RallyHealth.Store) or 0
+        if ScreenAnchorsSecondPlayer.HealthBack ~= nil then
+            ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.HealthBack, Text = "UI_PlayerHealth", LuaKey = "TempTextData", LuaValue = { Current = math.ceil(currentHealth), Maximum = math.ceil(maxHealth) }, AutoSetDataProperties = false })
+        end
+
+        if ScreenAnchorsSecondPlayer.HealthFill ~= nil then
+            SetAnimationFrameTarget({ Name = "HealthBarFill", Fraction = 1 - (currentHealth) / maxHealth, DestinationId =
+            ScreenAnchorsSecondPlayer.HealthFill })
+        end
+        if ScreenAnchorsSecondPlayer.HealthRally ~= nil then
+            SetAnimationFrameTarget({ Name = "HealthBarFillWhite", Fraction = 1 - (currentHealth + rallyHealth) / maxHealth, DestinationId =
+            ScreenAnchorsSecondPlayer.HealthRally })
+        end
+        if unit.RallyHealth == nil then
+            return
+        end
+        unit.RallyHealth.Cache =
+        {
+            CurrentHealth = currentHealth,
+            MaxHealth = maxHealth
+        }
     end
 
-    if not IsEmpty(ids) then
-        Destroy({ Ids = ids })
-    end
-    ScreenAnchorsSecondPlayer.SelfStoredAmmo = nil
-    ScreenAnchorsSecondPlayer.HealthBack = nil
-    ScreenAnchorsSecondPlayer.HealthFill = nil
-    ScreenAnchorsSecondPlayer.HealthFlash = nil
-    ScreenAnchorsSecondPlayer.HealthRally = nil
-    ScreenAnchorsSecondPlayer.LifePipIds = nil
-    ScreenAnchorsSecondPlayer.BadgeId = nil
-end
+    function SecondPlayerUi.UpdateRallyHealthUI()
+        local unit = CoopPlayers.GetHero(playerId)
+        if unit == nil or unit.RallyHealth == nil or ScreenAnchorsSecondPlayer.HealthRally == nil then return; end
 
-function SecondPlayerUi.UpdateLifePips()
-    local unit = CoopPlayers.GetHero(2)
-    if not unit or not ScreenAnchorsSecondPlayer.LifePipIds or not unit.LastStands then
-        return
+        local rallyHealth = unit.RallyHealth.Store or 0
+        local currentHealth = unit.Health
+        local maxHealth = unit.MaxHealth
+        if unit.RallyHealth.Cache ~= nil then
+            currentHealth = unit.RallyHealth.Cache.CurrentHealth
+            maxHealth = unit.RallyHealth.Cache.MaxHealth
+        end
+
+        SetAnimationFrameTarget({
+            Name = "HealthBarFillWhite",
+            Fraction = 1 - (currentHealth + rallyHealth) / maxHealth,
+            DestinationId = ScreenAnchorsSecondPlayer.HealthRally
+        })
     end
 
-    for i, lifePipId in pairs(ScreenAnchorsSecondPlayer.LifePipIds) do
-        local lastStandData = unit.LastStands[i]
-        if lastStandData then
-            SetAnimation({ Name = lastStandData.Icon, DestinationId = ScreenAnchorsSecondPlayer.LifePipIds[i] })
-        else
-            if unit.IsDead then
-                if IsMetaUpgradeActive("ExtraChanceReplenishMetaUpgrade") then
-                    SetAnimation({ Name = "ExtraLifeReplenish", DestinationId = ScreenAnchorsSecondPlayer.LifePipIds[i] })
-                else
-                    SetAnimation({ Name = "ExtraLifeZag", DestinationId = ScreenAnchorsSecondPlayer.LifePipIds[i] })
-                end
+    function SecondPlayerUi.HideHealthUI()
+        if ScreenAnchorsSecondPlayer.HealthBack == nil then
+            return
+        end
+        local healthIds = { "HealthBack", "HealthFill", "HealthFlash", "HealthRally", "BadgeId" }
+        local healthAnchorIds = {}
+        for i, id in pairs(healthIds) do
+            table.insert(healthAnchorIds, ScreenAnchorsSecondPlayer[id])
+        end
+        for i, id in pairs(ScreenAnchorsSecondPlayer.LifePipIds or {}) do
+            table.insert(healthAnchorIds, id)
+        end
+
+        for i, id in pairs(ScreenAnchorsSecondPlayer.SelfStoredAmmo or {}) do
+            table.insert(healthAnchorIds, id)
+        end
+
+        ScreenAnchorsSecondPlayer.HealthBack = nil
+        ScreenAnchorsSecondPlayer.HealthFill = nil
+        ScreenAnchorsSecondPlayer.HealthFlash = nil
+        ScreenAnchorsSecondPlayer.HealthRally = nil
+        ScreenAnchorsSecondPlayer.LifePipIds = nil
+        ScreenAnchorsSecondPlayer.SelfStoredAmmo = nil
+        ScreenAnchorsSecondPlayer.BadgeId = nil
+
+        HideObstacle({ Ids = healthAnchorIds, IncludeText = true, FadeTarget = 0, Duration = CombatUI.FadeDuration, Angle = 180, Distance =
+        CombatUI.FadeDistance.Health })
+
+        wait(CombatUI.FadeDuration, RoomThreadName)
+
+        Destroy({ Ids = healthAnchorIds })
+    end
+
+    function SecondPlayerUi.DestroyHealthUI()
+        -- CombineTables returns nil when LifePipIds is nil, which leaked the whole P2 health bar.
+        -- HealthRally, BadgeId and SelfStoredAmmo were never destroyed at all.
+        local ids = {}
+        for _, key in ipairs({ "HealthBack", "HealthFill", "HealthFlash", "HealthRally", "BadgeId" }) do
+            if ScreenAnchorsSecondPlayer[key] then
+                table.insert(ids, ScreenAnchorsSecondPlayer[key])
+            end
+        end
+        for _, id in pairs(ScreenAnchorsSecondPlayer.LifePipIds or {}) do
+            table.insert(ids, id)
+        end
+        for _, id in pairs(ScreenAnchorsSecondPlayer.SelfStoredAmmo or {}) do
+            table.insert(ids, id)
+        end
+
+        if not IsEmpty(ids) then
+            Destroy({ Ids = ids })
+        end
+        ScreenAnchorsSecondPlayer.SelfStoredAmmo = nil
+        ScreenAnchorsSecondPlayer.HealthBack = nil
+        ScreenAnchorsSecondPlayer.HealthFill = nil
+        ScreenAnchorsSecondPlayer.HealthFlash = nil
+        ScreenAnchorsSecondPlayer.HealthRally = nil
+        ScreenAnchorsSecondPlayer.LifePipIds = nil
+        ScreenAnchorsSecondPlayer.BadgeId = nil
+    end
+
+    function SecondPlayerUi.UpdateLifePips()
+        local unit = CoopPlayers.GetHero(playerId)
+        if not unit or not ScreenAnchorsSecondPlayer.LifePipIds or not unit.LastStands then
+            return
+        end
+
+        for i, lifePipId in pairs(ScreenAnchorsSecondPlayer.LifePipIds) do
+            local lastStandData = unit.LastStands[i]
+            if lastStandData then
+                SetAnimation({ Name = lastStandData.Icon, DestinationId = ScreenAnchorsSecondPlayer.LifePipIds[i] })
             else
-                SetAnimation({ Name = "ExtraLifeEmpty", DestinationId = ScreenAnchorsSecondPlayer.LifePipIds[i] })
+                if unit.IsDead then
+                    if IsMetaUpgradeActive("ExtraChanceReplenishMetaUpgrade") then
+                        SetAnimation({ Name = "ExtraLifeReplenish", DestinationId = ScreenAnchorsSecondPlayer.LifePipIds[i] })
+                    else
+                        SetAnimation({ Name = "ExtraLifeZag", DestinationId = ScreenAnchorsSecondPlayer.LifePipIds[i] })
+                    end
+                else
+                    SetAnimation({ Name = "ExtraLifeEmpty", DestinationId = ScreenAnchorsSecondPlayer.LifePipIds[i] })
+                end
             end
         end
     end
-end
 
-function SecondPlayerUi.RecreateLifePips()
-    if ScreenAnchorsSecondPlayer.LifePipIds then
-        Destroy { Ids = ScreenAnchorsSecondPlayer.LifePipIds }
+    function SecondPlayerUi.RecreateLifePips()
+        if ScreenAnchorsSecondPlayer.LifePipIds then
+            Destroy { Ids = ScreenAnchorsSecondPlayer.LifePipIds }
+        end
+
+        ScreenAnchorsSecondPlayer.LifePipIds = {}
+
+        local unit = CoopPlayers.GetHero(playerId)
+        if unit == nil then return; end
+
+        local numLastStands = 0
+        if unit.IsDead then
+            -- P2 can be marked as dead artificially (surface, run end) with full LastStands.
+            -- Summing them with meta upgrades duplicated the icons (#76)
+            numLastStands = math.max(TableLength(unit.LastStands or {}), GetNumMetaUpgradeLastStands())
+        elseif unit.MaxLastStands then
+            numLastStands = unit.MaxLastStands
+        end
+
+        local poxX = SW() - 80
+        for i = 1, numLastStands do
+            local obstacleId = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_UI", X = poxX - i * 32, Y =
+            SH() - 95 })
+            SetAnimation({ Name = "ExtraLifeEmpty", DestinationId = obstacleId })
+            table.insert(ScreenAnchorsSecondPlayer.LifePipIds, obstacleId)
+        end
+        SecondPlayerUi.UpdateLifePips()
     end
 
-    ScreenAnchorsSecondPlayer.LifePipIds = {}
-
-    local unit = CoopPlayers.GetHero(2)
-    if unit == nil then return; end
-
-    local numLastStands = 0
-    if unit.IsDead then
-        -- P2 can be marked as dead artificially (surface, run end) with full LastStands.
-        -- Summing them with meta upgrades duplicated the icons (#76)
-        numLastStands = math.max(TableLength(unit.LastStands or {}), GetNumMetaUpgradeLastStands())
-    elseif unit.MaxLastStands then
-        numLastStands = unit.MaxLastStands
-    end
-
-    local poxX = ScreenWidth - 80
-    for i = 1, numLastStands do
-        local obstacleId = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_UI", X = poxX - i * 32, Y =
-        ScreenHeight - 95 })
-        SetAnimation({ Name = "ExtraLifeEmpty", DestinationId = obstacleId })
-        table.insert(ScreenAnchorsSecondPlayer.LifePipIds, obstacleId)
-    end
-    SecondPlayerUi.UpdateLifePips()
-end
-
--- Ammo
-function SecondPlayerUi.ShowAmmoUI()
-    if ScreenAnchorsSecondPlayer.AmmoIndicatorUI ~= nil then
-        return
-    end
-    local poxX = ScreenWidth - 512 - 150
-    ScreenAnchorsSecondPlayer.AmmoIndicatorUI = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_UI", X = poxX, Y =
-    ScreenHeight - 62 })
-    SetAnimation({ Name = "AmmoIndicatorIcon", DestinationId = ScreenAnchorsSecondPlayer.AmmoIndicatorUI })
-    CreateTextBox(MergeTables({
-        Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI,
-        OffsetX = 24,
-        OffsetY = -2,
-        Font = "AlegreyaSansSCBold",
-        FontSize = 24,
-        ShadowRed = 0.1,
-        ShadowBlue = 0.1,
-        ShadowGreen = 0.1,
-        OutlineColor = { 0.113, 0.113, 0.113, 1 },
-        OutlineThickness = 1,
-        ShadowAlpha = 1.0,
-        ShadowBlur = 0,
-        ShadowOffsetY = 2,
-        ShadowOffsetX = 0,
-        Justification = "Left",
-    }, LocalizationData.UIScripts.AmmoUI))
-    thread(SecondPlayerUi.UpdateAmmoUI)
-
-    FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Duration = CombatUI.FadeInDuration, IncludeText = true, Distance =
-    CombatUI.FadeDistance.Ammo, Direction = 0 })
-end
-
-function SecondPlayerUi.UpdateAmmoUI()
-    local hero = CoopPlayers.GetHero(2)
-
-    if ScreenAnchorsSecondPlayer.AmmoIndicatorUI == nil or not hero then
-        return
-    end
-    local ammoData =
-    {
-        Current = GetWeaponProperty{ Id = hero.ObjectId, WeaponName = "RangedWeapon", Property = "Ammo" },
-        Maximum = GetWeaponMaxAmmo{ Id = hero.ObjectId, WeaponName = "RangedWeapon" }
-    }
-
-    if ammoData.Current == nil then
-        -- The player wasn't initialized yet
-        return
-    end
-
-
-    PulseText({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, ScaleTarget = 1.04, ScaleDuration = 0.05, HoldDuration = 0.05, PulseBias = 0.02 })
-    ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Text = "UI_AmmoText", OffsetY = -2, LuaKey = "TempTextData", LuaValue =
-    ammoData, AutoSetDataProperties = false, })
-end
-
-function SecondPlayerUi.HideAmmoUI()
-    if ScreenAnchorsSecondPlayer.AmmoIndicatorUI == nil then
-        return
-    end
-    ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads = ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads or {}
-
-    local ids = CombineTables({ ScreenAnchorsSecondPlayer.AmmoIndicatorUI }, ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads)
-
-    for i, reloadId in pairs(ids) do
-        HideObstacle({ Id = reloadId, IncludeText = true, Distance = CombatUI.FadeDistance.Ammo, Angle = 180, Duration =
-        CombatUI.FadeDuration, SmoothStep = true })
-    end
-    ScreenAnchorsSecondPlayer.AmmoIndicatorUI = nil
-    ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads = nil
-
-    wait(CombatUI.FadeDuration, RoomThreadName)
-
-    Destroy({ Ids = ids })
-end
-
-function SecondPlayerUi.StartAmmoReloadPresentation(delay)
-    ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads = ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads or {}
-    local reloadTimer = delay
-    local poxX = ScreenWidth - 494 - 150
-    if IsEmpty(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads) then
-        local id = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_Menu", Y = ScreenHeight - 70, X = poxX +
-        40 * #ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads })
-        SetAnimation({ Name = "AmmoReloadTimer", DestinationId = id, PlaySpeed = 100 / reloadTimer })
-        SetColor({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Color = { 0.5, 0.5, 0.5, 1.0 } })
-        table.insert(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads, id)
-    else
-        local id = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_Menu", Y = ScreenHeight - 62 + 35, X = poxX +
-        40 * #ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads })
-        SetAnimation({ Name = "AmmoMultipleReloadTimer", DestinationId = id, PlaySpeed = 100 / reloadTimer })
-        SetColor({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Color = { 0.5, 0.5, 0.5, 1.0 } })
-        table.insert(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads, id)
-    end
-end
-
-function SecondPlayerUi.EndAmmoReloadPresentation()
-	if IsEmpty(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads ) then
-		return
-	end
-
-	SetColor({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Color = {1.0, 1.0, 1.0, 1.0} })
-	CreateAnimation({ DestinationId = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Name = "AmmoReloadFinishedFlare" })
-	table.remove( ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads, 1 )
-
-    local poxX = ScreenWidth - 494 - 150
-	local destroyIds = {}
-	for i, id in pairs( ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads ) do
-        local targetId = SpawnObstacle({ Name = "InvisibleTarget", OffsetX = ScreenWidth + 40 * (i - 1), OffsetY =
-        ScreenHeight - 62 + 40, Group = "Standing" })
-		Move({ Id = id, DestinationId = targetId, Duration = 0.25 })
-		table.insert( destroyIds, targetId )
-	end
-	PlaySound({ Name = "/SFX/BloodstoneAmmoRecharged", Id = CurrentRun.Hero.ObjectId })
-	Destroy({ Ids = destroyIds })
-end
-
-
-function SecondPlayerUi.DestroyAmmoUI()
-    if ScreenAnchorsSecondPlayer.AmmoIndicatorUI == nil then
-        return
-    end
-    Destroy({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI })
-    Destroy({ Ids = ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads })
-    ScreenAnchorsSecondPlayer.AmmoIndicatorUI = nil
-end
-
--- Gun
-
-function SecondPlayerUi.ShowGunUI(gunData)
-    if not CurrentRun.Hero.Weapons.GunWeapon then
-        return
-    end
-    if ScreenAnchorsSecondPlayer.GunUI ~= nil then
-        return
-    end
-
-    if ScreenAnchorsSecondPlayer.Shadow ~= nil then
-        SetScaleX({ Id = ScreenAnchorsSecondPlayer.Shadow, Fraction = -1.3 })
-    end
-
-    ScreenAnchorsSecondPlayer.GunUI = CreateScreenObstacle({
-        Name = "BlankObstacle",
-        Group = "Combat_UI",
-        X = ScreenWidth - GunUI.StartX - 64 - 100,
-        Y = GunUI
-            .StartY
-    })
-
-
-    if HeroHasTrait("GunLoadedGrenadeTrait") then
-        SetAnimation({ Name = "GunLaserIndicatorIcon", DestinationId = ScreenAnchorsSecondPlayer.GunUI })
-    else
-        SetAnimation({ Name = "GunAmmoIndicatorIcon", DestinationId = ScreenAnchorsSecondPlayer.GunUI })
-    end
-
-    local offsetX = 20
-    CreateTextBox(MergeTables({
-            Id = ScreenAnchorsSecondPlayer.GunUI,
-            OffsetX = offsetX,
+    -- Ammo
+    function SecondPlayerUi.ShowAmmoUI()
+        if ScreenAnchorsSecondPlayer.AmmoIndicatorUI ~= nil then
+            return
+        end
+        local poxX = SW() - 512 - 150
+        ScreenAnchorsSecondPlayer.AmmoIndicatorUI = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_UI", X = poxX, Y =
+        SH() - 62 })
+        SetAnimation({ Name = "AmmoIndicatorIcon", DestinationId = ScreenAnchorsSecondPlayer.AmmoIndicatorUI })
+        CreateTextBox(MergeTables({
+            Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI,
+            OffsetX = 24,
             OffsetY = -2,
             Font = "AlegreyaSansSCBold",
             FontSize = 24,
@@ -460,314 +332,533 @@ function SecondPlayerUi.ShowGunUI(gunData)
             ShadowOffsetY = 2,
             ShadowOffsetX = 0,
             Justification = "Left",
-        },
-        LocalizationData.UIScripts.GunUI))
-    thread(SecondPlayerUi.UpdateGunUI)
+        }, LocalizationData.UIScripts.AmmoUI))
+        thread(SecondPlayerUi.UpdateAmmoUI)
 
-    FadeObstacleIn({
-        Id = ScreenAnchorsSecondPlayer.GunUI,
-        Duration = CombatUI.FadeInDuration,
-        IncludeText = true,
-        Distance =
-            CombatUI.FadeDistance.Ammo,
-        Direction = 0
-    })
-end
-
-function SecondPlayerUi.UpdateGunUI(triggerArgs)
-    triggerArgs = triggerArgs or {}
-    local ammoData =
-    {
-        Current = triggerArgs.Ammo or
-            GetWeaponProperty({ Id = CurrentRun.Hero.ObjectId, WeaponName = "GunWeapon", Property = "Ammo" }),
-        Maximum = triggerArgs.MaxAmmo or GetWeaponMaxAmmo({ Id = CurrentRun.Hero.ObjectId, WeaponName = "GunWeapon" })
-    }
-
-    if ammoData.Current == nil then
-        -- No longer carrying gun
-        return
+        FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Duration = CombatUI.FadeInDuration, IncludeText = true, Distance =
+        CombatUI.FadeDistance.Ammo, Direction = 0 })
     end
 
-    PulseText({ Id = ScreenAnchorsSecondPlayer.GunUI, ScaleTarget = 1.04, ScaleDuration = 0.05, HoldDuration = 0.05, PulseBias = 0.02 })
-    if ammoData.Current > 0 then
-        ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.GunUI, Text = "UI_GunText", Color = Color.White, ColorDuration = 0.04 })
-    else
-        ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.GunUI, Text = "UI_GunText", Color = Color.Red, ColorDuration = 0.04 })
-    end
+    function SecondPlayerUi.UpdateAmmoUI()
+        local hero = CoopPlayers.GetHero(playerId)
 
-    ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.GunUI, Text = "UI_GunText", FadeTarget = 1 })
-    if HeroHasTrait("GunInfiniteAmmoTrait") or HeroHasTrait("GunLoadedGrenadeInfiniteAmmoTrait") then
-        ModifyTextBox({
-            Id = ScreenAnchorsSecondPlayer.GunUI,
-            Text = "UI_Gun_Text_Infinity",
-            OffsetY = -2,
-            LuaKey = "TempTextData",
-            LuaValue =
-                ammoData,
-            AutoSetDataProperties = false,
-        })
-    else
-        ModifyTextBox({
-            Id = ScreenAnchorsSecondPlayer.GunUI,
-            Text = "UI_GunText",
-            OffsetY = -2,
-            LuaKey = "TempTextData",
-            LuaValue =
-                ammoData,
-            AutoSetDataProperties = false,
-        })
-    end
-    if HeroHasTrait("GunLoadedGrenadeTrait") then
-        SetAnimation({ Name = "GunLaserIndicatorIcon", DestinationId = ScreenAnchorsSecondPlayer.GunUI })
-    else
-        SetAnimation({ Name = "GunAmmoIndicatorIcon", DestinationId = ScreenAnchorsSecondPlayer.GunUI })
-    end
-end
-
-function SecondPlayerUi.HideGunUI()
-    if ScreenAnchorsSecondPlayer.GunUI == nil then
-        return
-    end
-
-    local id = ScreenAnchorsSecondPlayer.GunUI
-    HideObstacle({
-        Id = id,
-        IncludeText = true,
-        Distance = CombatUI.FadeDistance.Ammo,
-        Angle = 180,
-        Duration = CombatUI
-            .FadeDuration,
-        SmoothStep = true
-    })
-
-
-    ScreenAnchorsSecondPlayer.GunUI = nil
-
-    wait(CombatUI.FadeDuration, RoomThreadName)
-    Destroy({ Id = id })
-    ModifyTextBox({ Id = id, FadeTarget = 0, FadeDuration = 0, AutoSetDataProperties = false, })
-end
-
-function SecondPlayerUi.DestroyGunUI()
-    if ScreenAnchorsSecondPlayer.GunUI == nil then
-        return
-    end
-    Destroy({ Id = ScreenAnchorsSecondPlayer.GunUI })
-    ScreenAnchorsSecondPlayer.GunUI = nil
-end
-
-function SecondPlayerUi.ShowSuperMeter()
-    if not IsSuperValid() then
-        return
-    end
-
-    if ScreenAnchorsSecondPlayer.SuperMeterIcon ~= nil then
-        -- Already visible
-        return
-    end
-
-    local posX = ScreenWidth - 500 + 20
-
-    ScreenAnchorsSecondPlayer.SuperMeterIcon = CreateScreenObstacle{
-        Name = "BlankObstacle",
-        Group = "Combat_UI",
-        X = posX - (10 - CombatUI.FadeDistance.Super),
-        Y = ScreenHeight - 10
-    }
-
-    ScreenAnchorsSecondPlayer.SuperMeterCap = CreateScreenObstacle{
-        Name = "BlankObstacle",
-        Group = "Combat_Menu",
-        X = posX - (10 - CombatUI.FadeDistance.Super),
-        Y = ScreenHeight - 10
-    }
-
-    ScreenAnchorsSecondPlayer.SuperMeterHint = CreateScreenObstacle{
-        Name = "BlankObstacle",
-        X = posX - 10,
-        Y = ScreenHeight - 10,
-        Group = "Combat_Menu_Additive"
-    }
-
-    SetAnimation({ Name = "WrathBar", DestinationId = ScreenAnchorsSecondPlayer.SuperMeterIcon })
-
-    if HasHeroTraitValue("SuperMeterCap") then
-        SetAnimation({ Name = "WrathBarRegenCap", DestinationId = ScreenAnchorsSecondPlayer.SuperMeterCap })
-    end
-
-    local superMeterPoints = CurrentRun.Hero.SuperMeter
-    if superMeterPoints == nil then
-        superMeterPoints = 0
-    end
-
-    if CurrentRun.Hero.SuperMeter == CurrentRun.Hero.SuperMeterLimit and IsSuperAvailable(CurrentRun.Hero) and CanCommenceSuper() then
-        SetAnimation({ Name = "WrathBarFullFx", DestinationId = ScreenAnchorsSecondPlayer.SuperMeterHint })
-    end
-
-    ScreenAnchorsSecondPlayer.SuperPipBackingIds = {}
-    ScreenAnchorsSecondPlayer.SuperPipIds = {}
-    local pipXSize = SuperUI.PipXWidth * CurrentRun.Hero.SuperCost / SuperUI.BaseMoveThreshold
-    for i = 1, math.ceil(CurrentRun.Hero.SuperMeterLimit / CurrentRun.Hero.SuperCost) do
-        table.insert(ScreenAnchorsSecondPlayer.SuperPipBackingIds,
-            CreateScreenObstacle{
-                Name = "BlankObstacle",
-                Group = "Combat_UI",
-                X = posX + SuperUI.PipXStart + (i - 1) * pipXSize - CombatUI.FadeDistance.Super + 20,
-                Y = SuperUI.PipY }
-        )
-        table.insert(ScreenAnchorsSecondPlayer.SuperPipIds,
-            CreateScreenObstacle{
-                Name = "BlankObstacle",
-                Group = "Combat_Menu_Additive",
-                X = posX + SuperUI.PipXStart + (i - 1) * pipXSize - CombatUI.FadeDistance.Super + 20,
-                Y = SuperUI.PipY
-            }    
-        )
-        local fillPercent = 0
-        if superMeterPoints > (i - 1) * CurrentRun.Hero.SuperCost then
-            if CurrentRun.Hero.SuperMeterLimit < CurrentRun.Hero.SuperCost * i and i == math.ceil(CurrentRun.Hero.SuperMeterLimit / CurrentRun.Hero.SuperCost) then
-                fillPercent = math.min(1,
-                    (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) /
-                    (CurrentRun.Hero.SuperMeterLimit % CurrentRun.Hero.SuperCost))
-            else
-                fillPercent = math.min(1,
-                    (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) / CurrentRun.Hero.SuperCost)
-            end
+        if ScreenAnchorsSecondPlayer.AmmoIndicatorUI == nil or not hero then
+            return
         end
-        SecondPlayerUi.UpdateSuperUIComponent(i, fillPercent)
+        local ammoData =
+        {
+            Current = GetWeaponProperty{ Id = hero.ObjectId, WeaponName = "RangedWeapon", Property = "Ammo" },
+            Maximum = GetWeaponMaxAmmo{ Id = hero.ObjectId, WeaponName = "RangedWeapon" }
+        }
+
+        if ammoData.Current == nil then
+            -- The player wasn't initialized yet
+            return
+        end
+
+
+        PulseText({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, ScaleTarget = 1.04, ScaleDuration = 0.05, HoldDuration = 0.05, PulseBias = 0.02 })
+        ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Text = "UI_AmmoText", OffsetY = -2, LuaKey = "TempTextData", LuaValue =
+        ammoData, AutoSetDataProperties = false, })
     end
 
-    UpdateSuperMeterUI()
+    function SecondPlayerUi.HideAmmoUI()
+        if ScreenAnchorsSecondPlayer.AmmoIndicatorUI == nil then
+            return
+        end
+        ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads = ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads or {}
 
-    FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.SuperMeterIcon, Duration = CombatUI.FadeInDuration, IncludeText = true, Distance =
-    CombatUI.FadeDistance.Super, Direction = 0 })
-    FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.SuperMeterCap, Duration = CombatUI.FadeInDuration, IncludeText = true, Distance =
-    CombatUI.FadeDistance.Super, Direction = 0 })
-    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipIds) do
-        FadeObstacleIn({ Id = pipId, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance = CombatUI
-        .FadeDistance.Super, Direction = 0 })
-    end
-    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipBackingIds) do
-        FadeObstacleIn({ Id = pipId, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance = CombatUI
-        .FadeDistance.Super, Direction = 0 })
-    end
-end
+        local ids = CombineTables({ ScreenAnchorsSecondPlayer.AmmoIndicatorUI }, ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads)
 
-function SecondPlayerUi.HideSuperMeter()
-    if ScreenAnchorsSecondPlayer.SuperMeterIcon == nil then
-        -- Already hidden
-        return
-    end
+        for i, reloadId in pairs(ids) do
+            HideObstacle({ Id = reloadId, IncludeText = true, Distance = CombatUI.FadeDistance.Ammo, Angle = 180, Duration =
+            CombatUI.FadeDuration, SmoothStep = true })
+        end
+        ScreenAnchorsSecondPlayer.AmmoIndicatorUI = nil
+        ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads = nil
 
-    HideObstacle({ Id = ScreenAnchorsSecondPlayer.SuperMeterIcon, IncludeText = true, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration =
-    CombatUI.FadeDuration, SmoothStep = true })
-    HideObstacle({ Id = ScreenAnchorsSecondPlayer.SuperMeterCap, IncludeText = true, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration =
-    CombatUI.FadeDuration, SmoothStep = true })
+        wait(CombatUI.FadeDuration, RoomThreadName)
 
-    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipIds) do
-        Move({ Id = pipId, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration = CombatUI.FadeDuration, SmoothStep = true })
-        SetAlpha({ Id = pipId, Fraction = 0, Duration = CombatUI.FadeDuration })
-    end
-
-    for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipBackingIds) do
-        Move({ Id = pipId, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration = CombatUI.FadeDuration, SmoothStep = true })
-        SetAlpha({ Id = pipId, Fraction = 0, Duration = CombatUI.FadeDuration })
-    end
-
-    local ids = CombineTables(ScreenAnchorsSecondPlayer.SuperPipIds, ScreenAnchorsSecondPlayer.SuperPipBackingIds) or {}
-    table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterIcon)
-    table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterCap)
-    table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterHint)
-
-
-    ScreenAnchorsSecondPlayer.SuperMeterIcon = nil
-    ScreenAnchorsSecondPlayer.SuperMeterCap = nil
-    ScreenAnchorsSecondPlayer.SuperMeterHint = nil
-    ScreenAnchorsSecondPlayer.SuperPipIds = nil
-    ScreenAnchorsSecondPlayer.SuperPipBackingIds = nil
-
-    wait(CombatUI.FadeDuration, RoomThreadName)
-
-    Destroy({ Ids = ids })
-end
-
-function SecondPlayerUi.DestroySuperMeter()
-    local ids = CombineTables(ScreenAnchorsSecondPlayer.SuperPipIds, ScreenAnchorsSecondPlayer.SuperPipBackingIds) or {}
-    table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterIcon)
-    table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterCap)
-    table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterHint)
-    if not IsEmpty(ids) then
         Destroy({ Ids = ids })
     end
-    ScreenAnchorsSecondPlayer.SuperMeterIcon = nil
-    ScreenAnchorsSecondPlayer.SuperMeterCap = nil
-    ScreenAnchorsSecondPlayer.SuperMeterHint = nil
-    ScreenAnchorsSecondPlayer.SuperPipIds = nil
-    ScreenAnchorsSecondPlayer.SuperPipBackingIds = nil
-end
 
-function SecondPlayerUi.UpdateSuperUIComponent(index, filled)
-    if not CurrentRun.Hero.SuperCost then
-        return
-    end
-    --- leave this
-
-    local animationName = "WrathPipEmpty"
-    if filled >= 1 then
-        animationName = "WrathPipFull"
-    elseif filled > 0 then
-        animationName = "WrathPipPartial"
-    end
-
-    SetAnimation({ Name = "WrathPipEmpty", DestinationId = ScreenAnchorsSecondPlayer.SuperPipBackingIds[index] })
-    SetAnimation({ Name = animationName, DestinationId = ScreenAnchorsSecondPlayer.SuperPipIds[index] })
-    local baseFraction = CurrentRun.Hero.SuperCost / SuperUI.BaseMoveThreshold * 1.0
-
-    if CurrentRun.Hero.SuperMeterLimit < CurrentRun.Hero.SuperCost * index then
-        baseFraction = (CurrentRun.Hero.SuperMeterLimit % CurrentRun.Hero.SuperCost) / SuperUI.BaseMoveThreshold * 1.0
-    end
-    SetScaleX({ Id = ScreenAnchorsSecondPlayer.SuperPipBackingIds[index], Fraction = baseFraction, Duration = 0 })
-    SetScaleX({ Id = ScreenAnchorsSecondPlayer.SuperPipIds[index], Fraction = baseFraction * filled, Duration = 0 })
-end
-
-function SecondPlayerUi.UpdateSuperMeterUIReal()
-    if not CurrentRun.Hero.SuperCost then
-        return
-    end
-    --- leave this
-
-    if ScreenAnchorsSecondPlayer.SuperMeterIcon == nil then
-        return
-    end
-
-    local superMeterPoints = CurrentRun.Hero.SuperMeter
-    if superMeterPoints == nil then
-        superMeterPoints = 0
-    end
-
-    for i = 1, TableLength(ScreenAnchorsSecondPlayer.SuperPipBackingIds) do
-        local fillPercent = 0
-        if superMeterPoints > (i - 1) * CurrentRun.Hero.SuperCost then
-            if CurrentRun.Hero.SuperMeterLimit < CurrentRun.Hero.SuperCost * i and i == math.ceil(CurrentRun.Hero.SuperMeterLimit / CurrentRun.Hero.SuperCost) then
-                fillPercent = math.min(1,
-                    (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) /
-                    (CurrentRun.Hero.SuperMeterLimit % CurrentRun.Hero.SuperCost))
-            else
-                fillPercent = math.min(1,
-                    (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) / CurrentRun.Hero.SuperCost)
-            end
+    function SecondPlayerUi.StartAmmoReloadPresentation(delay)
+        ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads = ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads or {}
+        local reloadTimer = delay
+        local poxX = SW() - 494 - 150
+        if IsEmpty(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads) then
+            local id = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_Menu", Y = SH() - 70, X = poxX +
+            40 * #ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads })
+            SetAnimation({ Name = "AmmoReloadTimer", DestinationId = id, PlaySpeed = 100 / reloadTimer })
+            SetColor({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Color = { 0.5, 0.5, 0.5, 1.0 } })
+            table.insert(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads, id)
+        else
+            local id = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_Menu", Y = SH() - 62 + 35, X = poxX +
+            40 * #ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads })
+            SetAnimation({ Name = "AmmoMultipleReloadTimer", DestinationId = id, PlaySpeed = 100 / reloadTimer })
+            SetColor({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Color = { 0.5, 0.5, 0.5, 1.0 } })
+            table.insert(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads, id)
         end
-        UpdateSuperUIComponent(i, fillPercent)
     end
-    ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.SuperMeterIcon, Text = "UI_SuperText", LuaKey = "TempTextData", LuaValue = { Current = math.floor(superMeterPoints), Maximum = CurrentRun.Hero.SuperMeterLimit } })
 
-    UIScriptsDeferred.SuperMeterDirty = false
+    function SecondPlayerUi.EndAmmoReloadPresentation()
+    	if IsEmpty(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads ) then
+    		return
+    	end
+
+    	SetColor({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Color = {1.0, 1.0, 1.0, 1.0} })
+    	CreateAnimation({ DestinationId = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Name = "AmmoReloadFinishedFlare" })
+    	table.remove( ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads, 1 )
+
+        local poxX = SW() - 494 - 150
+    	local destroyIds = {}
+    	for i, id in pairs( ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads ) do
+            local targetId = SpawnObstacle({ Name = "InvisibleTarget", OffsetX = SW() + 40 * (i - 1), OffsetY =
+            SH() - 62 + 40, Group = "Standing" })
+    		Move({ Id = id, DestinationId = targetId, Duration = 0.25 })
+    		table.insert( destroyIds, targetId )
+    	end
+    	PlaySound({ Name = "/SFX/BloodstoneAmmoRecharged", Id = CurrentRun.Hero.ObjectId })
+    	Destroy({ Ids = destroyIds })
+    end
+
+
+    function SecondPlayerUi.DestroyAmmoUI()
+        if ScreenAnchorsSecondPlayer.AmmoIndicatorUI == nil then
+            return
+        end
+        Destroy({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI })
+        Destroy({ Ids = ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads })
+        ScreenAnchorsSecondPlayer.AmmoIndicatorUI = nil
+    end
+
+    -- Gun
+
+    function SecondPlayerUi.ShowGunUI(gunData)
+        if not CurrentRun.Hero.Weapons.GunWeapon then
+            return
+        end
+        if ScreenAnchorsSecondPlayer.GunUI ~= nil then
+            return
+        end
+
+        if ScreenAnchorsSecondPlayer.Shadow ~= nil then
+            SetScaleX({ Id = ScreenAnchorsSecondPlayer.Shadow, Fraction = -1.3 })
+        end
+
+        ScreenAnchorsSecondPlayer.GunUI = CreateScreenObstacle({
+            Name = "BlankObstacle",
+            Group = "Combat_UI",
+            X = SW() - GunUI.StartX - 64 - 100,
+            Y = (GunUI.StartY + hudOffsetY)
+        })
+
+
+        if HeroHasTrait("GunLoadedGrenadeTrait") then
+            SetAnimation({ Name = "GunLaserIndicatorIcon", DestinationId = ScreenAnchorsSecondPlayer.GunUI })
+        else
+            SetAnimation({ Name = "GunAmmoIndicatorIcon", DestinationId = ScreenAnchorsSecondPlayer.GunUI })
+        end
+
+        local offsetX = 20
+        CreateTextBox(MergeTables({
+                Id = ScreenAnchorsSecondPlayer.GunUI,
+                OffsetX = offsetX,
+                OffsetY = -2,
+                Font = "AlegreyaSansSCBold",
+                FontSize = 24,
+                ShadowRed = 0.1,
+                ShadowBlue = 0.1,
+                ShadowGreen = 0.1,
+                OutlineColor = { 0.113, 0.113, 0.113, 1 },
+                OutlineThickness = 1,
+                ShadowAlpha = 1.0,
+                ShadowBlur = 0,
+                ShadowOffsetY = 2,
+                ShadowOffsetX = 0,
+                Justification = "Left",
+            },
+            LocalizationData.UIScripts.GunUI))
+        thread(SecondPlayerUi.UpdateGunUI)
+
+        FadeObstacleIn({
+            Id = ScreenAnchorsSecondPlayer.GunUI,
+            Duration = CombatUI.FadeInDuration,
+            IncludeText = true,
+            Distance =
+                CombatUI.FadeDistance.Ammo,
+            Direction = 0
+        })
+    end
+
+    function SecondPlayerUi.UpdateGunUI(triggerArgs)
+        triggerArgs = triggerArgs or {}
+        local ammoData =
+        {
+            Current = triggerArgs.Ammo or
+                GetWeaponProperty({ Id = CurrentRun.Hero.ObjectId, WeaponName = "GunWeapon", Property = "Ammo" }),
+            Maximum = triggerArgs.MaxAmmo or GetWeaponMaxAmmo({ Id = CurrentRun.Hero.ObjectId, WeaponName = "GunWeapon" })
+        }
+
+        if ammoData.Current == nil then
+            -- No longer carrying gun
+            return
+        end
+
+        PulseText({ Id = ScreenAnchorsSecondPlayer.GunUI, ScaleTarget = 1.04, ScaleDuration = 0.05, HoldDuration = 0.05, PulseBias = 0.02 })
+        if ammoData.Current > 0 then
+            ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.GunUI, Text = "UI_GunText", Color = Color.White, ColorDuration = 0.04 })
+        else
+            ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.GunUI, Text = "UI_GunText", Color = Color.Red, ColorDuration = 0.04 })
+        end
+
+        ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.GunUI, Text = "UI_GunText", FadeTarget = 1 })
+        if HeroHasTrait("GunInfiniteAmmoTrait") or HeroHasTrait("GunLoadedGrenadeInfiniteAmmoTrait") then
+            ModifyTextBox({
+                Id = ScreenAnchorsSecondPlayer.GunUI,
+                Text = "UI_Gun_Text_Infinity",
+                OffsetY = -2,
+                LuaKey = "TempTextData",
+                LuaValue =
+                    ammoData,
+                AutoSetDataProperties = false,
+            })
+        else
+            ModifyTextBox({
+                Id = ScreenAnchorsSecondPlayer.GunUI,
+                Text = "UI_GunText",
+                OffsetY = -2,
+                LuaKey = "TempTextData",
+                LuaValue =
+                    ammoData,
+                AutoSetDataProperties = false,
+            })
+        end
+        if HeroHasTrait("GunLoadedGrenadeTrait") then
+            SetAnimation({ Name = "GunLaserIndicatorIcon", DestinationId = ScreenAnchorsSecondPlayer.GunUI })
+        else
+            SetAnimation({ Name = "GunAmmoIndicatorIcon", DestinationId = ScreenAnchorsSecondPlayer.GunUI })
+        end
+    end
+
+    function SecondPlayerUi.HideGunUI()
+        if ScreenAnchorsSecondPlayer.GunUI == nil then
+            return
+        end
+
+        local id = ScreenAnchorsSecondPlayer.GunUI
+        HideObstacle({
+            Id = id,
+            IncludeText = true,
+            Distance = CombatUI.FadeDistance.Ammo,
+            Angle = 180,
+            Duration = CombatUI
+                .FadeDuration,
+            SmoothStep = true
+        })
+
+
+        ScreenAnchorsSecondPlayer.GunUI = nil
+
+        wait(CombatUI.FadeDuration, RoomThreadName)
+        Destroy({ Id = id })
+        ModifyTextBox({ Id = id, FadeTarget = 0, FadeDuration = 0, AutoSetDataProperties = false, })
+    end
+
+    function SecondPlayerUi.DestroyGunUI()
+        if ScreenAnchorsSecondPlayer.GunUI == nil then
+            return
+        end
+        Destroy({ Id = ScreenAnchorsSecondPlayer.GunUI })
+        ScreenAnchorsSecondPlayer.GunUI = nil
+    end
+
+    function SecondPlayerUi.ShowSuperMeter()
+        if not IsSuperValid() then
+            return
+        end
+
+        if ScreenAnchorsSecondPlayer.SuperMeterIcon ~= nil then
+            -- Already visible
+            return
+        end
+
+        local posX = SW() - 500 + 20
+
+        ScreenAnchorsSecondPlayer.SuperMeterIcon = CreateScreenObstacle{
+            Name = "BlankObstacle",
+            Group = "Combat_UI",
+            X = posX - (10 - CombatUI.FadeDistance.Super),
+            Y = SH() - 10
+        }
+
+        ScreenAnchorsSecondPlayer.SuperMeterCap = CreateScreenObstacle{
+            Name = "BlankObstacle",
+            Group = "Combat_Menu",
+            X = posX - (10 - CombatUI.FadeDistance.Super),
+            Y = SH() - 10
+        }
+
+        ScreenAnchorsSecondPlayer.SuperMeterHint = CreateScreenObstacle{
+            Name = "BlankObstacle",
+            X = posX - 10,
+            Y = SH() - 10,
+            Group = "Combat_Menu_Additive"
+        }
+
+        SetAnimation({ Name = "WrathBar", DestinationId = ScreenAnchorsSecondPlayer.SuperMeterIcon })
+
+        if HasHeroTraitValue("SuperMeterCap") then
+            SetAnimation({ Name = "WrathBarRegenCap", DestinationId = ScreenAnchorsSecondPlayer.SuperMeterCap })
+        end
+
+        local superMeterPoints = CurrentRun.Hero.SuperMeter
+        if superMeterPoints == nil then
+            superMeterPoints = 0
+        end
+
+        if CurrentRun.Hero.SuperMeter == CurrentRun.Hero.SuperMeterLimit and IsSuperAvailable(CurrentRun.Hero) and CanCommenceSuper() then
+            SetAnimation({ Name = "WrathBarFullFx", DestinationId = ScreenAnchorsSecondPlayer.SuperMeterHint })
+        end
+
+        ScreenAnchorsSecondPlayer.SuperPipBackingIds = {}
+        ScreenAnchorsSecondPlayer.SuperPipIds = {}
+        local pipXSize = SuperUI.PipXWidth * CurrentRun.Hero.SuperCost / SuperUI.BaseMoveThreshold
+        for i = 1, math.ceil(CurrentRun.Hero.SuperMeterLimit / CurrentRun.Hero.SuperCost) do
+            table.insert(ScreenAnchorsSecondPlayer.SuperPipBackingIds,
+                CreateScreenObstacle{
+                    Name = "BlankObstacle",
+                    Group = "Combat_UI",
+                    X = posX + SuperUI.PipXStart + (i - 1) * pipXSize - CombatUI.FadeDistance.Super + 20,
+                    Y = SuperUI.PipY + hudOffsetY }
+            )
+            table.insert(ScreenAnchorsSecondPlayer.SuperPipIds,
+                CreateScreenObstacle{
+                    Name = "BlankObstacle",
+                    Group = "Combat_Menu_Additive",
+                    X = posX + SuperUI.PipXStart + (i - 1) * pipXSize - CombatUI.FadeDistance.Super + 20,
+                    Y = SuperUI.PipY + hudOffsetY
+                }    
+            )
+            local fillPercent = 0
+            if superMeterPoints > (i - 1) * CurrentRun.Hero.SuperCost then
+                if CurrentRun.Hero.SuperMeterLimit < CurrentRun.Hero.SuperCost * i and i == math.ceil(CurrentRun.Hero.SuperMeterLimit / CurrentRun.Hero.SuperCost) then
+                    fillPercent = math.min(1,
+                        (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) /
+                        (CurrentRun.Hero.SuperMeterLimit % CurrentRun.Hero.SuperCost))
+                else
+                    fillPercent = math.min(1,
+                        (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) / CurrentRun.Hero.SuperCost)
+                end
+            end
+            SecondPlayerUi.UpdateSuperUIComponent(i, fillPercent)
+        end
+
+        UpdateSuperMeterUI()
+
+        FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.SuperMeterIcon, Duration = CombatUI.FadeInDuration, IncludeText = true, Distance =
+        CombatUI.FadeDistance.Super, Direction = 0 })
+        FadeObstacleIn({ Id = ScreenAnchorsSecondPlayer.SuperMeterCap, Duration = CombatUI.FadeInDuration, IncludeText = true, Distance =
+        CombatUI.FadeDistance.Super, Direction = 0 })
+        for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipIds) do
+            FadeObstacleIn({ Id = pipId, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance = CombatUI
+            .FadeDistance.Super, Direction = 0 })
+        end
+        for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipBackingIds) do
+            FadeObstacleIn({ Id = pipId, Duration = CombatUI.FadeInDuration, IncludeText = false, Distance = CombatUI
+            .FadeDistance.Super, Direction = 0 })
+        end
+    end
+
+    function SecondPlayerUi.HideSuperMeter()
+        if ScreenAnchorsSecondPlayer.SuperMeterIcon == nil then
+            -- Already hidden
+            return
+        end
+
+        HideObstacle({ Id = ScreenAnchorsSecondPlayer.SuperMeterIcon, IncludeText = true, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration =
+        CombatUI.FadeDuration, SmoothStep = true })
+        HideObstacle({ Id = ScreenAnchorsSecondPlayer.SuperMeterCap, IncludeText = true, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration =
+        CombatUI.FadeDuration, SmoothStep = true })
+
+        for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipIds) do
+            Move({ Id = pipId, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration = CombatUI.FadeDuration, SmoothStep = true })
+            SetAlpha({ Id = pipId, Fraction = 0, Duration = CombatUI.FadeDuration })
+        end
+
+        for i, pipId in pairs(ScreenAnchorsSecondPlayer.SuperPipBackingIds) do
+            Move({ Id = pipId, Distance = CombatUI.FadeDistance.Super, Angle = 180, Duration = CombatUI.FadeDuration, SmoothStep = true })
+            SetAlpha({ Id = pipId, Fraction = 0, Duration = CombatUI.FadeDuration })
+        end
+
+        local ids = CombineTables(ScreenAnchorsSecondPlayer.SuperPipIds, ScreenAnchorsSecondPlayer.SuperPipBackingIds) or {}
+        table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterIcon)
+        table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterCap)
+        table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterHint)
+
+
+        ScreenAnchorsSecondPlayer.SuperMeterIcon = nil
+        ScreenAnchorsSecondPlayer.SuperMeterCap = nil
+        ScreenAnchorsSecondPlayer.SuperMeterHint = nil
+        ScreenAnchorsSecondPlayer.SuperPipIds = nil
+        ScreenAnchorsSecondPlayer.SuperPipBackingIds = nil
+
+        wait(CombatUI.FadeDuration, RoomThreadName)
+
+        Destroy({ Ids = ids })
+    end
+
+    function SecondPlayerUi.DestroySuperMeter()
+        local ids = CombineTables(ScreenAnchorsSecondPlayer.SuperPipIds, ScreenAnchorsSecondPlayer.SuperPipBackingIds) or {}
+        table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterIcon)
+        table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterCap)
+        table.insert(ids, ScreenAnchorsSecondPlayer.SuperMeterHint)
+        if not IsEmpty(ids) then
+            Destroy({ Ids = ids })
+        end
+        ScreenAnchorsSecondPlayer.SuperMeterIcon = nil
+        ScreenAnchorsSecondPlayer.SuperMeterCap = nil
+        ScreenAnchorsSecondPlayer.SuperMeterHint = nil
+        ScreenAnchorsSecondPlayer.SuperPipIds = nil
+        ScreenAnchorsSecondPlayer.SuperPipBackingIds = nil
+    end
+
+    function SecondPlayerUi.UpdateSuperUIComponent(index, filled)
+        if not CurrentRun.Hero.SuperCost then
+            return
+        end
+        --- leave this
+
+        local animationName = "WrathPipEmpty"
+        if filled >= 1 then
+            animationName = "WrathPipFull"
+        elseif filled > 0 then
+            animationName = "WrathPipPartial"
+        end
+
+        SetAnimation({ Name = "WrathPipEmpty", DestinationId = ScreenAnchorsSecondPlayer.SuperPipBackingIds[index] })
+        SetAnimation({ Name = animationName, DestinationId = ScreenAnchorsSecondPlayer.SuperPipIds[index] })
+        local baseFraction = CurrentRun.Hero.SuperCost / SuperUI.BaseMoveThreshold * 1.0
+
+        if CurrentRun.Hero.SuperMeterLimit < CurrentRun.Hero.SuperCost * index then
+            baseFraction = (CurrentRun.Hero.SuperMeterLimit % CurrentRun.Hero.SuperCost) / SuperUI.BaseMoveThreshold * 1.0
+        end
+        SetScaleX({ Id = ScreenAnchorsSecondPlayer.SuperPipBackingIds[index], Fraction = baseFraction, Duration = 0 })
+        SetScaleX({ Id = ScreenAnchorsSecondPlayer.SuperPipIds[index], Fraction = baseFraction * filled, Duration = 0 })
+    end
+
+    function SecondPlayerUi.UpdateSuperMeterUIReal()
+        if not CurrentRun.Hero.SuperCost then
+            return
+        end
+        --- leave this
+
+        if ScreenAnchorsSecondPlayer.SuperMeterIcon == nil then
+            return
+        end
+
+        local superMeterPoints = CurrentRun.Hero.SuperMeter
+        if superMeterPoints == nil then
+            superMeterPoints = 0
+        end
+
+        for i = 1, TableLength(ScreenAnchorsSecondPlayer.SuperPipBackingIds) do
+            local fillPercent = 0
+            if superMeterPoints > (i - 1) * CurrentRun.Hero.SuperCost then
+                if CurrentRun.Hero.SuperMeterLimit < CurrentRun.Hero.SuperCost * i and i == math.ceil(CurrentRun.Hero.SuperMeterLimit / CurrentRun.Hero.SuperCost) then
+                    fillPercent = math.min(1,
+                        (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) /
+                        (CurrentRun.Hero.SuperMeterLimit % CurrentRun.Hero.SuperCost))
+                else
+                    fillPercent = math.min(1,
+                        (superMeterPoints - (i - 1) * CurrentRun.Hero.SuperCost) / CurrentRun.Hero.SuperCost)
+                end
+            end
+            UpdateSuperUIComponent(i, fillPercent)
+        end
+        ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.SuperMeterIcon, Text = "UI_SuperText", LuaKey = "TempTextData", LuaValue = { Current = math.floor(superMeterPoints), Maximum = CurrentRun.Hero.SuperMeterLimit } })
+
+        UIScriptsDeferred.SuperMeterDirty = false
+    end
+
+    function SecondPlayerUi.Refresh()
+        SecondPlayerUi.UpdateHealthUI()
+        SecondPlayerUi.RecreateLifePips()
+        SecondPlayerUi.UpdateAmmoUI()
+    end
+
+    return SecondPlayerUi
 end
 
-function SecondPlayerUi.Refresh()
-    SecondPlayerUi.UpdateHealthUI()
-    SecondPlayerUi.RecreateLifePips()
-    SecondPlayerUi.UpdateAmmoUI()
+-- Module: HUD for all additional players (player 2, 3, ...)
+---@class SecondPlayerUi
+local SecondPlayerUi = {}
+
+---@private
+SecondPlayerUi.PlayerUis = {}
+
+---@param playerId number
+function SecondPlayerUi.Get(playerId)
+    if not playerId or playerId < 2 then
+        return nil
+    end
+    local ui = SecondPlayerUi.PlayerUis[playerId]
+    if not ui then
+        ui = CreatePlayerUi(playerId)
+        SecondPlayerUi.PlayerUis[playerId] = ui
+    end
+    return ui
+end
+
+--- HUD of an additional player hero, nil for the main hero or unknown heroes
+function SecondPlayerUi.ForHero(hero)
+    if not hero then
+        return nil
+    end
+    return SecondPlayerUi.Get(CoopPlayers.GetPlayerByHero(hero))
+end
+
+--- Calls fun(playerId, hero, ui) for every additional player slot
+function SecondPlayerUi.ForEach(fun)
+    for playerId = 2, math.max(CoopPlayers.GetPlayersCount(), #CoopPlayers.CoopHeroes) do
+        fun(playerId, CoopPlayers.GetHero(playerId), SecondPlayerUi.Get(playerId))
+    end
+end
+
+-- These functions wait, so every player HUD runs in its own thread
+local WaitingFunctions = {
+    HideHealthUI = true,
+    HideAmmoUI = true,
+    HideGunUI = true,
+    HideSuperMeter = true,
+}
+
+-- Module level functions run the function for all additional players.
+-- Use SecondPlayerUi.ForHero(hero).Function() to update one player.
+local unpackArgs = table.unpack or unpack
+local template = CreatePlayerUi(2)
+for funcName, value in pairs(template) do
+    if type(value) == "function" then
+        SecondPlayerUi[funcName] = function(...)
+            local args = { ... }
+            local argsCount = select("#", ...)
+            SecondPlayerUi.ForEach(function(playerId, hero, ui)
+                local fun = ui[funcName]
+                local function run()
+                    if hero then
+                        HeroContext.RunWithHeroContext(hero, fun, unpackArgs(args, 1, argsCount))
+                    else
+                        fun(unpackArgs(args, 1, argsCount))
+                    end
+                end
+                if WaitingFunctions[funcName] then
+                    thread(run)
+                else
+                    run()
+                end
+            end)
+        end
+    end
 end
 
 return SecondPlayerUi

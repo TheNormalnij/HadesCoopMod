@@ -60,8 +60,11 @@ function OnHit(args)
         if isVictimPlayer then
             if victim == CoopPlayers.GetMainHero() then
                 UpdateHealthUI()
-            elseif victim == CoopPlayers.GetHero(2) then
-                SecondPlayerUi.UpdateHealthUI()
+            else
+                local ui = SecondPlayerUi.ForHero(victim)
+                if ui then
+                    ui.UpdateHealthUI()
+                end
             end
         end
     end }
