@@ -117,6 +117,7 @@ function LootRoomDuplicated.OnUnlockedRewardedRoom(baseFun, run, room)
         if RunEx.IsDefaultDoorsLeadToRunProgress() then
             --- NextRewardStoreName can be overrided
             LootRoomDuplicated.CurrentHeroChooser = firstAliveHero
+            LootRoomDuplicated.TryGenerateSharedDoorRewards(firstAliveHero)
         else
             -- Do not duplicate meta progress
             LootRoomDuplicated.CurrentHeroChooser = nil
@@ -124,6 +125,124 @@ function LootRoomDuplicated.OnUnlockedRewardedRoom(baseFun, run, room)
     else
         HeroContext.RunWithHeroContextAwait(firstAliveHero, baseFun, run, room)
         LootRoomDuplicated.CurrentHeroChooser = firstAliveHero
+        LootRoomDuplicated.TryGenerateSharedDoorRewards(firstAliveHero)
+    end
+end
+
+---@return boolean
+function LootRoomDuplicated.IsSharedDoorChoice()
+    return Config.RoomDuplicatedDelivery.SharedDoorChoice and not CurrentRun.StyxLoot
+end
+
+---@private
+--- Animation of a reward icon above a door
+function LootRoomDuplicated.GetDoorRewardAnimation(reward)
+    if reward.rewardType == nil then
+        return "StoryPreview"
+    end
+    if reward.rewardType == "Boon" and reward.lootName and LootData[reward.lootName] then
+        return LootData[reward.lootName].DoorIcon or LootData[reward.lootName].Icon
+    end
+    return reward.rewardType .. "Preview"
+end
+
+--- Every door gets a reward for every alive player (door.CoopPlayerRewards[playerId]).
+--- The door room keeps the rewards of the owner (the first alive player), the others are
+--- generated in their hero context, so gods and boons are random per player as usual.
+---@private
+function LootRoomDuplicated.TryGenerateSharedDoorRewards(ownerHero)
+    if not LootRoomDuplicated.IsSharedDoorChoice() then
+        return
+    end
+
+    local ownerId = CoopPlayers.GetPlayerByHero(ownerHero)
+    if not ownerId then
+        return
+    end
+
+    local doors = {}
+    for doorObjectId, door in pairs(OfferedExitDoors) do
+        local room = door.Room
+        if door.IsDefaultDoor and room then
+            door.CoopPlayerRewards = {
+                [ownerId] = { rewardType = room.ChosenRewardType, lootName = room.ForceLootName }
+            }
+            if LootRoomDuplicated.DuplicatedRewards[room.ChosenRewardType] then
+                table.insert(doors, door)
+            end
+        end
+    end
+
+    for playerId, hero in CoopPlayers.PlayersIterator() do
+        if hero ~= ownerHero and hero and not hero.IsDead then
+            -- Disables shop and story rooms for other players (IsGameStateEligibleWrap)
+            LootRoomDuplicated.CurrentHeroChooser = hero
+            HeroContext.RunWithHeroContextAwait(hero, function()
+                -- This table doesn't allow using the same boon twice
+                local currentRewards = {}
+                for _, door in ipairs(doors) do
+                    local room = door.Room
+                    local ownerRoomState = {}
+                    for key, value in pairs(room) do
+                        ownerRoomState[key] = value
+                    end
+
+                    room.ForceLootName = nil
+                    room.RewardOverrides = nil
+                    SetupRoomReward(CurrentRun, room, currentRewards,
+                        { Door = door, IgnoreForceLootName = room.IgnoreForceLootName })
+
+                    door.CoopPlayerRewards[playerId] = { rewardType = room.ChosenRewardType, lootName = room.ForceLootName }
+                    table.insert(currentRewards, { RewardType = room.ChosenRewardType, ForceLootName = room.ForceLootName })
+
+                    -- Restore the owner reward
+                    for key in pairs(room) do
+                        room[key] = nil
+                    end
+                    for key, value in pairs(ownerRoomState) do
+                        room[key] = value
+                    end
+                end
+            end)
+        end
+    end
+    LootRoomDuplicated.CurrentHeroChooser = ownerHero
+
+    for _, door in ipairs(doors) do
+        LootRoomDuplicated.CreateSharedDoorIcons(door, ownerId)
+    end
+end
+
+--- The owner reward is the vanilla icon in the middle, rewards of other players are smaller icons
+--- on the left and right side. Every icon has a colored "P1/P2/P3" label.
+---@private
+function LootRoomDuplicated.CreateSharedDoorIcons(door, ownerId)
+    if not door.DoorIconId or not door.CoopPlayerRewards then
+        return
+    end
+    door.AdditionalIcons = door.AdditionalIcons or {}
+    door.AdditionalAttractIds = door.AdditionalAttractIds or {}
+
+    PlayerVisibilityHelper.AddDoorIconLabel(ownerId, door.DoorIconId)
+
+    local slot = 0
+    for playerId = 1, CoopPlayers.GetPlayersCount() do
+        local reward = door.CoopPlayerRewards[playerId]
+        if playerId ~= ownerId and reward then
+            slot = slot + 1
+            local side = (slot % 2 == 1) and -1 or 1
+            local distance = 85 * math.ceil(slot / 2)
+
+            local iconId = SpawnObstacle({ Name = "BlankGeoObstacle", Group = "Standing" })
+            SetAnimation({ DestinationId = iconId, Name = LootRoomDuplicated.GetDoorRewardAnimation(reward) })
+            Attach({ Id = iconId, DestinationId = door.DoorIconId, DynamicScaleOffset = true, OffsetX = side * distance, OffsetZ = -15 })
+            SetScale({ Id = iconId, Fraction = 0.75 })
+            SetThingProperty({ Property = "SortMode", Value = "FromParent", DestinationId = iconId })
+            table.insert(door.AdditionalIcons, iconId)
+            table.insert(door.AdditionalAttractIds, iconId)
+
+            PlayerVisibilityHelper.AddDoorIconLabel(playerId, iconId)
+        end
     end
 end
 
@@ -288,7 +407,7 @@ function LootRoomDuplicated.CheckSpecialDoorRequirementWrap(baseFun, door)
         return "ExitNotActive"
     end
 
-    if LootRoomDuplicated.CurrentHeroChooser ~= CurrentRun.Hero then
+    if not LootRoomDuplicated.IsSharedDoorChoice() and LootRoomDuplicated.CurrentHeroChooser ~= CurrentRun.Hero then
         return "ExitNotActive"
     end
 
@@ -357,6 +476,23 @@ function LootRoomDuplicated.LeaveRoomWrap(baseFun, currentRun, door)
     then
         CurrentRun.CurrentRoom.SkipLoadNextMap = LootRoomDuplicated.ShouldSkipLoadingNextMap
         GameFlags.LeaveRoomHandlesOnce = true
+        return baseFun(currentRun, door)
+    end
+
+    if LootRoomDuplicated.IsSharedDoorChoice() then
+        LootRoomDuplicated.ChosenPlayerLoot = {}
+        for playerId, hero in CoopPlayers.PlayersIterator() do
+            local reward = door.CoopPlayerRewards and door.CoopPlayerRewards[playerId]
+            if hero and not hero.IsDead and reward then
+                LootRoomDuplicated.ChosenPlayerLoot[playerId] = {
+                    rewardType = reward.rewardType,
+                    lootName = reward.lootName,
+                }
+            end
+        end
+        CurrentRun.CurrentRoom.SkipLoadNextMap = LootRoomDuplicated.ShouldSkipLoadingNextMap
+        GameFlags.LeaveRoomHandlesOnce = true
+        LootRoomDuplicated.FinishRoomChoices()
         return baseFun(currentRun, door)
     end
 

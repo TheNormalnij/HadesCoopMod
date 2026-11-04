@@ -30,7 +30,7 @@ end
 
 -- Text color of the "P1/P2/P3" label, made from the player outline color
 ---@param playerId number
-local function GetPlayerTextColor(playerId)
+function PlayerVisibilityHelper.GetPlayerTextColor(playerId)
     local outline = Config["Player" .. playerId .. "Outline"]
     if not outline then
         return { 255, 255, 255, 255 }
@@ -56,7 +56,27 @@ function PlayerVisibilityHelper.AddLootMarker(playerId, objectId)
         Text = "P" .. playerId,
         OffsetY = -110,
         FontSize = 30,
-        Color = GetPlayerTextColor(playerId),
+        Color = PlayerVisibilityHelper.GetPlayerTextColor(playerId),
+        ShadowColor = { 0, 0, 0, 240 },
+        ShadowOffset = { 0, 2 },
+        ShadowBlur = 0,
+        OutlineThickness = 3,
+        OutlineColor = { 0, 0, 0, 1 },
+        Font = "AlegreyaSansSCBold",
+        Justification = "Center",
+    })
+end
+
+--- "P1/P2/P3" label above a door reward icon
+---@param playerId number
+---@param iconId number
+function PlayerVisibilityHelper.AddDoorIconLabel(playerId, iconId)
+    CreateTextBox({
+        Id = iconId,
+        Text = "P" .. playerId,
+        OffsetY = -75,
+        FontSize = 24,
+        Color = PlayerVisibilityHelper.GetPlayerTextColor(playerId),
         ShadowColor = { 0, 0, 0, 240 },
         ShadowOffset = { 0, 2 },
         ShadowBlur = 0,

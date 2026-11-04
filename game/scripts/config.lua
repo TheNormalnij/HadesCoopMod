@@ -19,6 +19,10 @@ local Config = {
     RoomDuplicatedDelivery = {
         -- Enables duplication of the Chaos boons.
         DuplicateChaosBoon = false;
+        -- true: every door shows the rewards of all players (with P1/P2/P3 labels),
+        -- any player can enter a door and everybody goes there with their own reward.
+        -- false: players choose doors one by one.
+        SharedDoorChoice = true;
     },
     Player1HasOutline = true;
     Player1Outline = {
