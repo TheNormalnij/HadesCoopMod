@@ -6,6 +6,8 @@ local CoopPlayers = ModRequire "CoopPlayers.lua"
 
 ---@type HeroContext
 local HeroContext = ModRequire "HeroContext.lua"
+---@type PlayerVisibilityHelper
+local PlayerVisibilityHelper = ModRequire "PlayerVisibilityHelper.lua"
 
 -- HUD offsets of additional players. Player 2 uses the bottom right corner,
 -- player 3 is placed above player 2.
@@ -102,6 +104,7 @@ local function CreatePlayerUi(playerId)
             ShadowOffsetX = 0,
             Justification = "Left",
         }, LocalizationData.UIScripts.HealthUI))
+        PlayerVisibilityHelper.AddHealthBarLabel(playerId, ScreenAnchorsSecondPlayer.HealthBack, 470)
 
         SetAnimation({ Name = "HealthBar", DestinationId = ScreenAnchorsSecondPlayer.HealthBack })
 

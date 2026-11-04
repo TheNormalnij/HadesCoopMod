@@ -51,7 +51,8 @@ local Config = {
         Thickness = 2,
         Threshold = 0.6,
     };
-    TextAbovePlayersEnabled = false;
+    -- "P1/P2/P3" above players, colored like the player outline
+    TextAbovePlayersEnabled = true;
     TextAbovePlayersParams = {
         -- CreateTextBox params
         OffsetX = 0,

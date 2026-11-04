@@ -23,6 +23,7 @@ function PlayerVisibilityHelper.AddPlayerMarkers(playerId, unit)
             {
                 Id = unit,
                 Text = "P" .. playerId,
+                Color = PlayerVisibilityHelper.GetPlayerTextColor(playerId),
             })
         )
     end
@@ -56,6 +57,32 @@ function PlayerVisibilityHelper.AddLootMarker(playerId, objectId)
         Text = "P" .. playerId,
         OffsetY = -110,
         FontSize = 30,
+        Color = PlayerVisibilityHelper.GetPlayerTextColor(playerId),
+        ShadowColor = { 0, 0, 0, 240 },
+        ShadowOffset = { 0, 2 },
+        ShadowBlur = 0,
+        OutlineThickness = 3,
+        OutlineColor = { 0, 0, 0, 1 },
+        Font = "AlegreyaSansSCBold",
+        Justification = "Center",
+    })
+end
+
+--- "P1/P2/P3" label next to a health bar. It is attached to the health bar anchor,
+--- so it is hidden and destroyed together with the health bar.
+---@param playerId number
+---@param anchorId number
+---@param offsetX number
+function PlayerVisibilityHelper.AddHealthBarLabel(playerId, anchorId, offsetX)
+    if not anchorId then
+        return
+    end
+    CreateTextBox({
+        Id = anchorId,
+        Text = "P" .. playerId,
+        OffsetX = offsetX,
+        OffsetY = -45,
+        FontSize = 24,
         Color = PlayerVisibilityHelper.GetPlayerTextColor(playerId),
         ShadowColor = { 0, 0, 0, 240 },
         ShadowOffset = { 0, 2 },

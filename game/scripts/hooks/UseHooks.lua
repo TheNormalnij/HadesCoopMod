@@ -9,6 +9,8 @@ local CoopPlayers = ModRequire "../CoopPlayers.lua"
 local HeroContext = ModRequire "../HeroContext.lua"
 ---@type ILootDelivery
 local LootDelivery = ModRequire "../loot/LootInterface.lua"
+---@type AmmoHooks
+local AmmoHooks = ModRequire "AmmoHooks.lua"
 
 local _OnUsed = OnUsed
 OnUsed = function(args)
@@ -40,6 +42,11 @@ OnUsed = function(args)
                 local item = triggerArgs.AttachedTable
 
                 if not LootDelivery.CanUseHeroLoot(item, hero) then
+                    return
+                end
+
+                if item.AddAmmo and not AmmoHooks.CanPickUp(item, hero) then
+                    -- Cast ammo of another player
                     return
                 end
 

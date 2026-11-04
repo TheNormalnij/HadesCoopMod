@@ -7,6 +7,8 @@
 local SecondPlayerUi = ModRequire "../SecondPlayerUI.lua"
 ---@type TraitTrays
 local TraitTrays = ModRequire "../TraitTrays.lua"
+---@type PlayerVisibilityHelper
+local PlayerVisibilityHelper = ModRequire "../PlayerVisibilityHelper.lua"
 ---@type CoopPlayers
 local CoopPlayers = ModRequire "../CoopPlayers.lua"
 ---@type HeroContext
@@ -153,6 +155,13 @@ function UIHooks.InitHooks()
     end
 
     -- Health
+    HookUtils.wrap("ShowHealthUI", function(baseFun, ...)
+        local healthBack = ScreenAnchors.HealthBack
+        baseFun(...)
+        if ScreenAnchors.HealthBack and ScreenAnchors.HealthBack ~= healthBack then
+            PlayerVisibilityHelper.AddHealthBarLabel(1, ScreenAnchors.HealthBack, 25)
+        end
+    end)
     UIHooks.SimpleHookWithVisibilityCheck("ShowHealthUI")
 
     UIHooks.CreateSimpleHook("UpdateHealthUI")
