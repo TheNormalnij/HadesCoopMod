@@ -124,19 +124,14 @@ function TraitTrays.RunForHero(hero, fun, ...)
     end
 
     local prevActiveHero = activeHero
-    local _CreateScreenObstacle = CreateScreenObstacle
+    -- CreateScreenObstacle is a Lua function that calls SpawnObstacle with OffsetX = X,
+    -- so only SpawnObstacle is mirrored (mirroring both moves icons back to the left side)
     local _SpawnObstacle = SpawnObstacle
     local _Teleport = Teleport
     local _FadeObstacleIn = FadeObstacleIn
     local _HideObstacle = HideObstacle
 
     activeHero = hero
-    CreateScreenObstacle = function(args)
-        if args.X then
-            args.X = mirrorX(args.X)
-        end
-        return _CreateScreenObstacle(args)
-    end
     SpawnObstacle = function(args)
         local isBacking = args.Group == "Combat_UI_Backing" and args.OffsetY == TraitUI.StartY
         if args.OffsetX and not args.DestinationId then
@@ -170,7 +165,6 @@ function TraitTrays.RunForHero(hero, fun, ...)
 
     local result = { pcall(fun, ...) }
 
-    CreateScreenObstacle = _CreateScreenObstacle
     SpawnObstacle = _SpawnObstacle
     Teleport = _Teleport
     FadeObstacleIn = _FadeObstacleIn
