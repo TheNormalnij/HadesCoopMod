@@ -83,7 +83,9 @@ OnAnyLoad {
                 end
                 CoopPlayers.SetMainHero(HeroContext.GetDefaultHero())
                 CoopPlayers.UpdateMainHero()
-                CoopPlayers.InitCoopUnit(2)
+                for playerId = 2, CoopPlayers.GetPlayersCount() do
+                    CoopPlayers.InitCoopUnit(playerId)
+                end
                 SecondPlayerUi.Refresh()
             end)
         end

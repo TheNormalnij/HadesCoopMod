@@ -40,7 +40,27 @@ local MENU_STATE = {
     PLAYER_TWO_SELECTED = 2,
     INVALID_STATE_SECOND_KEYBOARD = 3,
     INVALID_STATE_SAME_DEVICE = 4,
+    PLAYER_THREE_SELECTED = 5,
 }
+
+local function IsDeviceUsed(control, playersCount)
+    for playerId = 1, playersCount do
+        local other = SelectedGuiControl[playerId]
+        if other and other.Device == control.Device and other.ControllerId == control.ControllerId then
+            return true
+        end
+    end
+    return false
+end
+
+local function PlayersText(playersCount)
+    local template = GetDisplayName { Text = "CoopMenu_PlayerController" }
+    local lines = {}
+    for playerId = 1, playersCount do
+        lines[playerId] = string.gsub(template, "%$(%w+)", { PlayerIndex = playerId, Controller = TostringPlayerConfiguration(playerId) })
+    end
+    return table.concat(lines, "\n")
+end
 
 local CURRENT_MENU_STATE
 
@@ -94,11 +114,10 @@ MainMenuAPIAddGamemode("Coop", function(name)
             message:SetText(text)
             btn:SetTextLocalizationKey("CoopMenu_P2Press")
         elseif state == MENU_STATE.PLAYER_TWO_SELECTED then
-            local template = GetDisplayName { Text = "CoopMenu_PlayerController" }
-            local text = string.gsub(template, "%$(%w+)", { PlayerIndex = 1, Controller = TostringPlayerConfiguration(1) })
-            local text2 = string.gsub(template, "%$(%w+)", { PlayerIndex = 2, Controller = TostringPlayerConfiguration(2) })
-
-            message:SetText(text .. "\n" .. text2)
+            message:SetText(PlayersText(2))
+            btn:SetText("Player 3: press here. Player 1: press to start")
+        elseif state == MENU_STATE.PLAYER_THREE_SELECTED then
+            message:SetText(PlayersText(3))
             btn:SetText(START_BUTTON_MESSAGES[math.random(1, #START_BUTTON_MESSAGES)])
         elseif state == MENU_STATE.INVALID_STATE_SECOND_KEYBOARD then
             message:SetTextLocalizationKey("CoopMenu_ErrP1KBOnly")
@@ -129,6 +148,18 @@ MainMenuAPIAddGamemode("Coop", function(name)
                 SetStage(MENU_STATE.PLAYER_TWO_SELECTED)
             end
         elseif CURRENT_MENU_STATE == MENU_STATE.PLAYER_TWO_SELECTED then
+            local control = GetCurrentControl()
+            if control.Device == "Gamepad" and not IsDeviceUsed(control, 2) then
+                SelectedGuiControl[3] = control
+                SetStage(MENU_STATE.PLAYER_THREE_SELECTED)
+            else
+                -- A press from an already selected device starts the game with 2 players
+                SelectedGuiControl[3] = nil
+                SetTempRuntimeData("Gamemode", name)
+                SetTempRuntimeData("TN_Coop:control", SelectedGuiControl)
+                MainMenuOpenProfiles()
+            end
+        elseif CURRENT_MENU_STATE == MENU_STATE.PLAYER_THREE_SELECTED then
             SetTempRuntimeData("Gamemode", name)
             SetTempRuntimeData("TN_Coop:control", SelectedGuiControl)
             MainMenuOpenProfiles()

@@ -6,6 +6,7 @@
 #include "pch.h"
 #include "LuaFunctionDefs.h"
 #include "CoopContext.h"
+#include "CoopLog.h"
 #include "lua.hpp"
 #include "interface/Gamepad.h"
 
@@ -153,8 +154,17 @@ static int CoopUseItem(lua_State* L) {
     return 1;
 }
 
+// CoopLog(string text)
+static int CoopLogLua(lua_State *L) {
+    const char *text = lua_tostring(L, 1);
+    CoopLog::Write("lua: %s", text ? text : "(nil)");
+    return 0;
+}
+
 void LuaFunctionDefs::Load(lua_State* L) {
     #define REGISTER(fun) lua_register(L, #fun, fun)
+
+    lua_register(L, "CoopLog", CoopLogLua);
 
     REGISTER(CoopSetPlayerGamepad);
     REGISTER(CoopGetPlayerGamepad);

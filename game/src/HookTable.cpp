@@ -14,6 +14,9 @@ void HookTable::Init(IModApi::GetSymbolAddress_t GetSymbolAddress) {
     PlayerManager_Instance = GetSymbolAddress("sgg::PlayerManager::Instance");
     PlayerManager_AddPlayer = GetSymbolAddress("sgg::PlayerManager::AddPlayer");
     PlayerManager_AssignController = GetSymbolAddress("sgg::PlayerManager::AssignController");
+    // The game allocates PlayerManager::m_palyers for 2 players. We grow it with the game's own
+    // resize so the memory comes from the game allocator (_aligned_malloc).
+    PlayerVector_Resize = GetSymbolAddress("eastl::vector<sgg::Player *,eastl::allocator_forge>::resize");
     Player_Player = GetSymbolAddress("sgg::Player::Player");
     PlayerUnit_PlayerUnit = GetSymbolAddress("sgg::PlayerUnit::PlayerUnit");
 

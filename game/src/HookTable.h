@@ -14,6 +14,7 @@ struct HookTable {
 	size_t PlayerManager_Instance;
     size_t PlayerManager_AddPlayer;
     size_t PlayerManager_AssignController;
+    size_t PlayerVector_Resize;
 
     size_t Player_Player;
 

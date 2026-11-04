@@ -6,6 +6,7 @@
 #include "pch.h"
 
 #include "CoopContext.h"
+#include "CoopLog.h"
 
 #include "extensions/LuaFunctionDefs.h"
 #include "interface/PlayerManager.h"
@@ -28,13 +29,15 @@ size_t CoopContext::CreatePlayer() {
     for (size_t i = 0; i < MAX_PLAYERS; i++) {
         if (!playerManager.HasPlayer(i)) {
             playerIndex = i;
+            break;
         }
     }
 
     if (playerIndex == INVALID_PLAYER_INDEX)
         return INVALID_PLAYER_INDEX;
 
-    playerManager.CreatePlayer(playerIndex);
+    if (!playerManager.CreatePlayer(playerIndex))
+        return INVALID_PLAYER_INDEX;
 
     return playerIndex;
 }
@@ -43,14 +46,20 @@ size_t CoopContext::CreatePlayerUnit(size_t playerIndex) {
     auto *basePlayer = playerManager.GetPlayer(0);
     auto *newPlayer = playerManager.GetPlayer(playerIndex);
 
-    if (!basePlayer || !newPlayer)
+    if (!basePlayer || !newPlayer) {
+        CoopLog::Write("CreatePlayerUnit(%zu): no player (base=%p new=%p)", playerIndex, (void *)basePlayer,
+                       (void *)newPlayer);
         return INVALID_UNIT_INDEX;
+    }
 
     auto *baseUnit = basePlayer->GetUnit();
     auto *currentUnit = newPlayer->GetUnit();
 
-    if (!baseUnit || currentUnit)
+    if (!baseUnit || currentUnit) {
+        CoopLog::Write("CreatePlayerUnit(%zu): baseUnit=%p currentUnit=%p", playerIndex, (void *)baseUnit,
+                       (void *)currentUnit);
         return INVALID_UNIT_INDEX;
+    }
 
     SGG::MapThing *mapThingBase = baseUnit->GetMapThing();
 
@@ -69,6 +78,7 @@ size_t CoopContext::CreatePlayerUnit(size_t playerIndex) {
     playerUnit->SetPlayer(newPlayer);
     newPlayer->SetUnit(playerUnit);
 
+    CoopLog::Write("CreatePlayerUnit(%zu): unit id=%zu", playerIndex, (size_t)playerUnit->GetId());
     return playerUnit->GetId();
 }
 

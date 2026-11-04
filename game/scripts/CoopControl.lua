@@ -21,6 +21,10 @@ CoopControl.Schemas = {
             Device = "Gamepad",
             ControllerId = 0,
         };
+        {
+            Device = "Gamepad",
+            ControllerId = 1,
+        };
     };
     UserDefined = {};
     Current = {};

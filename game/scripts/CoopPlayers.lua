@@ -95,14 +95,29 @@ function CoopPlayers.GetUnits()
 end
 
 function CoopPlayers.InitCoopPlayer()
-    local playerId = 2
-
-    if not CoopHasPlayer(playerId) then
-        playerId = CoopCreatePlayer()
-        CoopControl.InitControlSchemas()
+    if CoopHasPlayer(2) then
+        CoopLog("InitCoopPlayer: player 2 exists, players=" .. tostring(CoopGetPlayersCount()))
+        return
     end
 
-    return playerId
+    -- One player per device selected in the coop menu (at least 2)
+    -- Returns (true, data)
+    local _, selected = GetTempRuntimeData("TN_Coop:control")
+    local playersCount = math.max(2, type(selected) == "table" and #selected or 2)
+    CoopLog("InitCoopPlayer: selected type=" .. type(selected) .. " count=" .. tostring(playersCount))
+
+    for playerId = 2, playersCount do
+        if not CoopHasPlayer(playerId) then
+            local created = CoopCreatePlayer()
+            CoopLog("InitCoopPlayer: create player " .. playerId .. " -> " .. tostring(created))
+            if not created then
+                break
+            end
+        end
+    end
+    CoopLog("InitCoopPlayer: players=" .. tostring(CoopGetPlayersCount()))
+
+    CoopControl.InitControlSchemas()
 end
 
 ---@return boolean
@@ -160,11 +175,16 @@ function CoopPlayers.RestoreSavedHero(playerId)
         if not hero.IsDead then
             CoopPlayers.InitCoopUnit(playerId)
         end
+    else
+        -- A player joined after this save was made (e.g. the third player): create a fresh hero
+        CoopPlayers.CoopHeroes[playerId] = nil
+        CoopPlayers.InitCoopUnit(playerId)
     end
 end
 
 function CoopPlayers.InitCoopUnit(playerId)
     local unit = CoopCreatePlayerUnit(playerId)
+    CoopLog("InitCoopUnit(" .. tostring(playerId) .. ") -> " .. tostring(unit))
 
     if not unit then
         return false
