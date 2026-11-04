@@ -41,6 +41,10 @@
 
 1. **Где создаётся `m_palyers` на 2 места** (конструктор `sgg::PlayerManager` / `Init`). Есть ли там константа `2`,
    которую проще поменять, чем расширять вектор потом.
+   Зацепка: по анализу проекта [HadesPort](https://github.com/lukifer23/HadesPort) (`native/analysis/engine-identity.json`)
+   `sgg::App::Initialize` при старте вызывает `PlayerManager::AddPlayer` / `AssignController`.
+   Их RVA (`0x35a70`) — для другой сборки движка (sha256 `d98546ea…`), у Steam-версии от 2026-11-04 хеш другой,
+   поэтому искать по имени через PDB, а не по адресу.
 2. **Аллокатор игры** для eastl/forge: функция, которой игра выделяет память под свои векторы
    (что-то вроде `tf_memalign` / `tf_malloc` / `tf_free` или `eastl::allocator_forge::allocate`).
    Без неё расширять вектор нельзя — память освободит игра своим аллокатором и упадёт.
