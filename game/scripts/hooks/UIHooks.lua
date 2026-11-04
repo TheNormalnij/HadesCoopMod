@@ -62,7 +62,84 @@ function UIHooks.SimpleCurrentTraitWrapper(funcName)
     end)
 end
 
+local HealthAnchorKeys = { "HealthBack", "HealthFill", "HealthFlash", "HealthRally", "LifePipIds" }
+
+---@private
+---@return boolean
+function UIHooks.IsSecondPlayerContext()
+    local mainHero = CoopPlayers.GetMainHero()
+    local current = HeroContext.GetCurrentHeroContext()
+    return mainHero ~= nil and current ~= nil and current ~= mainHero
+end
+
+--- Runs a vanilla presentation function with ScreenAnchors health ids pointing to the P2 HUD.
+--- Vanilla code always draws damage flashes / last stand pips on ScreenAnchors (P1 HUD).
+--- The function is run in a separate coroutine, so anchors are restored even if it yields.
+---@private
+function UIHooks.RunWithSecondPlayerAnchors(fun, ...)
+    local backup = {}
+    for _, key in ipairs(HealthAnchorKeys) do
+        backup[key] = ScreenAnchors[key]
+        ScreenAnchors[key] = SecondPlayerUi.ScreenAnchors[key]
+    end
+
+    HeroContext.RunWithHeroContext(HeroContext.GetCurrentHeroContext(), fun, ...)
+
+    for _, key in ipairs(HealthAnchorKeys) do
+        ScreenAnchors[key] = backup[key]
+    end
+end
+
+---@private
+---@param funcName string
+function UIHooks.RedirectAnchorsForSecondPlayer(funcName)
+    if not _G[funcName] then
+        return
+    end
+    HookUtils.wrap(funcName, function(baseFun, ...)
+        if UIHooks.IsSecondPlayerContext() then
+            UIHooks.RunWithSecondPlayerAnchors(baseFun, ...)
+        else
+            return baseFun(...)
+        end
+    end)
+end
+
 function UIHooks.InitHooks()
+    -- Damage / heal / last stand presentation must target the HUD of the right player (#92)
+    UIHooks.RedirectAnchorsForSecondPlayer("HeroDamagePresentation")
+    UIHooks.RedirectAnchorsForSecondPlayer("HeroMajorDamagePresentationThread")
+    UIHooks.RedirectAnchorsForSecondPlayer("DisplayPlayerHealingText")
+    UIHooks.RedirectAnchorsForSecondPlayer("GainLastStandPresentation")
+    UIHooks.RedirectAnchorsForSecondPlayer("LostLastStandPresentation")
+
+    if PlayerLastStandHealingText then
+        -- Yields before touching HealthFlash, so redirect only the drawing part
+        PlayerLastStandHealingText = function(args)
+            waitScreenTime(0.2)
+            PlaySound({ Name = "/Leftovers/SFX/StaminaSkillProc", Id = CurrentRun.Hero.ObjectId })
+            OnPlayerHealed({ ActualHealAmount = CurrentRun.Hero.Health })
+            local flashId = ScreenAnchors.HealthFlash
+            if UIHooks.IsSecondPlayerContext() then
+                flashId = SecondPlayerUi.ScreenAnchors.HealthFlash
+            end
+            if flashId ~= nil then
+                CreateAnimation({ Name = "LastStandHealthBarRefillFlare", DestinationId = flashId, Group = "Combat_Menu_Additive", OffsetY = -12, OffsetX = 40 })
+            end
+        end
+    end
+
+    if HeroLowHealthBarPulseThread then
+        -- The loop waits and reads ScreenAnchors.HealthBack (P1) every iteration,
+        -- and the shared GameState flag blocks the pulse for P1. Skip it for P2.
+        HookUtils.wrap("HeroLowHealthBarPulseThread", function(baseFun, ...)
+            if UIHooks.IsSecondPlayerContext() then
+                return
+            end
+            return baseFun(...)
+        end)
+    end
+
     -- Health
     UIHooks.SimpleHookWithVisibilityCheck("ShowHealthUI")
 
@@ -86,13 +163,19 @@ function UIHooks.InitHooks()
 
     local _AddLastStand = AddLastStand
     AddLastStand = function(args)
-        local isSecondPlayer = CoopPlayers.GetMainHero() ~= HeroContext.GetCurrentHeroContext()
+        local targetHero = args.Unit or HeroContext.GetCurrentHeroContext()
+        local mainHero = CoopPlayers.GetMainHero()
+        -- Fresh P2 heroes are not registered in CoopHeroes yet, so compare with the main hero
+        local isSecondPlayer = mainHero ~= nil and targetHero ~= nil and targetHero ~= mainHero
         local pipsBackup = ScreenAnchors.LifePipIds
         local _CreateScreenObstacle = CreateScreenObstacle
         if isSecondPlayer then
             ScreenAnchors.LifePipIds = SecondPlayerUi.ScreenAnchors.LifePipIds
-            CreateScreenObstacle = function(args)
-                args.X = (ScreenWidth - 80) - (args.X - 70)
+            -- Mirror the pip to the right side of the screen.
+            -- Must call the original and return the obstacle id, otherwise P2 pips are never created
+            CreateScreenObstacle = function(obstacleArgs)
+                obstacleArgs.X = (ScreenWidth - 80) - (obstacleArgs.X - 70)
+                return _CreateScreenObstacle(obstacleArgs)
             end
         end
 

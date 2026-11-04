@@ -99,6 +99,42 @@ function RunHooks.StartRoomWrapHook(StartRoomFun, run, currentRoom)
     end
 end
 
+--- Vanilla StartRoom replenishes "Stubborn Defiance" only for CurrentRun.Hero (player 1).
+--- Do the same for additional players, otherwise they lose it forever after the first use (#91).
+---@private
+function RunHooks.ReplenishStubbornDefiance()
+    if GetNumMetaUpgrades("ExtraChanceReplenishMetaUpgrade") <= 0 then
+        return
+    end
+
+    for playerId = 2, CoopPlayers.GetPlayersCount() do
+        local hero = CoopPlayers.GetHero(playerId)
+        if hero and not hero.IsDead then
+            hero.LastStands = hero.LastStands or {}
+            local numRegenerationLastStands = 0
+            for _, lastStand in pairs(hero.LastStands) do
+                if lastStand.Name == "ExtraChanceReplenishMetaUpgrade" then
+                    numRegenerationLastStands = numRegenerationLastStands + 1
+                end
+            end
+            HeroContext.RunWithHeroContext(hero, function()
+                while GetNumMetaUpgrades("ExtraChanceReplenishMetaUpgrade") > numRegenerationLastStands do
+                    AddLastStand({
+                        Name = "ExtraChanceReplenishMetaUpgrade",
+                        Unit = hero,
+                        Icon = "ExtraLifeReplenish",
+                        WeaponName = "LastStandMetaUpgradeShield",
+                        HealFraction = MetaUpgradeData.ExtraChanceReplenishMetaUpgrade.HealPercent,
+                        Silent = true
+                    })
+                    numRegenerationLastStands = numRegenerationLastStands + 1
+                end
+            end)
+            hero.MaxLastStands = TableLength(hero.LastStands)
+        end
+    end
+end
+
 ---@private
 function RunHooks.HandleGenericRoom(StartRoomFun, run, currentRoom)
     local overrides = currentRoom.EncounterSpecificDataOverwrites and
@@ -125,6 +161,7 @@ function RunHooks.HandleGenericRoom(StartRoomFun, run, currentRoom)
                 CoopPlayers.InitCoopUnit(playerId)
             end
         end
+        RunHooks.ReplenishStubbornDefiance()
         SecondPlayerUi.Refresh()
 
         CoopPlayers.UpdateMainHero()
@@ -139,7 +176,7 @@ function RunHooks.HandleGenericRoom(StartRoomFun, run, currentRoom)
         if currentRoom.HeroEndPoint then
             for playerId = 2, CoopPlayers.GetPlayersCount() do
                 local hero = CoopPlayers.GetHero(playerId)
-                if not hero.IsDead then
+                if hero and not hero.IsDead and hero.ObjectId then
                     Teleport({ Id = hero.ObjectId, DestinationId = currentRoom.HeroEndPoint })
                     if isMainPlayerDead then
                         RemoveInputBlock{ PlayerIndex = playerId, Name = "MoveHeroToRoomPosition" }

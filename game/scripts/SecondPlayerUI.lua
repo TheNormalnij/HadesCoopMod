@@ -133,7 +133,7 @@ function SecondPlayerUi.UpdateHealthUI()
         return
     end
 
-    local rallyHealth = unit.RallyHealth.Store
+    local rallyHealth = (unit.RallyHealth and unit.RallyHealth.Store) or 0
     if ScreenAnchorsSecondPlayer.HealthBack ~= nil then
         ModifyTextBox({ Id = ScreenAnchorsSecondPlayer.HealthBack, Text = "UI_PlayerHealth", LuaKey = "TempTextData", LuaValue = { Current = math.ceil(currentHealth), Maximum = math.ceil(maxHealth) }, AutoSetDataProperties = false })
     end
@@ -142,8 +142,13 @@ function SecondPlayerUi.UpdateHealthUI()
         SetAnimationFrameTarget({ Name = "HealthBarFill", Fraction = 1 - (currentHealth) / maxHealth, DestinationId =
         ScreenAnchorsSecondPlayer.HealthFill })
     end
-    SetAnimationFrameTarget({ Name = "HealthBarFillWhite", Fraction = 1 - (currentHealth + rallyHealth) / maxHealth, DestinationId =
-    ScreenAnchorsSecondPlayer.HealthRally })
+    if ScreenAnchorsSecondPlayer.HealthRally ~= nil then
+        SetAnimationFrameTarget({ Name = "HealthBarFillWhite", Fraction = 1 - (currentHealth + rallyHealth) / maxHealth, DestinationId =
+        ScreenAnchorsSecondPlayer.HealthRally })
+    end
+    if unit.RallyHealth == nil then
+        return
+    end
     unit.RallyHealth.Cache =
     {
         CurrentHealth = currentHealth,
@@ -153,9 +158,9 @@ end
 
 function SecondPlayerUi.UpdateRallyHealthUI()
     local unit = CoopPlayers.GetHero(2)
-    if unit == nil then return; end
+    if unit == nil or unit.RallyHealth == nil or ScreenAnchorsSecondPlayer.HealthRally == nil then return; end
 
-    local rallyHealth = unit.RallyHealth.Store
+    local rallyHealth = unit.RallyHealth.Store or 0
     local currentHealth = unit.Health
     local maxHealth = unit.MaxHealth
     if unit.RallyHealth.Cache ~= nil then
@@ -179,11 +184,11 @@ function SecondPlayerUi.HideHealthUI()
     for i, id in pairs(healthIds) do
         table.insert(healthAnchorIds, ScreenAnchorsSecondPlayer[id])
     end
-    for i, id in pairs(ScreenAnchorsSecondPlayer.LifePipIds) do
+    for i, id in pairs(ScreenAnchorsSecondPlayer.LifePipIds or {}) do
         table.insert(healthAnchorIds, id)
     end
 
-    for i, id in pairs(ScreenAnchorsSecondPlayer.SelfStoredAmmo) do
+    for i, id in pairs(ScreenAnchorsSecondPlayer.SelfStoredAmmo or {}) do
         table.insert(healthAnchorIds, id)
     end
 
@@ -204,17 +209,25 @@ function SecondPlayerUi.HideHealthUI()
 end
 
 function SecondPlayerUi.DestroyHealthUI()
-    local ids = CombineTables({
-        ScreenAnchorsSecondPlayer.HealthBack,
-        ScreenAnchorsSecondPlayer.HealthFill,
-        ScreenAnchorsSecondPlayer.HealthFlash 
-        },
-        ScreenAnchorsSecondPlayer.LifePipIds
-        )
+    -- CombineTables returns nil when LifePipIds is nil, which leaked the whole P2 health bar.
+    -- HealthRally, BadgeId and SelfStoredAmmo were never destroyed at all.
+    local ids = {}
+    for _, key in ipairs({ "HealthBack", "HealthFill", "HealthFlash", "HealthRally", "BadgeId" }) do
+        if ScreenAnchorsSecondPlayer[key] then
+            table.insert(ids, ScreenAnchorsSecondPlayer[key])
+        end
+    end
+    for _, id in pairs(ScreenAnchorsSecondPlayer.LifePipIds or {}) do
+        table.insert(ids, id)
+    end
+    for _, id in pairs(ScreenAnchorsSecondPlayer.SelfStoredAmmo or {}) do
+        table.insert(ids, id)
+    end
 
     if not IsEmpty(ids) then
         Destroy({ Ids = ids })
     end
+    ScreenAnchorsSecondPlayer.SelfStoredAmmo = nil
     ScreenAnchorsSecondPlayer.HealthBack = nil
     ScreenAnchorsSecondPlayer.HealthFill = nil
     ScreenAnchorsSecondPlayer.HealthFlash = nil
@@ -259,7 +272,9 @@ function SecondPlayerUi.RecreateLifePips()
 
     local numLastStands = 0
     if unit.IsDead then
-        numLastStands = TableLength(unit.LastStands) + GetNumMetaUpgradeLastStands()
+        -- P2 can be marked as dead artificially (surface, run end) with full LastStands.
+        -- Summing them with meta upgrades duplicated the icons (#76)
+        numLastStands = math.max(TableLength(unit.LastStands or {}), GetNumMetaUpgradeLastStands())
     elseif unit.MaxLastStands then
         numLastStands = unit.MaxLastStands
     end
