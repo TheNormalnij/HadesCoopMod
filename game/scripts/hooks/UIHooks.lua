@@ -5,8 +5,8 @@
 
 ---@type SecondPlayerUi
 local SecondPlayerUi = ModRequire "../SecondPlayerUI.lua"
----@type CombinedTraitsUI
-local CombinedTraitsUI = ModRequire "../CombinedTraitsUI.lua"
+---@type TraitTrays
+local TraitTrays = ModRequire "../TraitTrays.lua"
 ---@type CoopPlayers
 local CoopPlayers = ModRequire "../CoopPlayers.lua"
 ---@type HeroContext
@@ -64,7 +64,7 @@ end
 ---@private
 function UIHooks.SimpleCurrentTraitWrapper(funcName)
     HookUtils.wrap(funcName, function(baseFun, ...)
-        HeroContext.RunWithHeroContext(CombinedTraitsUI.GetCurrentTraitHero(), baseFun, ...)
+        HeroContext.RunWithHeroContext(TraitTrays.GetScreenHero() or CoopPlayers.GetMainHero(), baseFun, ...)
     end)
 end
 
@@ -368,18 +368,7 @@ function UIHooks.InitHooks()
         end)
     end
 
-    -- Traits
-    HookUtils.onPreFunction("ShowAdvancedTooltip", CombinedTraitsUI.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIActivateTrait", CombinedTraitsUI.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIDeactivateTrait", CombinedTraitsUI.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUICreateComponent", CombinedTraitsUI.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIUpdateText", CombinedTraitsUI.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIRemove", CombinedTraitsUI.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUICreateText", CombinedTraitsUI.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("UpdateTraitNumber", CombinedTraitsUI.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("UpdateAdditionalTraitHint", CombinedTraitsUI.ChangeHeroInTraitsMenu)
-    HookUtils.onPreFunction("TraitUIActivateTraits", CombinedTraitsUI.ChangeHeroInTraitsMenu)
-
+    -- Traits: per player trays are handled in TraitTrays.lua
     UIHooks.SimpleCurrentTraitWrapper("CloseAdvancedTooltipScreen")
     UIHooks.SimpleCurrentTraitWrapper("PinTraitDetails")
 

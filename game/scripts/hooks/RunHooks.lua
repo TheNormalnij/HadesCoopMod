@@ -19,6 +19,8 @@ local LootHooks = ModRequire "LootHooks.lua"
 local LootDelivery = ModRequire "../loot/LootInterface.lua"
 ---@type SecondPlayerUi
 local SecondPlayerUi = ModRequire "../SecondPlayerUI.lua"
+---@type TraitTrays
+local TraitTrays = ModRequire "../TraitTrays.lua"
 ---@type RunEx
 local RunEx = ModRequire "../RunEx.lua"
 ---@type PlayerVisibilityHelper
@@ -163,6 +165,7 @@ function RunHooks.HandleGenericRoom(StartRoomFun, run, currentRoom)
         end
         RunHooks.ReplenishStubbornDefiance()
         SecondPlayerUi.Refresh()
+        TraitTrays.Refresh()
 
         CoopPlayers.UpdateMainHero()
 
@@ -376,6 +379,7 @@ function RunHooks.RestoreUnlockRoomExitsWrapHook(baseFun, run, room)
     end
 
     SecondPlayerUi.Refresh()
+    TraitTrays.Refresh()
 end
 
 ---@private

@@ -11,6 +11,8 @@ local CoopPlayers = ModRequire "CoopPlayers.lua"
 local SecondPlayerUi = ModRequire "SecondPlayerUI.lua"
 ---@type HeroContext
 local HeroContext = ModRequire "HeroContext.lua"
+---@type TraitTrays
+local TraitTrays = ModRequire "TraitTrays.lua"
 ---@type CoopCamera
 local CoopCamera = ModRequire "CoopCamera.lua"
 ---@type FreezeHooks
@@ -59,6 +61,7 @@ local function TryInstalBasicHooks()
     RunHooks.InitHooks()
     MenuHooks.InitHooks()
     --PactDoorFix.InitHooks()
+    TraitTrays.InitHooks()
     UIHooks.InitHooks()
     CoopPlayers.CoopInit()
     LootHooks.InitHooks()
@@ -87,6 +90,7 @@ OnAnyLoad {
                     CoopPlayers.InitCoopUnit(playerId)
                 end
                 SecondPlayerUi.Refresh()
+                TraitTrays.Refresh()
             end)
         end
     end

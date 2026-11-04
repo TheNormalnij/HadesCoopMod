@@ -449,8 +449,9 @@ local function CreatePlayerUi(playerId)
         ScreenAnchorsSecondPlayer.GunUI = CreateScreenObstacle({
             Name = "BlankObstacle",
             Group = "Combat_UI",
-            X = SW() - GunUI.StartX - 64 - 100,
-            Y = (GunUI.StartY + hudOffsetY)
+            -- Next to the ammo UI: the right screen side is used by boon trays of additional players
+            X = SW() - 662 - 120,
+            Y = SH() - 62
         })
 
 
