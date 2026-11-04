@@ -46,9 +46,14 @@ local function GetTrayAnchors(playerId)
     return TraitTrays.Anchors[playerId]
 end
 
---- Player id of an additional player hero.
---- false for unknown non-main heroes (fresh heroes not registered yet), nil for the main hero.
----@return number|false|nil
+local function Log(text)
+    if CoopLog then
+        CoopLog("trays: " .. text)
+    end
+end
+
+--- Player id of an additional player hero, nil for player 1 and unknown heroes
+---@return number|nil
 local function GetAdditionalPlayerId(hero)
     if hero == nil or hero == CoopPlayers.GetMainHero() then
         return nil
@@ -57,7 +62,46 @@ local function GetAdditionalPlayerId(hero)
     if playerId and playerId > 1 then
         return playerId
     end
-    return false
+    return nil
+end
+
+local function DescribeHero(hero)
+    if hero == nil then
+        return "nil"
+    end
+    if hero == CoopPlayers.GetMainHero() then
+        return "P1"
+    end
+    local playerId = CoopPlayers.GetPlayerByHero(hero)
+    return playerId and ("P" .. playerId) or ("unknown " .. tostring(hero))
+end
+
+local function CountShownTraits(hero)
+    local count = 0
+    for _, trait in pairs(hero and hero.Traits or {}) do
+        if trait.AnchorId then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+--- Icons left from a tray that no longer exists (e.g. drawn before the hero was registered).
+--- Vanilla skips traits with AnchorId, so they must be cleared before the tray is created.
+local function ClearStaleTraitAnchors(hero)
+    local ids = {}
+    for _, trait in pairs(hero.Traits or {}) do
+        for _, key in ipairs({ "AnchorId", "TraitIconOverlay", "TraitActiveOverlay", "TraitInfoCardId" }) do
+            if trait[key] then
+                table.insert(ids, trait[key])
+                trait[key] = nil
+            end
+        end
+    end
+    if #ids > 0 then
+        Log("cleared " .. #ids .. " stale icons of " .. DescribeHero(hero))
+        Destroy({ Ids = ids })
+    end
 end
 
 --- Runs a vanilla tray function for the tray of the given hero
@@ -65,10 +109,6 @@ function TraitTrays.RunForHero(hero, fun, ...)
     local playerId = GetAdditionalPlayerId(hero)
     if playerId == nil or hero == activeHero then
         return fun(...)
-    end
-    if playerId == false then
-        -- The hero is being created, its tray is created on the next refresh
-        return
     end
 
     local shiftX = TrayShiftX[playerId] or (playerId - 2) * 200
@@ -222,7 +262,9 @@ function TraitTrays.Refresh()
     end
     ForEachAdditionalHero(function(playerId, hero)
         if IsTrayVisibleFor(hero) and not GetTrayAnchors(playerId).TraitBacking then
+            ClearStaleTraitAnchors(hero)
             TraitTrays.RunForHero(hero, ShowTraitUI)
+            Log("refresh P" .. playerId .. ": icons=" .. CountShownTraits(hero))
         end
     end)
 end
@@ -255,10 +297,26 @@ end
 function TraitTrays.InitHooks()
     -- Shown / hidden / destroyed together with the main tray
     HookUtils.wrap("ShowTraitUI", function(baseFun, ...)
-        HeroContext.RunWithHeroContext(CoopPlayers.GetMainHero(), baseFun, ...)
+        local mainHero = CoopPlayers.GetMainHero()
+        local current = HeroContext.GetCurrentHeroContext()
+        if GetAdditionalPlayerId(current) and mainHero then
+            HeroContext.RunWithHeroContext(mainHero, baseFun, ...)
+        else
+            baseFun(...)
+        end
+        Log(string.format("show: context=%s main icons=%d traits=%d showing=%s hiding=%s hide=%s decision=%s",
+            DescribeHero(current), CountShownTraits(mainHero), TableLength(mainHero and mainHero.Traits or {}),
+            tostring(ShowingCombatUI), tostring(CombatUI.Hiding), tostring(not IsEmpty(CombatUI.Hide)),
+            tostring(CombatUI.ShowUIForDecision)))
+
         ForEachAdditionalHero(function(playerId, hero)
             if IsTrayVisibleFor(hero) then
+                if not GetTrayAnchors(playerId).TraitBacking then
+                    ClearStaleTraitAnchors(hero)
+                end
                 TraitTrays.RunForHero(hero, baseFun)
+                Log(string.format("show P%d: backing=%s icons=%d traits=%d", playerId,
+                    tostring(GetTrayAnchors(playerId).TraitBacking), CountShownTraits(hero), TableLength(hero.Traits or {})))
             end
         end)
     end)
@@ -274,7 +332,7 @@ function TraitTrays.InitHooks()
             end
         end
         local mainHero = CoopPlayers.GetMainHero()
-        if mainHero and HeroContext.GetCurrentHeroContext() ~= mainHero then
+        if mainHero and GetAdditionalPlayerId(HeroContext.GetCurrentHeroContext()) then
             local args = { ... }
             return HeroContext.RunWithHeroContext(mainHero, baseFun, (table.unpack or unpack)(args))
         end
@@ -282,7 +340,12 @@ function TraitTrays.InitHooks()
     end)
 
     HookUtils.wrap("DestroyTraitUI", function(baseFun, ...)
-        HeroContext.RunWithHeroContext(CoopPlayers.GetMainHero(), baseFun, ...)
+        local mainHero = CoopPlayers.GetMainHero()
+        if GetAdditionalPlayerId(HeroContext.GetCurrentHeroContext()) and mainHero then
+            HeroContext.RunWithHeroContext(mainHero, baseFun, ...)
+        else
+            baseFun(...)
+        end
         ForEachAdditionalHero(function(playerId, hero)
             TraitTrays.RunForHero(hero, baseFun)
         end)
@@ -306,7 +369,11 @@ function TraitTrays.InitHooks()
                     -- The boon list screen is drawn on the left side for the hero that opened it
                     return baseFun(...)
                 end
-                return TraitTrays.RunForHero(CurrentRun and CurrentRun.Hero, baseFun, ...)
+                local hero = CurrentRun and CurrentRun.Hero
+                if hero ~= activeHero and GetAdditionalPlayerId(hero) then
+                    Log(funcName .. " for " .. DescribeHero(hero))
+                end
+                return TraitTrays.RunForHero(hero, baseFun, ...)
             end)
         end
     end

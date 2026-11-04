@@ -26,6 +26,8 @@ function MenuHooks.InitHooks()
     MenuHooks.HookUiControl("ShowStoreScreen")
     MenuHooks.HookUiControl("OpenSellTraitMenu")
     MenuHooks.HookUiControl("OpenShrineUpgradeMenu")
+    -- Any player can open the Codex, so the menu must be controlled by that player
+    MenuHooks.HookUiControl("OpenCodexScreen")
 
     HookUtils.wrap("ShowAwardMenu", function(baseFun, ...)
         if HeroContext.GetCurrentHeroContext() == CoopPlayers.GetMainHero() then

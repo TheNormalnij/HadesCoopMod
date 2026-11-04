@@ -28,4 +28,43 @@ function PlayerVisibilityHelper.AddPlayerMarkers(playerId, unit)
     end
 end
 
+-- Text color of the "P1/P2/P3" label, made from the player outline color
+---@param playerId number
+local function GetPlayerTextColor(playerId)
+    local outline = Config["Player" .. playerId .. "Outline"]
+    if not outline then
+        return { 255, 255, 255, 255 }
+    end
+    local function channel(value)
+        return (value or 0) > 0 and 255 or 90
+    end
+    return { channel(outline.R), channel(outline.G), channel(outline.B), 255 }
+end
+
+--- Marks a reward that only one player can take: player outline color + "P2" label above it
+---@param playerId number
+---@param objectId number
+function PlayerVisibilityHelper.AddLootMarker(playerId, objectId)
+    if not objectId then
+        return
+    end
+    if Config["Player" .. playerId .. "HasOutline"] then
+        AddOutline(MergeTables(Config["Player" .. playerId .. "Outline"], { Id = objectId }))
+    end
+    CreateTextBox({
+        Id = objectId,
+        Text = "P" .. playerId,
+        OffsetY = -110,
+        FontSize = 30,
+        Color = GetPlayerTextColor(playerId),
+        ShadowColor = { 0, 0, 0, 240 },
+        ShadowOffset = { 0, 2 },
+        ShadowBlur = 0,
+        OutlineThickness = 3,
+        OutlineColor = { 0, 0, 0, 1 },
+        Font = "AlegreyaSansSCBold",
+        Justification = "Center",
+    })
+end
+
 return PlayerVisibilityHelper

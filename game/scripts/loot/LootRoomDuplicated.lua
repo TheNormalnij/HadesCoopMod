@@ -23,6 +23,8 @@ local CoopCamera = ModRequire "../CoopCamera.lua"
 local GameFlags = ModRequire "../GameFlags.lua"
 ---@type CoopModConfig
 local Config = ModRequire "../config.lua"
+---@type PlayerVisibilityHelper
+local PlayerVisibilityHelper = ModRequire "../PlayerVisibilityHelper.lua"
 
 ---@class LootRoomDuplicated : ILootDelivery
 local LootRoomDuplicated = {}
@@ -312,6 +314,10 @@ function LootRoomDuplicated.CreateRewardWrap(baseFun, ...)
         local loot = baseFun(...)
         loot.CoopChoosenPlayer = LootRoomDuplicated.TagNextLootForPlayer
         LootRoomDuplicated.TagNextLootForPlayer = nil
+        if loot and loot.ObjectId and CoopPlayers.GetPlayersCount() > 1 then
+            -- Rewards of different players often lie close to each other
+            PlayerVisibilityHelper.AddLootMarker(loot.CoopChoosenPlayer, loot.ObjectId)
+        end
         return loot
     end
 end
