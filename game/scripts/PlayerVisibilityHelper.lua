@@ -73,7 +73,8 @@ end
 ---@param playerId number
 ---@param anchorId number
 ---@param offsetX number
-function PlayerVisibilityHelper.AddHealthBarLabel(playerId, anchorId, offsetX)
+---@param offsetY number?
+function PlayerVisibilityHelper.AddHealthBarLabel(playerId, anchorId, offsetX, offsetY)
     if not anchorId then
         return
     end
@@ -81,7 +82,7 @@ function PlayerVisibilityHelper.AddHealthBarLabel(playerId, anchorId, offsetX)
         Id = anchorId,
         Text = "P" .. playerId,
         OffsetX = offsetX,
-        OffsetY = -45,
+        OffsetY = offsetY or -45,
         FontSize = 24,
         Color = PlayerVisibilityHelper.GetPlayerTextColor(playerId),
         ShadowColor = { 0, 0, 0, 240 },

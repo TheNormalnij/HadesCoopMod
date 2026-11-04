@@ -202,13 +202,13 @@ function UIHooks.InitHooks()
                 ScreenAnchors.LifePipIds = throwawayPips
             end
             local offsetX = ui and ui.OffsetX or 0
-            local offsetY = ui and ui.OffsetY or 0
+            local transformY = ui and ui.TransformScreenY
             -- Mirror the pip to the right side of the screen.
             -- Must call the original and return the obstacle id, otherwise P2 pips are never created
             CreateScreenObstacle = function(obstacleArgs)
                 obstacleArgs.X = (ScreenWidth - 80) - (obstacleArgs.X - 70) + offsetX
-                if obstacleArgs.Y then
-                    obstacleArgs.Y = obstacleArgs.Y + offsetY
+                if obstacleArgs.Y and transformY then
+                    obstacleArgs.Y = transformY(obstacleArgs.Y)
                 end
                 return _CreateScreenObstacle(obstacleArgs)
             end

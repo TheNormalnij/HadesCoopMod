@@ -9,11 +9,12 @@ local HeroContext = ModRequire "HeroContext.lua"
 ---@type PlayerVisibilityHelper
 local PlayerVisibilityHelper = ModRequire "PlayerVisibilityHelper.lua"
 
--- HUD offsets of additional players. Player 2 uses the bottom right corner,
--- player 3 is placed above player 2.
+-- HUD layout of additional players.
+-- Player 2 uses the bottom right corner.
+-- Player 3 uses the top right corner, mirrored vertically (health bar at the top edge).
 local PlayerHudOffsets = {
     [2] = { X = 0, Y = 0 },
-    [3] = { X = 0, Y = -140 },
+    [3] = { X = 0, Y = 0, MirrorY = true },
 }
 
 ---@param playerId number
@@ -23,13 +24,29 @@ local function CreatePlayerUi(playerId)
     SecondPlayerUi.ScreenAnchors = ScreenAnchorsSecondPlayer
     SecondPlayerUi.PlayerId = playerId
 
-    local offset = PlayerHudOffsets[playerId] or { X = 0, Y = -140 * (playerId - 2) }
+    local offset = PlayerHudOffsets[playerId] or { X = 0, Y = -140 * (playerId - 3) }
     local hudOffsetX, hudOffsetY = offset.X, offset.Y
     SecondPlayerUi.OffsetX = hudOffsetX
     SecondPlayerUi.OffsetY = hudOffsetY
 
     local function SW() return ScreenWidth + hudOffsetX end
     local function SH() return ScreenHeight + hudOffsetY end
+    local mirrorY = offset.MirrorY and true or false
+    SecondPlayerUi.MirrorY = mirrorY
+    --- Screen Y of an element that is placed `fromEdge` pixels from the bottom edge
+    --- (from the top edge when the HUD is mirrored)
+    local function Y(fromEdge)
+        if mirrorY then
+            return fromEdge - hudOffsetY
+        end
+        return SH() - fromEdge
+    end
+    --- Converts a screen Y of the vanilla (bottom) layout to this HUD
+    function SecondPlayerUi.TransformScreenY(y)
+        return Y(ScreenHeight - y)
+    end
+    --- Text above the health bar goes below it when the HUD is mirrored
+    SecondPlayerUi.AboveBarOffsetY = mirrorY and 45 or -45
 
     function SecondPlayerUi.ShowHealthUI()
         if not ConfigOptionCache.ShowUIAnimations then
@@ -58,28 +75,28 @@ local function CreatePlayerUi(playerId)
             Group = "Combat_UI",
             X = posX - (10 - CombatUI.FadeDistance.Health),
             --X = SW() - 266,
-            Y = SH() - 50
+            Y = Y(50)
         })
 
         ScreenAnchorsSecondPlayer.HealthRally = CreateScreenObstacle({
             Name = "BlankObstacle",
             Group = "Combat_UI",
             X = posX - (10 - CombatUI.FadeDistance.Health),
-            Y = SH() - 50
+            Y = Y(50)
         })
 
         ScreenAnchorsSecondPlayer.HealthFill = CreateScreenObstacle({
             Name = "BlankObstacle",
             Group = "Combat_UI",
             X = posX - (10 - CombatUI.FadeDistance.Health),
-            Y = SH() - 50
+            Y = Y(50)
         })
 
         ScreenAnchorsSecondPlayer.HealthFlash = CreateScreenObstacle({
             Name = "BlankObstacle",
             Group = "Combat_UI",
             X = posX - (10 - CombatUI.FadeDistance.Health),
-            Y = SH() - 50
+            Y = Y(50)
         })
 
         ScreenAnchorsSecondPlayer.StoredAmmo = ScreenAnchorsSecondPlayer.StoredAmmo or {}
@@ -104,7 +121,7 @@ local function CreatePlayerUi(playerId)
             ShadowOffsetX = 0,
             Justification = "Left",
         }, LocalizationData.UIScripts.HealthUI))
-        PlayerVisibilityHelper.AddHealthBarLabel(playerId, ScreenAnchorsSecondPlayer.HealthBack, 470)
+        PlayerVisibilityHelper.AddHealthBarLabel(playerId, ScreenAnchorsSecondPlayer.HealthBack, 470, SecondPlayerUi.AboveBarOffsetY)
 
         SetAnimation({ Name = "HealthBar", DestinationId = ScreenAnchorsSecondPlayer.HealthBack })
 
@@ -122,7 +139,7 @@ local function CreatePlayerUi(playerId)
                 local offsetY = -50
                 offsetX = offsetX + (#ScreenAnchorsSecondPlayer.SelfStoredAmmo * 22)
                 local screenId = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_UI", DestinationId =
-                ScreenAnchorsSecondPlayer.HealthBack, X = 10 + offsetX, Y = SH() - 50 + offsetY })
+                ScreenAnchorsSecondPlayer.HealthBack, X = 10 + offsetX, Y = Y(50 - offsetY) })
                 SetThingProperty({ Property = "SortMode", Value = "Id", DestinationId = screenId })
                 table.insert(ScreenAnchorsSecondPlayer.SelfStoredAmmo, screenId)
                 SetAnimation({ Name = "AmmoEmbeddedInEnemyIcon", DestinationId = screenId })
@@ -303,7 +320,7 @@ local function CreatePlayerUi(playerId)
         local poxX = SW() - 80
         for i = 1, numLastStands do
             local obstacleId = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_UI", X = poxX - i * 32, Y =
-            SH() - 95 })
+            Y(95) })
             SetAnimation({ Name = "ExtraLifeEmpty", DestinationId = obstacleId })
             table.insert(ScreenAnchorsSecondPlayer.LifePipIds, obstacleId)
         end
@@ -317,7 +334,7 @@ local function CreatePlayerUi(playerId)
         end
         local poxX = SW() - 512 - 150
         ScreenAnchorsSecondPlayer.AmmoIndicatorUI = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_UI", X = poxX, Y =
-        SH() - 62 })
+        Y(62) })
         SetAnimation({ Name = "AmmoIndicatorIcon", DestinationId = ScreenAnchorsSecondPlayer.AmmoIndicatorUI })
         CreateTextBox(MergeTables({
             Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI,
@@ -390,13 +407,13 @@ local function CreatePlayerUi(playerId)
         local reloadTimer = delay
         local poxX = SW() - 494 - 150
         if IsEmpty(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads) then
-            local id = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_Menu", Y = SH() - 70, X = poxX +
+            local id = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_Menu", Y = Y(70), X = poxX +
             40 * #ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads })
             SetAnimation({ Name = "AmmoReloadTimer", DestinationId = id, PlaySpeed = 100 / reloadTimer })
             SetColor({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Color = { 0.5, 0.5, 0.5, 1.0 } })
             table.insert(ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads, id)
         else
-            local id = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_Menu", Y = SH() - 62 + 35, X = poxX +
+            local id = CreateScreenObstacle({ Name = "BlankObstacle", Group = "Combat_Menu", Y = Y(62 - 35), X = poxX +
             40 * #ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads })
             SetAnimation({ Name = "AmmoMultipleReloadTimer", DestinationId = id, PlaySpeed = 100 / reloadTimer })
             SetColor({ Id = ScreenAnchorsSecondPlayer.AmmoIndicatorUI, Color = { 0.5, 0.5, 0.5, 1.0 } })
@@ -417,7 +434,7 @@ local function CreatePlayerUi(playerId)
     	local destroyIds = {}
     	for i, id in pairs( ScreenAnchorsSecondPlayer.AmmoIndicatorUIReloads ) do
             local targetId = SpawnObstacle({ Name = "InvisibleTarget", OffsetX = SW() + 40 * (i - 1), OffsetY =
-            SH() - 62 + 40, Group = "Standing" })
+            Y(62 - 40), Group = "Standing" })
     		Move({ Id = id, DestinationId = targetId, Duration = 0.25 })
     		table.insert( destroyIds, targetId )
     	end
@@ -454,7 +471,7 @@ local function CreatePlayerUi(playerId)
             Group = "Combat_UI",
             -- Next to the ammo UI: the right screen side is used by boon trays of additional players
             X = SW() - 662 - 120,
-            Y = SH() - 62
+            Y = Y(62)
         })
 
 
@@ -593,20 +610,20 @@ local function CreatePlayerUi(playerId)
             Name = "BlankObstacle",
             Group = "Combat_UI",
             X = posX - (10 - CombatUI.FadeDistance.Super),
-            Y = SH() - 10
+            Y = Y(10)
         }
 
         ScreenAnchorsSecondPlayer.SuperMeterCap = CreateScreenObstacle{
             Name = "BlankObstacle",
             Group = "Combat_Menu",
             X = posX - (10 - CombatUI.FadeDistance.Super),
-            Y = SH() - 10
+            Y = Y(10)
         }
 
         ScreenAnchorsSecondPlayer.SuperMeterHint = CreateScreenObstacle{
             Name = "BlankObstacle",
             X = posX - 10,
-            Y = SH() - 10,
+            Y = Y(10),
             Group = "Combat_Menu_Additive"
         }
 
@@ -634,14 +651,14 @@ local function CreatePlayerUi(playerId)
                     Name = "BlankObstacle",
                     Group = "Combat_UI",
                     X = posX + SuperUI.PipXStart + (i - 1) * pipXSize - CombatUI.FadeDistance.Super + 20,
-                    Y = SuperUI.PipY + hudOffsetY }
+                    Y = Y(ScreenHeight - SuperUI.PipY) }
             )
             table.insert(ScreenAnchorsSecondPlayer.SuperPipIds,
                 CreateScreenObstacle{
                     Name = "BlankObstacle",
                     Group = "Combat_Menu_Additive",
                     X = posX + SuperUI.PipXStart + (i - 1) * pipXSize - CombatUI.FadeDistance.Super + 20,
-                    Y = SuperUI.PipY + hudOffsetY
+                    Y = Y(ScreenHeight - SuperUI.PipY)
                 }    
             )
             local fillPercent = 0
