@@ -189,7 +189,11 @@ function LootRoomDuplicated.TryGenerateSharedDoorRewards(ownerHero)
 
                     room.ForceLootName = nil
                     room.RewardOverrides = nil
-                    SetupRoomReward(CurrentRun, room, currentRewards,
+                    -- The reward type of a door is shared, only the god is chosen per player.
+                    -- Exclude gods that other players already have on this door, so a boon door
+                    -- offers different gods when possible.
+                    local excludedRewards = LootRoomDuplicated.WithOtherPlayersGods(currentRewards, door, playerId, hero)
+                    SetupRoomReward(CurrentRun, room, excludedRewards,
                         { Door = door, IgnoreForceLootName = room.IgnoreForceLootName })
 
                     door.CoopPlayerRewards[playerId] = { rewardType = room.ChosenRewardType, lootName = room.ForceLootName }
@@ -211,6 +215,39 @@ function LootRoomDuplicated.TryGenerateSharedDoorRewards(ownerHero)
     for _, door in ipairs(doors) do
         LootRoomDuplicated.CreateSharedDoorIcons(door, ownerId)
     end
+end
+
+--- Returns previouslyChosenRewards for SetupRoomReward: rewards of this player on other doors
+--- plus boon gods of other players on this door. SetupRoomReward only uses Boon entries of this
+--- list to exclude gods (it doesn't change the reward type). Keepsake gods of the player
+--- (ForceBoonName) are never excluded, so keepsakes keep working.
+---@private
+---@param currentRewards table[]
+---@param door table
+---@param playerId number
+---@param hero table
+---@return table[]
+function LootRoomDuplicated.WithOtherPlayersGods(currentRewards, door, playerId, hero)
+    local out = {}
+    for _, reward in ipairs(currentRewards) do
+        table.insert(out, reward)
+    end
+
+    local forcedGods = {}
+    for _, trait in pairs(hero.Traits or {}) do
+        if trait.ForceBoonName and (trait.Uses or 0) > 0 then
+            forcedGods[trait.ForceBoonName] = true
+        end
+    end
+
+    for otherPlayerId, reward in pairs(door.CoopPlayerRewards or {}) do
+        if otherPlayerId ~= playerId and reward.rewardType == "Boon" and reward.lootName
+            and not forcedGods[reward.lootName] then
+            table.insert(out, { RewardType = "Boon", ForceLootName = reward.lootName })
+        end
+    end
+
+    return out
 end
 
 --- The owner reward is the vanilla icon in the middle, rewards of other players are smaller icons
