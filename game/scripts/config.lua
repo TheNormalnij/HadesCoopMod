@@ -36,6 +36,11 @@ local Config = {
         DamagePerPlayer = 0,
         BossDamagePerPlayer = 0,
     },
+    -- Players whose UI (HUD and boon tray) is hidden while a boss health bar is shown.
+    -- The player 3 UI is at the top of the screen and covers the boss health bar.
+    HideUiDuringBoss = {
+        [3] = true,
+    },
     Player1HasOutline = true;
     Player1Outline = {
         R = 0,

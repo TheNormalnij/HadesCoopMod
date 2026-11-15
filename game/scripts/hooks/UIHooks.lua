@@ -192,6 +192,10 @@ function UIHooks.InitHooks()
         local _CreateScreenObstacle = CreateScreenObstacle
         -- nil for fresh heroes: their pips are rebuilt by RecreateLifePips on refresh
         local ui = isSecondPlayer and SecondPlayerUi.ForHero(targetHero) or nil
+        if ui and ui.IsHidden() then
+            -- The HUD of this player is hidden (boss fight): pips are rebuilt when it is shown again
+            ui = nil
+        end
         local throwawayPips = nil
         if isSecondPlayer then
             if ui then

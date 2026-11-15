@@ -8,14 +8,16 @@ local CoopPlayers = ModRequire "CoopPlayers.lua"
 local HeroContext = ModRequire "HeroContext.lua"
 ---@type PlayerVisibilityHelper
 local PlayerVisibilityHelper = ModRequire "PlayerVisibilityHelper.lua"
+---@type CoopUiVisibility
+local CoopUiVisibility = ModRequire "CoopUiVisibility.lua"
 
 -- HUD layout of additional players.
 -- Player 2 uses the bottom right corner.
 -- Player 3 uses the top right corner, mirrored vertically (health bar at the top edge).
+-- It covers the boss health bar, so it is hidden during boss fights (CoopUiVisibility).
 local PlayerHudOffsets = {
     [2] = { X = 0, Y = 0 },
-    -- Y = -100: 100px lower than the screen edge, the boss health bar is at the top
-    [3] = { X = 0, Y = -100, MirrorY = true },
+    [3] = { X = 0, Y = 0, MirrorY = true },
 }
 
 ---@param playerId number
@@ -809,6 +811,25 @@ local function CreatePlayerUi(playerId)
         SecondPlayerUi.UpdateAmmoUI()
     end
 
+    -- Functions do nothing while the player's UI is hidden (boss fights).
+    -- Raw keeps the real functions to destroy the HUD when it gets hidden.
+    local raw = {}
+    for name, fun in pairs(SecondPlayerUi) do
+        if type(fun) == "function" and name ~= "TransformScreenY" then
+            raw[name] = fun
+            SecondPlayerUi[name] = function(...)
+                if CoopUiVisibility.IsHidden(playerId) then
+                    return
+                end
+                return fun(...)
+            end
+        end
+    end
+    SecondPlayerUi.Raw = raw
+    SecondPlayerUi.IsHidden = function()
+        return CoopUiVisibility.IsHidden(playerId)
+    end
+
     return SecondPlayerUi
 end
 
@@ -840,6 +861,26 @@ function SecondPlayerUi.ForHero(hero)
     return SecondPlayerUi.Get(CoopPlayers.GetPlayerByHero(hero))
 end
 
+--- Destroys the whole HUD of a player right away (used when the UI gets hidden)
+---@param playerId number
+function SecondPlayerUi.DestroyPlayerHud(playerId)
+    local ui = SecondPlayerUi.Get(playerId)
+    local hero = CoopPlayers.GetHero(playerId)
+    if not ui then
+        return
+    end
+    local function destroy()
+        for _, name in ipairs({ "DestroyHealthUI", "DestroyAmmoUI", "DestroyGunUI", "DestroySuperMeter" }) do
+            ui.Raw[name]()
+        end
+    end
+    if hero then
+        HeroContext.RunWithHeroContext(hero, destroy)
+    else
+        destroy()
+    end
+end
+
 --- Calls fun(playerId, hero, ui) for every additional player slot
 function SecondPlayerUi.ForEach(fun)
     for playerId = 2, math.max(CoopPlayers.GetPlayersCount(), #CoopPlayers.CoopHeroes) do
@@ -859,8 +900,9 @@ local WaitingFunctions = {
 -- Use SecondPlayerUi.ForHero(hero).Function() to update one player.
 local unpackArgs = table.unpack or unpack
 local template = CreatePlayerUi(2)
+local NotDispatched = { IsHidden = true, TransformScreenY = true }
 for funcName, value in pairs(template) do
-    if type(value) == "function" then
+    if type(value) == "function" and not NotDispatched[funcName] then
         SecondPlayerUi[funcName] = function(...)
             local args = { ... }
             local argsCount = select("#", ...)

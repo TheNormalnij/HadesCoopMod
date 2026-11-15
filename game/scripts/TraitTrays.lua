@@ -22,6 +22,8 @@ local HeroContext = ModRequire "HeroContext.lua"
 local HookUtils = ModRequire "HookUtils.lua"
 ---@type RunEx
 local RunEx = ModRequire "RunEx.lua"
+---@type CoopUiVisibility
+local CoopUiVisibility = ModRequire "CoopUiVisibility.lua"
 
 ---@class TraitTrays
 local TraitTrays = {}
@@ -31,8 +33,8 @@ local TraitTrays = {}
 --  Top: vanilla tray turned by 90 degrees, the first slot column starts at X, the slot row at Y
 local TrayLayouts = {
     [2] = { Kind = "Mirror", ShiftX = 0 },
-    -- Below the boss health bar (Y ~ 40..100)
-    [3] = { Kind = "Top", X = 560, Y = 180 },
+    -- Covers the boss health bar, hidden during boss fights (CoopUiVisibility)
+    [3] = { Kind = "Top", X = 560, Y = 70 },
 }
 
 local function GetLayout(playerId)
@@ -134,6 +136,10 @@ function TraitTrays.RunForHero(hero, fun, ...)
     local playerId = GetAdditionalPlayerId(hero)
     if playerId == nil or hero == activeHero then
         return fun(...)
+    end
+    if CoopUiVisibility.IsHidden(playerId) then
+        -- The tray of this player is hidden (boss fight)
+        return
     end
 
     local layout = GetLayout(playerId)
@@ -315,7 +321,20 @@ function TraitTrays.GetScreenHero()
     return TraitTrays.ScreenHero
 end
 
+--- Destroys the tray of an additional player right away (used when the UI gets hidden)
+---@param playerId number
+function TraitTrays.DestroyTray(playerId)
+    local hero = CoopPlayers.GetHero(playerId)
+    if not hero or not TraitTrays.VanillaDestroyTraitUI then
+        return
+    end
+    HeroContext.RunWithHeroContext(hero, function()
+        TraitTrays.RunForHero(hero, TraitTrays.VanillaDestroyTraitUI)
+    end)
+end
+
 function TraitTrays.InitHooks()
+    TraitTrays.VanillaDestroyTraitUI = DestroyTraitUI
     -- Shown / hidden / destroyed together with the main tray
     HookUtils.wrap("ShowTraitUI", function(baseFun, ...)
         local mainHero = CoopPlayers.GetMainHero()
