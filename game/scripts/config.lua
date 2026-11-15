@@ -36,10 +36,11 @@ local Config = {
         DamagePerPlayer = 0,
         BossDamagePerPlayer = 0,
     },
-    -- Players whose UI (HUD and boon tray) is hidden while a boss health bar is shown.
+    -- Parts of the player UI hidden while a boss health bar is shown.
+    -- Hud: health, ammo, wrath. Tray: boon tray.
     -- The player 3 UI is at the top of the screen and covers the boss health bar.
     HideUiDuringBoss = {
-        [3] = true,
+        [3] = { Hud = false, Tray = true },
     },
     Player1HasOutline = true;
     Player1Outline = {
@@ -73,8 +74,8 @@ local Config = {
     TextAbovePlayersParams = {
         -- CreateTextBox params
         OffsetX = 0,
-        OffsetY = -175,
-        FontSize = 48,
+        OffsetY = -195,
+        FontSize = 72,
         Color = { 255, 255, 255, 255 },
         ShadowColor = { 0, 0, 0, 240 },
         ShadowOffset = { 0, 2 },

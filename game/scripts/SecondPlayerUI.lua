@@ -818,7 +818,7 @@ local function CreatePlayerUi(playerId)
         if type(fun) == "function" and name ~= "TransformScreenY" then
             raw[name] = fun
             SecondPlayerUi[name] = function(...)
-                if CoopUiVisibility.IsHidden(playerId) then
+                if CoopUiVisibility.IsHidden(playerId, "Hud") then
                     return
                 end
                 return fun(...)
@@ -827,7 +827,7 @@ local function CreatePlayerUi(playerId)
     end
     SecondPlayerUi.Raw = raw
     SecondPlayerUi.IsHidden = function()
-        return CoopUiVisibility.IsHidden(playerId)
+        return CoopUiVisibility.IsHidden(playerId, "Hud")
     end
 
     return SecondPlayerUi

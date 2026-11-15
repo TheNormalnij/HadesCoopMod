@@ -137,7 +137,7 @@ function TraitTrays.RunForHero(hero, fun, ...)
     if playerId == nil or hero == activeHero then
         return fun(...)
     end
-    if CoopUiVisibility.IsHidden(playerId) then
+    if CoopUiVisibility.IsHidden(playerId, "Tray") then
         -- The tray of this player is hidden (boss fight)
         return
     end

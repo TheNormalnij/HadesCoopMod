@@ -1,5 +1,5 @@
 --
--- Hides the UI of some players (config.lua: HideUiDuringBoss) while a boss health bar is shown.
+-- Hides parts of the UI of some players (config.lua: HideUiDuringBoss) while a boss health bar is shown.
 --
 
 ---@type CoopPlayers
@@ -26,13 +26,17 @@ function BossUiHooks.IsBossFight()
 end
 
 ---@private
-function BossUiHooks.ShowPlayerUi(playerId)
+function BossUiHooks.ShowPart(playerId, part)
     local hero = CoopPlayers.GetHero(playerId)
-    local ui = SecondPlayerUi.Get(playerId)
-    if not hero or hero.IsDead or not ui or not ShowingCombatUI then
+    if not hero or hero.IsDead or not ShowingCombatUI then
         -- Created by the next ShowCombatUI
         return
     end
+    if part == "Tray" then
+        TraitTrays.Refresh()
+        return
+    end
+    local ui = SecondPlayerUi.Get(playerId)
     HeroContext.RunWithHeroContext(hero, function()
         ui.ShowHealthUI()
         ui.ShowAmmoUI()
@@ -40,21 +44,30 @@ function BossUiHooks.ShowPlayerUi(playerId)
         ui.ShowSuperMeter()
         ui.Refresh()
     end)
-    TraitTrays.Refresh()
+end
+
+---@private
+function BossUiHooks.HidePart(playerId, part)
+    if part == "Tray" then
+        TraitTrays.DestroyTray(playerId)
+    else
+        SecondPlayerUi.DestroyPlayerHud(playerId)
+    end
 end
 
 function BossUiHooks.Update()
     local bossFight = BossUiHooks.IsBossFight()
-    for playerId, enabled in pairs(Config.HideUiDuringBoss or {}) do
-        if enabled and playerId > 1 then
-            local hidden = CoopUiVisibility.IsHidden(playerId)
-            if bossFight and not hidden then
-                SecondPlayerUi.DestroyPlayerHud(playerId)
-                TraitTrays.DestroyTray(playerId)
-                CoopUiVisibility.SetHidden(playerId, true)
-            elseif not bossFight and hidden then
-                CoopUiVisibility.SetHidden(playerId, false)
-                BossUiHooks.ShowPlayerUi(playerId)
+    for playerId, parts in pairs(Config.HideUiDuringBoss or {}) do
+        if playerId > 1 and type(parts) == "table" then
+            for _, part in ipairs({ "Hud", "Tray" }) do
+                local hidden = CoopUiVisibility.IsHidden(playerId, part)
+                if parts[part] and bossFight and not hidden then
+                    BossUiHooks.HidePart(playerId, part)
+                    CoopUiVisibility.SetHidden(playerId, part, true)
+                elseif hidden and (not bossFight or not parts[part]) then
+                    CoopUiVisibility.SetHidden(playerId, part, false)
+                    BossUiHooks.ShowPart(playerId, part)
+                end
             end
         end
     end
