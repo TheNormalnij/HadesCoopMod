@@ -233,13 +233,15 @@ function UIHooks.InitHooks()
 
     local _UpdateSuperUIComponent = UpdateSuperUIComponent
     UpdateSuperUIComponent = function(...)
-        local mainHero = CoopPlayers.GetMainHero()
+        -- Draw the pip only on the bar of the hero whose meter is being drawn.
+        -- Drawing on both bars made them mirror each other and replay the "full" effect.
         local secondHero = CoopPlayers.GetHero(2)
-        if ScreenAnchors.SuperPipBackingIds then
-            HeroContext.RunWithHeroContext(mainHero, _UpdateSuperUIComponent, ...)
-        end
-        if secondHero and SecondPlayerUi.ScreenAnchors.SuperPipBackingIds then
-            HeroContext.RunWithHeroContext(secondHero, SecondPlayerUi.UpdateSuperUIComponent, ...)
+        if secondHero and HeroContext.GetCurrentHeroContext() == secondHero then
+            if SecondPlayerUi.ScreenAnchors.SuperPipBackingIds then
+                SecondPlayerUi.UpdateSuperUIComponent(...)
+            end
+        elseif ScreenAnchors.SuperPipBackingIds then
+            _UpdateSuperUIComponent(...)
         end
     end
 
