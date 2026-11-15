@@ -24,6 +24,18 @@ local Config = {
         -- false: players choose doors one by one.
         SharedDoorChoice = true;
     },
+    -- Enemy scaling by the number of players (like Seamless Coop).
+    -- Values are added for every additional alive player: 0.35 = +35%.
+    -- With 3 players: regular enemies 1 + 2 * 0.35 = 1.7x health, bosses 1 + 2 * 0.5 = 2x.
+    -- Health scaling also scales enemy armor.
+    EnemyScaling = {
+        Enabled = true,
+        HealthPerPlayer = 0.35,
+        BossHealthPerPlayer = 0.5,
+        -- Damage enemies deal to players
+        DamagePerPlayer = 0,
+        BossDamagePerPlayer = 0,
+    },
     Player1HasOutline = true;
     Player1Outline = {
         R = 0,

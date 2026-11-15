@@ -15,6 +15,8 @@ local HeroContextWrapper = ModRequire "../HeroContextWrapper.lua"
 local HookUtils = ModRequire "../HookUtils.lua"
 ---@type CoopModConfig
 local Config = ModRequire "../config.lua"
+---@type EnemyScaling
+local EnemyScaling = ModRequire "../EnemyScaling.lua"
 
 local _OnHit = OnHit
 function OnHit(args)
@@ -42,6 +44,10 @@ function OnHit(args)
 
         if Config.Debug.OneHit then
             triggerArgs.DamageAmount = 10000
+        end
+
+        if isVictimPlayer and not isAttackerPlayer then
+            EnemyScaling.ScaleDamageToPlayer(triggerArgs, attacker)
         end
 
         if isAttackerPlayer then

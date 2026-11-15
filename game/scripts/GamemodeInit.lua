@@ -15,6 +15,8 @@ local HeroContext = ModRequire "HeroContext.lua"
 local TraitTrays = ModRequire "TraitTrays.lua"
 ---@type AmmoHooks
 local AmmoHooks = ModRequire "hooks/AmmoHooks.lua"
+---@type EnemyScaling
+local EnemyScaling = ModRequire "EnemyScaling.lua"
 ---@type CoopCamera
 local CoopCamera = ModRequire "CoopCamera.lua"
 ---@type FreezeHooks
@@ -65,6 +67,7 @@ local function TryInstalBasicHooks()
     --PactDoorFix.InitHooks()
     TraitTrays.InitHooks()
     AmmoHooks.InitHooks()
+    EnemyScaling.InitHooks()
     UIHooks.InitHooks()
     CoopPlayers.CoopInit()
     LootHooks.InitHooks()
