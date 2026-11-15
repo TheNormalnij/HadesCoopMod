@@ -68,8 +68,8 @@ local Config = {
     TextAbovePlayersParams = {
         -- CreateTextBox params
         OffsetX = 0,
-        OffsetY = -150,
-        FontSize = 28,
+        OffsetY = -175,
+        FontSize = 48,
         Color = { 255, 255, 255, 255 },
         ShadowColor = { 0, 0, 0, 240 },
         ShadowOffset = { 0, 2 },

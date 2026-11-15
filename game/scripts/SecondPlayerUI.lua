@@ -14,7 +14,8 @@ local PlayerVisibilityHelper = ModRequire "PlayerVisibilityHelper.lua"
 -- Player 3 uses the top right corner, mirrored vertically (health bar at the top edge).
 local PlayerHudOffsets = {
     [2] = { X = 0, Y = 0 },
-    [3] = { X = 0, Y = 0, MirrorY = true },
+    -- Y = -100: 100px lower than the screen edge, the boss health bar is at the top
+    [3] = { X = 0, Y = -100, MirrorY = true },
 }
 
 ---@param playerId number

@@ -31,7 +31,8 @@ local TraitTrays = {}
 --  Top: vanilla tray turned by 90 degrees, the first slot column starts at X, the slot row at Y
 local TrayLayouts = {
     [2] = { Kind = "Mirror", ShiftX = 0 },
-    [3] = { Kind = "Top", X = 560, Y = 70 },
+    -- Below the boss health bar (Y ~ 40..100)
+    [3] = { Kind = "Top", X = 560, Y = 180 },
 }
 
 local function GetLayout(playerId)

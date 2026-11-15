@@ -17,6 +17,8 @@ local TraitTrays = ModRequire "TraitTrays.lua"
 local AmmoHooks = ModRequire "hooks/AmmoHooks.lua"
 ---@type EnemyScaling
 local EnemyScaling = ModRequire "EnemyScaling.lua"
+---@type FountainHooks
+local FountainHooks = ModRequire "hooks/FountainHooks.lua"
 ---@type CoopCamera
 local CoopCamera = ModRequire "CoopCamera.lua"
 ---@type FreezeHooks
@@ -68,6 +70,7 @@ local function TryInstalBasicHooks()
     TraitTrays.InitHooks()
     AmmoHooks.InitHooks()
     EnemyScaling.InitHooks()
+    FountainHooks.InitHooks()
     UIHooks.InitHooks()
     CoopPlayers.CoopInit()
     LootHooks.InitHooks()
